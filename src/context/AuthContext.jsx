@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AuthContext = createContext(null);
 
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = 'https://fest-alchemy-backend-z523.vercel.app';
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
