@@ -4,7 +4,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Views
 import HomePage from './views/HomePage';
-import PublicDashboard from './views/PublicDashboard';
+import TeamStatsPage from './views/TeamStatsPage';
+import ResultsPage from './views/ResultsPage';
+import CustomCursor from './components/CustomCursor';
 import Login from './views/Login';
 import AdminPanel from './views/AdminPanel';
 import JudgePanel from './views/JudgePanel';
@@ -306,12 +308,13 @@ function AppContent() {
   const location = useLocation();
   return (
     <div className="app-container">
+      <CustomCursor />
       <Navbar />
       <main className={`main-content ${location.pathname === '/' ? 'main-content--home' : ''}`}>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/results" element={<PublicDashboard initialSection="results" />} />
-          <Route path="/team-status" element={<PublicDashboard initialSection="standings" />} />
+          <Route path="/results" element={<ResultsPage />} />
+          <Route path="/team-status" element={<TeamStatsPage />} />
           <Route path="/login" element={<Login />} />
 
           <Route path="/admin/*" element={
