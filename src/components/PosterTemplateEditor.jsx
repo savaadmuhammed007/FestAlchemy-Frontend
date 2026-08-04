@@ -54,7 +54,7 @@ const DEFAULT_CONFIG = {
   result_value: { x: 540, y: 1175, size: 30, color: '#ffffff' },
 };
 
-const SUPPORTED_FONTS = ['Inter', 'Montserrat', 'Poppins', 'Playfair Display', 'Cinzel'];
+const SUPPORTED_FONTS = ['Inter', 'Montserrat', 'Poppins', 'Playfair Display', 'Cinzel',];
 
 const getDefaultWeight = (key) => {
   if (key === 'program' || key.endsWith('_name')) return 'ExtraBold';

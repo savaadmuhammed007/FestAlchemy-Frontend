@@ -141,6 +141,6 @@ We avoid TailwindCSS and maintain styling inside `src/index.css`. All colors, an
 * **Theme Switching:** Modifying theme applies a `data-theme` attribute to the `html` element which updates variable tokens automatically.
 
 ### Authentication & API Routing (`AuthContext.jsx`)
-* **API URL:** By default, calls are made to the local Django server: `http://localhost:8000`.
+* **API URL:** By default, calls are made to the local Django server: `https://festalchemy-backend.onrender.com/`.
 * **Token Storage:** Authenticated session tokens are persisted in `localStorage` as `token`.
 * **Headers:** Requests to protected endpoints must carry the header `'Authorization': 'Token <your_token>'`.

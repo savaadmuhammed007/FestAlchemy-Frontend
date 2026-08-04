@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+
+
+import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../context/AuthContext';
-import { Award, Users, RefreshCw, Trophy, Medal, ChevronLeft, Search, Download, FileText } from 'lucide-react';
+import { Award, Users, RefreshCw, Trophy, Medal, ChevronLeft, Search, Download, FileText, Menu, X } from 'lucide-react';
 
 /* ─── Top Performers Sub-Component ──────────────────────────── */
 function TopPerformersSection({ individualLeaderboard }) {
@@ -106,7 +108,7 @@ function TopPerformersSection({ individualLeaderboard }) {
                           </span>
                         )}
                       </div>
-                      
+
                       {/* Mobile-only Program Breakdown display */}
                       <div className="mobile-only" style={{ display: 'none', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.35rem' }}>
                         {(item.program_breakdown || []).map(pb => (
@@ -155,19 +157,17 @@ function TopPerformersSection({ individualLeaderboard }) {
 }
 
 
-export default function PublicDashboard({ initialSection = 'results' }) {
+export default function PublicDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeSection, setActiveSection] = useState(initialSection);
+  const [activeSection, setActiveSection] = useState('results');
   const [selectedProgramResults, setSelectedProgramResults] = useState(null);
   const [resultsLoading, setResultsLoading] = useState(false);
   const [resultsSearch, setResultsSearch] = useState('');
   const [resultsCategoryFilter, setResultsCategoryFilter] = useState('all');
-
-  useEffect(() => {
-    setActiveSection(initialSection);
-  }, [initialSection]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const contentRef = useRef(null);
 
   const fetchData = async () => {
     try {
@@ -207,6 +207,20 @@ export default function PublicDashboard({ initialSection = 'results' }) {
     }
   };
 
+  const goToSection = (key) => {
+    setActiveSection(key);
+    setSelectedProgramResults(null);
+    setMobileMenuOpen(false);
+    setTimeout(() => {
+      contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
+  const scrollToTop = () => {
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (loading && !data) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '1rem' }}>
@@ -236,11 +250,143 @@ export default function PublicDashboard({ initialSection = 'results' }) {
 
   const rankColors = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
 
+  const categoryCount = new Set(
+    [
+      ...(programs_with_results || []).map(p => p.category_name),
+      ...(individual_leaderboard || []).map(c => c.category_name),
+    ].filter(Boolean)
+  ).size;
+
+  const navBtnReset = { background: 'none', border: 'none', cursor: 'pointer', font: 'inherit' };
+  const isTabActive = (key) => activeSection === key && !selectedProgramResults;
+
   return (
     <div>
 
+      {/* ─── Public Navbar (reuses the app's real .navbar / .nav-link classes) ─── */}
+      <nav className="navbar" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', position: 'sticky', top: 0 }}>
+        <div className="nav-brand" onClick={scrollToTop} style={{ cursor: 'pointer' }}>
+          <Trophy size={22} style={{ color: 'var(--accent)' }} />
+          <span className="gradient-text">{fest_settings?.fest_name || 'FestAlchemy'}</span>
+        </div>
+
+        {/* Desktop links */}
+        <div className="nav-links desktop-only">
+          <button onClick={scrollToTop} className="nav-link" style={navBtnReset}>Home</button>
+          <button onClick={() => goToSection('standings')} className={`nav-link ${isTabActive('standings') ? 'active' : ''}`} style={navBtnReset}>Team Standings</button>
+          <button onClick={() => goToSection('performers')} className={`nav-link ${isTabActive('performers') ? 'active' : ''}`} style={navBtnReset}>Top Performers</button>
+          <button onClick={() => goToSection('results')} className={`nav-link ${isTabActive('results') ? 'active' : ''}`} style={navBtnReset}>Results</button>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Point this at your actual login route / AuthContext flow */}
+          <a href="/login" className="btn btn-primary desktop-only" style={{ fontSize: '0.8rem' }}>Login</a>
+          <button
+            className="theme-toggle mobile-only"
+            onClick={() => setMobileMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile dropdown menu */}
+      {mobileMenuOpen && (
+        <div className="glass-panel mobile-only public-mobile-menu" style={{ marginTop: '-1rem', marginBottom: '1.5rem', flexDirection: 'column', gap: '0.35rem' }}>
+          <button onClick={scrollToTop} className="nav-link" style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Home</button>
+          <button onClick={() => goToSection('standings')} className={`nav-link ${isTabActive('standings') ? 'active' : ''}`} style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Team Standings</button>
+          <button onClick={() => goToSection('performers')} className={`nav-link ${isTabActive('performers') ? 'active' : ''}`} style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Top Performers</button>
+          <button onClick={() => goToSection('results')} className={`nav-link ${isTabActive('results') ? 'active' : ''}`} style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Results</button>
+          <a href="/login" className="btn btn-primary" style={{ justifyContent: 'center', marginTop: '0.5rem' }}>Login</a>
+        </div>
+      )}
+
+      {/* ─── Hero Banner ─── */}
+      <div className="glass-panel hero-banner" style={{ marginBottom: '1.5rem', textAlign: 'center', position: 'relative', overflow: 'hidden', padding: '3rem 1.5rem' }}>
+        <div style={{ position: 'absolute', top: '-20%', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '300px', background: 'radial-gradient(var(--accent), transparent 70%)', filter: 'blur(40px)', opacity: '0.12', pointerEvents: 'none' }} />
+
+        {fest_settings?.logo && (
+          <img src={`${API_BASE_URL}${fest_settings.logo}`} alt="logo" style={{ maxHeight: '100px', marginBottom: '0.75rem', objectFit: 'contain' }} />
+        )}
+
+        <h1 className="gradient-text" style={{ fontSize: '2.5rem', fontFamily: 'var(--font-display)', marginBottom: '0.25rem' }}>
+          {fest_settings?.fest_name || "FestAlchemy"} {fest_settings?.year || 2026}
+        </h1>
+        {fest_settings?.tagline && (
+          <p style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 500, maxWidth: '500px', margin: '0 auto' }}>
+            {fest_settings.tagline}
+          </p>
+        )}
+
+        {/* Optional — only renders if your fest_settings model has these fields */}
+        {(fest_settings?.start_date || fest_settings?.venue) && (
+          <p style={{ marginTop: '0.75rem', fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 500 }}>
+            {fest_settings?.start_date}{fest_settings?.end_date ? ` – ${fest_settings.end_date}` : ''}
+            {fest_settings?.start_date && fest_settings?.venue ? '  •  ' : ''}
+            {fest_settings?.venue}
+          </p>
+        )}
+
+        <div className="btn-group-responsive" style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', marginTop: '1.75rem' }}>
+          <button
+            onClick={() => goToSection('results')}
+            className="btn btn-primary"
+            style={{ borderRadius: 'var(--radius-full)', padding: '0.65rem 1.6rem', fontSize: '0.9rem' }}
+          >
+            <Award size={16} /> View Results
+          </button>
+          <button
+            onClick={() => goToSection('standings')}
+            className="btn btn-secondary"
+            style={{ borderRadius: 'var(--radius-full)', padding: '0.65rem 1.6rem', fontSize: '0.9rem' }}
+          >
+            <Trophy size={16} /> Team Standings
+          </button>
+        </div>
+      </div>
+
+      {/* ─── About / Live Stats ─── */}
+      <div className="glass-panel" style={{ marginBottom: '1.5rem', padding: '2rem 1.75rem' }}>
+        <div style={{ display: 'flex', gap: '2.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ flex: '1 1 320px' }}>
+            <span
+              className="tag tag-primary"
+              style={{ fontSize: '0.7rem', padding: '0.25rem 0.7rem', marginBottom: '0.85rem', display: 'inline-block' }}
+            >
+              Live &amp; Updating
+            </span>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', marginBottom: '0.6rem' }}>
+              One scoreboard, every event
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '480px' }}>
+              {fest_settings?.description ||
+                "Every program, every point, tracked as it happens — from category heats to the final tally. Browse team standings, individual leaderboards, and published results as soon as judges submit them, all in one place."}
+            </p>
+          </div>
+
+          <div className="db-stats-grid" style={{ flex: '1 1 320px', gap: '0.85rem' }}>
+            {[
+              { icon: <Users size={20} />, value: leaderboard?.length || 0, label: 'Teams', color: 'var(--accent)', soft: 'var(--accent-soft)' },
+              { icon: <Award size={20} />, value: programs_with_results?.length || 0, label: 'Events Published', color: 'var(--success)', soft: 'var(--success-soft)' },
+              { icon: <Medal size={20} />, value: categoryCount, label: 'Categories', color: 'var(--info)', soft: 'var(--info-soft)' },
+            ].map((stat) => (
+              <div key={stat.label} className="db-stat-card">
+                <div className="db-stat-info">
+                  <span className="db-stat-label">{stat.label}</span>
+                  <span className="db-stat-value">{stat.value}</span>
+                </div>
+                <div className="db-stat-icon-wrapper" style={{ background: stat.soft, color: stat.color }}>
+                  {stat.icon}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       {/* ─── Section Tabs ─── */}
-      <div className="dashboard-tabs" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      <div ref={contentRef} className="dashboard-tabs" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
         {[
           { key: 'standings', label: 'Team Standings', icon: <Trophy size={16} /> },
           { key: 'performers', label: 'Top Performers', icon: <Medal size={16} /> },
