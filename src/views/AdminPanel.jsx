@@ -748,16 +748,42 @@ export default function AdminPanel() {
       const json = await res.json();
       if (res.ok) {
         alert(json.message);
-        loadSetupData();
-        if (targetProgramId.toString() === resultsProgramId.toString()) {
-          setPublishStatus(json.published);
-          setComputedResults(prev => prev.map(r => ({ ...r, published: json.published })));
-        }
+        setPublishStatus(json.published);
+        fetchCoreData();
       } else {
-        alert(json.error || "Failed to toggle publish status.");
+        alert(json.error || "Failed to toggle publish");
       }
     } catch (err) {
-      console.error(err);
+      alert("Error toggling publish status");
+    }
+  };
+
+  const handleTogglePublishTeamStandings = async () => {
+    if (!festSettings || !festSettings.id) {
+      alert("Fest settings not loaded yet.", "warning");
+      return;
+    }
+    const nextStatus = !festSettings.publish_team_standings;
+    const actionText = nextStatus ? "Publish" : "Hide / Unpublish";
+    const confirmed = await confirm(`${actionText} Team Standings`, `Are you sure you want to ${actionText.toLowerCase()} team standings on the public website?`);
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/fest-settings/${festSettings.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ publish_team_standings: nextStatus })
+      });
+      if (!res.ok) throw new Error("Failed to update team standings publication status");
+      const updated = await res.json();
+      setFestSettings(updated);
+      alert(`Team standings ${nextStatus ? 'published to public!' : 'hidden from public.'}`, nextStatus ? 'success' : 'info');
+    } catch (err) {
+      console.error("Error toggling team standings publication:", err);
+      alert("Failed to update team standings publication status.", "error");
     }
   };
 
@@ -1518,6 +1544,8 @@ export default function AdminPanel() {
             onOpenModal={openModal}
             teams={teams}
             token={token}
+            festSettings={festSettings}
+            onTogglePublishTeamStandings={handleTogglePublishTeamStandings}
           />
         )}
 

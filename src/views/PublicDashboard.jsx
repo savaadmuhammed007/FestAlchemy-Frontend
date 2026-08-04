@@ -259,7 +259,15 @@ export default function PublicDashboard() {
             <h2 style={{ marginBottom: '1.25rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem' }}>
               <Trophy size={22} style={{ color: 'var(--gold)' }} /> Live Team Standings
             </h2>
-            {leaderboard?.length === 0 ? (
+            {fest_settings?.publish_team_standings === false ? (
+              <div className="empty-state" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
+                <Trophy size={36} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem' }} />
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.35rem', color: 'var(--text-primary)' }}>Team Standings Not Published Yet</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  Overall team standings are currently hidden by event management. Check back soon for updated scores!
+                </p>
+              </div>
+            ) : leaderboard?.length === 0 ? (
               <div className="empty-state"><p>No scores computed yet.</p></div>
             ) : (
               <div className="table-container">

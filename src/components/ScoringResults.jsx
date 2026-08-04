@@ -19,7 +19,9 @@ export default function ScoringResults({
   onDeleteResult,
   onOpenModal,
   teams = [],
-  token
+  token,
+  festSettings,
+  onTogglePublishTeamStandings
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const { showToast, confirm } = useContext(UIContext);
@@ -472,6 +474,51 @@ export default function ScoringResults({
 
             {/* RIGHT COLUMN: Live Team Standings */}
             <div style={{ flex: 1, minWidth: '300px' }} className="glass-panel">
+              
+              {/* Public Visibility Banner */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.65rem 0.85rem',
+                marginBottom: '1.25rem',
+                borderRadius: 'var(--radius-md)',
+                background: festSettings?.publish_team_standings !== false ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+                border: `1px solid ${festSettings?.publish_team_standings !== false ? 'rgba(34, 197, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                gap: '0.5rem',
+                flexWrap: 'wrap'
+              }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{
+                      width: '8px', height: '8px', borderRadius: '50%',
+                      background: festSettings?.publish_team_standings !== false ? '#22c55e' : '#f59e0b'
+                    }} />
+                    Public Status: {festSettings?.publish_team_standings !== false ? 'Published to Public' : 'Hidden from Public'}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
+                    {festSettings?.publish_team_standings !== false ? 'Public users can see live standings' : 'Team standings hidden on public site'}
+                  </div>
+                </div>
+                {onTogglePublishTeamStandings && (
+                  <button
+                    onClick={onTogglePublishTeamStandings}
+                    className="btn"
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.3rem 0.7rem',
+                      height: '28px',
+                      background: festSettings?.publish_team_standings !== false ? 'var(--bg-raised)' : '#22c55e',
+                      border: `1px solid ${festSettings?.publish_team_standings !== false ? 'var(--border)' : '#22c55e'}`,
+                      color: festSettings?.publish_team_standings !== false ? 'var(--text-primary)' : '#ffffff',
+                      borderRadius: 'var(--radius-sm)'
+                    }}
+                  >
+                    {festSettings?.publish_team_standings !== false ? 'Unpublish' : 'Publish to Public'}
+                  </button>
+                )}
+              </div>
+
               {/* Standings Header Bar */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <div style={{ 
