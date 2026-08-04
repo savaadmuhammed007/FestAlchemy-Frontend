@@ -256,8 +256,13 @@ export default function PublicDashboard() {
         {/* ═══ TEAM STANDINGS ═══ */}
         {activeSection === 'standings' && (
           <div>
-            <h2 style={{ marginBottom: '1.25rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem' }}>
+            <h2 style={{ marginBottom: '1.25rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem', flexWrap: 'wrap' }}>
               <Trophy size={22} style={{ color: 'var(--gold)' }} /> Live Team Standings
+              {fest_settings?.published_standings_limit > 0 && (
+                <span className="tag tag-primary" style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)' }}>
+                  After {fest_settings.published_standings_limit} Events
+                </span>
+              )}
             </h2>
             {fest_settings?.publish_team_standings === false ? (
               <div className="empty-state" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>

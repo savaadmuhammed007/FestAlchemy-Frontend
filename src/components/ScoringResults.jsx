@@ -21,7 +21,8 @@ export default function ScoringResults({
   teams = [],
   token,
   festSettings,
-  onTogglePublishTeamStandings
+  onTogglePublishTeamStandings,
+  onUpdateFestSettings
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const { showToast, confirm } = useContext(UIContext);
@@ -31,6 +32,35 @@ export default function ScoringResults({
   const [results, setResults] = useState([]);
   const [onlyPublished, setOnlyPublished] = useState(true);
   const [afterCount, setAfterCount] = useState('');
+  const [standingsLimitInput, setStandingsLimitInput] = useState(festSettings?.published_standings_limit ?? 0);
+
+  useEffect(() => {
+    if (festSettings && festSettings.published_standings_limit !== undefined) {
+      setStandingsLimitInput(festSettings.published_standings_limit);
+    }
+  }, [festSettings]);
+
+  const handleSaveStandingsLimit = async () => {
+    if (!festSettings || !festSettings.id) return;
+    const limitVal = parseInt(standingsLimitInput, 10) || 0;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/fest-settings/${festSettings.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ published_standings_limit: limitVal })
+      });
+      if (!res.ok) throw new Error("Failed to save standings limit");
+      const updated = await res.json();
+      if (onUpdateFestSettings) onUpdateFestSettings(updated);
+      showToast(limitVal > 0 ? `Public team standings updated to show first ${limitVal} events!` : 'Public team standings updated to show all events!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast("Error updating standings limit.", "error");
+    }
+  };
 
   // Only show spin-lotted programs in scoring and results
   const spinLottedPrograms = useMemo(() => {
@@ -478,45 +508,91 @@ export default function ScoringResults({
               {/* Public Visibility Banner */}
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.65rem 0.85rem',
+                flexDirection: 'column',
+                gap: '0.75rem',
+                padding: '0.85rem 1rem',
                 marginBottom: '1.25rem',
                 borderRadius: 'var(--radius-md)',
-                background: festSettings?.publish_team_standings !== false ? 'rgba(34, 197, 94, 0.1)' : 'rgba(245, 158, 11, 0.1)',
-                border: `1px solid ${festSettings?.publish_team_standings !== false ? 'rgba(34, 197, 94, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
-                gap: '0.5rem',
-                flexWrap: 'wrap'
+                background: festSettings?.publish_team_standings !== false ? 'rgba(34, 197, 94, 0.08)' : 'rgba(245, 158, 11, 0.08)',
+                border: `1px solid ${festSettings?.publish_team_standings !== false ? 'rgba(34, 197, 94, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
               }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                    <span style={{
-                      width: '8px', height: '8px', borderRadius: '50%',
-                      background: festSettings?.publish_team_standings !== false ? '#22c55e' : '#f59e0b'
-                    }} />
-                    Public Status: {festSettings?.publish_team_standings !== false ? 'Published to Public' : 'Hidden from Public'}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{
+                        width: '8px', height: '8px', borderRadius: '50%',
+                        background: festSettings?.publish_team_standings !== false ? '#22c55e' : '#f59e0b'
+                      }} />
+                      Public Status: {festSettings?.publish_team_standings !== false ? 'Published to Public' : 'Hidden from Public'}
+                    </div>
+                    <div style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
+                      {festSettings?.publish_team_standings !== false ? 'Public users can see team standings' : 'Team standings hidden on public site'}
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>
-                    {festSettings?.publish_team_standings !== false ? 'Public users can see live standings' : 'Team standings hidden on public site'}
-                  </div>
+                  {onTogglePublishTeamStandings && (
+                    <button
+                      onClick={onTogglePublishTeamStandings}
+                      className="btn"
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '0.35rem 0.75rem',
+                        height: '30px',
+                        background: festSettings?.publish_team_standings !== false ? 'var(--bg-raised)' : '#22c55e',
+                        border: `1px solid ${festSettings?.publish_team_standings !== false ? 'var(--border)' : '#22c55e'}`,
+                        color: festSettings?.publish_team_standings !== false ? 'var(--text-primary)' : '#ffffff',
+                        borderRadius: 'var(--radius-sm)'
+                      }}
+                    >
+                      {festSettings?.publish_team_standings !== false ? 'Unpublish' : 'Publish to Public'}
+                    </button>
+                  )}
                 </div>
-                {onTogglePublishTeamStandings && (
-                  <button
-                    onClick={onTogglePublishTeamStandings}
-                    className="btn"
-                    style={{
-                      fontSize: '0.75rem',
-                      padding: '0.3rem 0.7rem',
-                      height: '28px',
-                      background: festSettings?.publish_team_standings !== false ? 'var(--bg-raised)' : '#22c55e',
-                      border: `1px solid ${festSettings?.publish_team_standings !== false ? 'var(--border)' : '#22c55e'}`,
-                      color: festSettings?.publish_team_standings !== false ? 'var(--text-primary)' : '#ffffff',
-                      borderRadius: 'var(--radius-sm)'
-                    }}
-                  >
-                    {festSettings?.publish_team_standings !== false ? 'Unpublish' : 'Publish to Public'}
-                  </button>
-                )}
+
+                {/* Event Count Limit Setting */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  paddingTop: '0.55rem',
+                  borderTop: '1px dashed var(--border)',
+                  fontSize: '0.78rem',
+                  color: 'var(--text-secondary)',
+                  flexWrap: 'wrap'
+                }}>
+                  <span>Show standings after:</span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0 = all"
+                      value={standingsLimitInput}
+                      onChange={(e) => setStandingsLimitInput(e.target.value)}
+                      style={{
+                        width: '65px',
+                        height: '26px',
+                        fontSize: '0.8rem',
+                        padding: '0 0.4rem',
+                        borderRadius: '4px',
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg-raised)',
+                        color: 'var(--text-primary)',
+                        textAlign: 'center',
+                        fontWeight: 'bold'
+                      }}
+                    />
+                    <span>events</span>
+                    <button
+                      onClick={handleSaveStandingsLimit}
+                      className="btn btn-secondary"
+                      style={{ fontSize: '0.72rem', padding: '0.2rem 0.6rem', height: '26px' }}
+                    >
+                      Save Limit
+                    </button>
+                  </div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    ({festSettings?.published_standings_limit > 0 ? `Currently showing first ${festSettings.published_standings_limit} events` : 'Showing all events'})
+                  </span>
+                </div>
               </div>
 
               {/* Standings Header Bar */}
