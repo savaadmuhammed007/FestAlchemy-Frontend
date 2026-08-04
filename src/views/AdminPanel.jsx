@@ -7,7 +7,7 @@ import {
   Play, CheckSquare, PlusCircle, Trash, Edit, 
   Save, FileText, CheckCircle, Award, UserCheck, 
   Sliders, ClipboardList, Clock, Search, Filter, Shield,
-  Printer, UserPlus, Image
+  Printer, UserPlus, Image, Medal
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import DashboardOverview from '../components/DashboardOverview';
@@ -24,6 +24,7 @@ import ReportViewer from '../components/ReportViewer';
 import SettingsConfig from '../components/SettingsConfig';
 import MemberRegistry from '../components/MemberRegistry';
 import PosterTemplateEditor from '../components/PosterTemplateEditor';
+import TopPerformersSection from '../components/TopPerformersSection';
 
 export default function AdminPanel() {
   const { token } = useAuth();
@@ -39,6 +40,8 @@ export default function AdminPanel() {
   // Tabs Navigation
   const [activeTab, setActiveTab] = useState('dashboard');
   const [settingsSubTab, setSettingsSubTab] = useState('general');
+  const [individualLeaderboard, setIndividualLeaderboard] = useState([]);
+  const [performersLoading, setPerformersLoading] = useState(false);
 
   
   // Core lists
@@ -140,12 +143,28 @@ export default function AdminPanel() {
       setActiveTab('rankings');
     } else if (path === '/admin/schedule-planner') {
       setActiveTab('schedule-planner');
+    } else if (path === '/admin/performers') {
+      setActiveTab('performers');
     } else if (path === '/admin/poster') {
       setActiveTab('poster');
     } else {
       setActiveTab('dashboard');
     }
   }, [location.pathname]);
+
+  // Fetch individual leaderboard when performers tab is active
+  useEffect(() => {
+    if (activeTab === 'performers') {
+      setPerformersLoading(true);
+      fetch(`${API_BASE_URL}/api/public/stats/`)
+        .then(res => res.json())
+        .then(data => {
+          setIndividualLeaderboard(data.individual_leaderboard || []);
+        })
+        .catch(err => console.error("Error fetching performers:", err))
+        .finally(() => setPerformersLoading(false));
+    }
+  }, [activeTab]);
 
 
 
@@ -1323,6 +1342,9 @@ export default function AdminPanel() {
         </button>
         <button onClick={() => navigate('/admin/schedule-planner')} className={`btn ${activeTab === 'schedule-planner' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
           <Clock size={16} /> Schedule Planner
+        </button>
+        <button onClick={() => navigate('/admin/performers')} className={`btn ${activeTab === 'performers' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
+          <Medal size={16} /> Top Performers
         </button>
 
         <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)', margin: '0.75rem 0 0.25rem 0.5rem', letterSpacing: '0.05em' }}>SYSTEM & REPORTS</div>

@@ -4,157 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../context/AuthContext';
 import { Award, Users, RefreshCw, Trophy, Medal, ChevronLeft, Search, Download, FileText, Menu, X } from 'lucide-react';
 
-/* ─── Top Performers Sub-Component ──────────────────────────── */
-function TopPerformersSection({ individualLeaderboard }) {
-  const [activeCatId, setActiveCatId] = useState(null);
 
-  if (!individualLeaderboard || individualLeaderboard.length === 0) {
-    return (
-      <div className="empty-state">
-        <Medal size={32} />
-        <p>No individual points recorded yet.</p>
-      </div>
-    );
-  }
-
-  const ALL = 'all';
-  const currentCatId = activeCatId ?? ALL;
-
-  let performers;
-  if (currentCatId === ALL) {
-    const merged = [];
-    individualLeaderboard.forEach(cat => {
-      cat.performers.forEach(p => {
-        merged.push({ ...p, category_name: cat.category_name });
-      });
-    });
-    performers = merged.sort((a, b) => b.total_points - a.total_points).slice(0, 20);
-  } else {
-    const currentCat = individualLeaderboard.find(c => c.category_id === currentCatId) || individualLeaderboard[0];
-    performers = (currentCat?.performers || []).map(p => ({
-      ...p,
-      category_name: currentCat?.category_name,
-    }));
-  }
-
-  const rankColors = ['var(--gold)', 'var(--silver)', 'var(--bronze)'];
-
-  return (
-    <div>
-      {/* Category Tab Buttons */}
-      <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        <button
-          onClick={() => setActiveCatId(ALL)}
-          className={`btn ${currentCatId === ALL ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ fontSize: '0.85rem', padding: '0.45rem 1.1rem', borderRadius: 'var(--radius-full)' }}
-        >
-          All
-        </button>
-        {individualLeaderboard.map(cat => (
-          <button
-            key={cat.category_id}
-            onClick={() => setActiveCatId(cat.category_id)}
-            className={`btn ${currentCatId === cat.category_id ? 'btn-primary' : 'btn-secondary'}`}
-            style={{ fontSize: '0.85rem', padding: '0.45rem 1.1rem', borderRadius: 'var(--radius-full)' }}
-          >
-            {cat.category_name}
-          </button>
-        ))}
-      </div>
-
-      {/* Performers Table */}
-      {performers.length === 0 ? (
-        <div className="empty-state">
-          <p>No participants recorded for this category yet.</p>
-        </div>
-      ) : (
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th style={{ width: '55px' }}>#</th>
-                <th>Participant</th>
-                <th className="desktop-only">Programs</th>
-                <th style={{ width: '80px', textAlign: 'right' }}>Points</th>
-              </tr>
-            </thead>
-            <tbody>
-              {performers.map((item, idx) => {
-                const rank = idx + 1;
-                const isTop3 = rank <= 3;
-                const color = isTop3 ? rankColors[rank - 1] : 'var(--text-muted)';
-
-                return (
-                  <tr key={item.member_id}>
-                    <td>
-                      <div style={{
-                        width: '30px', height: '30px', borderRadius: '50%',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 800, fontSize: '0.78rem',
-                        background: isTop3 ? `color-mix(in srgb, ${color} 12%, transparent)` : 'var(--bg-hover)',
-                        color: color,
-                        border: `2px solid ${isTop3 ? color : 'var(--border)'}`,
-                      }}>
-                        {rank}
-                      </div>
-                    </td>
-                    <td>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{item.member_name}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.15rem', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.team_name}</span>
-                        {currentCatId === ALL && item.category_name && (
-                          <span className="tag tag-info" style={{ fontSize: '0.6rem', padding: '0.05rem 0.35rem' }}>
-                            {item.category_name}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Mobile-only Program Breakdown display */}
-                      <div className="mobile-only" style={{ display: 'none', flexWrap: 'wrap', gap: '0.2rem', marginTop: '0.35rem' }}>
-                        {(item.program_breakdown || []).map(pb => (
-                          <span
-                            key={pb.program_id}
-                            title={`${pb.program_name}: ${pb.points} pts (Rank #${pb.rank})`}
-                            className="tag tag-primary"
-                            style={{ fontSize: '0.6rem', padding: '0.05rem 0.3rem' }}
-                          >
-                            {pb.program_name}: {pb.points}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="desktop-only">
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                        {(item.program_breakdown || []).map(pb => (
-                          <span
-                            key={pb.program_id}
-                            title={`${pb.program_name}: ${pb.points} pts (Rank #${pb.rank})`}
-                            className="tag tag-primary"
-                            style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem' }}
-                          >
-                            {pb.program_name}: {pb.points}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td style={{ textAlign: 'right' }}>
-                      <span style={{
-                        fontSize: '1.1rem', fontWeight: 800,
-                        color: isTop3 ? color : 'var(--success)',
-                      }}>
-                        {item.total_points}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
 
 
 export default function PublicDashboard() {
@@ -274,7 +124,6 @@ export default function PublicDashboard() {
         <div className="nav-links desktop-only">
           <button onClick={scrollToTop} className="nav-link" style={navBtnReset}>Home</button>
           <button onClick={() => goToSection('standings')} className={`nav-link ${isTabActive('standings') ? 'active' : ''}`} style={navBtnReset}>Team Standings</button>
-          <button onClick={() => goToSection('performers')} className={`nav-link ${isTabActive('performers') ? 'active' : ''}`} style={navBtnReset}>Top Performers</button>
           <button onClick={() => goToSection('results')} className={`nav-link ${isTabActive('results') ? 'active' : ''}`} style={navBtnReset}>Results</button>
         </div>
 
@@ -296,7 +145,6 @@ export default function PublicDashboard() {
         <div className="glass-panel mobile-only public-mobile-menu" style={{ marginTop: '-1rem', marginBottom: '1.5rem', flexDirection: 'column', gap: '0.35rem' }}>
           <button onClick={scrollToTop} className="nav-link" style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Home</button>
           <button onClick={() => goToSection('standings')} className={`nav-link ${isTabActive('standings') ? 'active' : ''}`} style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Team Standings</button>
-          <button onClick={() => goToSection('performers')} className={`nav-link ${isTabActive('performers') ? 'active' : ''}`} style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Top Performers</button>
           <button onClick={() => goToSection('results')} className={`nav-link ${isTabActive('results') ? 'active' : ''}`} style={{ ...navBtnReset, textAlign: 'left', width: '100%' }}>Results</button>
           <a href="/login" className="btn btn-primary" style={{ justifyContent: 'center', marginTop: '0.5rem' }}>Login</a>
         </div>
@@ -389,7 +237,6 @@ export default function PublicDashboard() {
       <div ref={contentRef} className="dashboard-tabs" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
         {[
           { key: 'standings', label: 'Team Standings', icon: <Trophy size={16} /> },
-          { key: 'performers', label: 'Top Performers', icon: <Medal size={16} /> },
           { key: 'results', label: 'Results', icon: <Award size={16} /> },
         ].map(tab => (
           <button
@@ -458,15 +305,7 @@ export default function PublicDashboard() {
           </div>
         )}
 
-        {/* ═══ TOP PERFORMERS ═══ */}
-        {activeSection === 'performers' && (
-          <div>
-            <h2 style={{ marginBottom: '1.25rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem' }}>
-              <Medal size={22} style={{ color: 'var(--accent)' }} /> Top Performers
-            </h2>
-            <TopPerformersSection individualLeaderboard={individual_leaderboard} />
-          </div>
-        )}
+
 
         {/* ═══ RESULTS ═══ */}
         {activeSection === 'results' && (
