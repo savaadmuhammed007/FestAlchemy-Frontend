@@ -1531,6 +1531,43 @@ export default function AdminPanel() {
           />
         )}
 
+        {/* TOP PERFORMERS TAB */}
+        {activeTab === 'performers' && (
+          <div className="glass-panel" style={{ padding: '1.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
+                  <Medal size={22} style={{ color: 'var(--gold)' }} /> Top Performers (Individual Leaderboard)
+                </h2>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.2rem' }}>
+                  Individual participant rankings based on published single event points
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  setPerformersLoading(true);
+                  fetch(`${API_BASE_URL}/api/public/stats/`)
+                    .then(res => res.json())
+                    .then(data => setIndividualLeaderboard(data.individual_leaderboard || []))
+                    .finally(() => setPerformersLoading(false));
+                }}
+                className="btn btn-secondary" 
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}
+              >
+                <RefreshCw size={14} className={performersLoading ? "spinning" : ""} /> Refresh
+              </button>
+            </div>
+
+            {performersLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+                <RefreshCw size={32} className="spinning" style={{ color: 'var(--accent)' }} />
+              </div>
+            ) : (
+              <TopPerformersSection individualLeaderboard={individualLeaderboard} />
+            )}
+          </div>
+        )}
+
         {/* REPORTS TAB */}
         {activeTab === 'reports' && (
           <div>
