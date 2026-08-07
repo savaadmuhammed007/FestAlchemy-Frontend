@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
-export default function Modal({ isOpen, onClose, title, children }) {
+export default function Modal({ isOpen, onClose, title, maxWidth = '520px', children }) {
   // Close on Escape key
   useEffect(() => {
     const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
@@ -17,8 +17,8 @@ export default function Modal({ isOpen, onClose, title, children }) {
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.55)',
-        backdropFilter: 'blur(4px)',
+        background: 'rgba(0, 0, 0, 0.65)',
+        backdropFilter: 'blur(6px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -31,7 +31,7 @@ export default function Modal({ isOpen, onClose, title, children }) {
         className="glass-panel"
         style={{
           width: '100%',
-          maxWidth: '520px',
+          maxWidth: maxWidth,
           maxHeight: '90vh',
           overflowY: 'auto',
           borderRadius: 'var(--radius-xl)',

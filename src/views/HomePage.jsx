@@ -1,7 +1,50 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../context/AuthContext';
-import { Award, Trophy, Sparkles, ChevronDown, Crown, Medal, Flame, ArrowRight, BarChart2, CheckCircle2 } from 'lucide-react';
+import { Award, Trophy, Sparkles, ChevronDown, Crown, Medal, Flame, ArrowRight, BarChart2, CheckCircle2, Users, Calendar, Layers, Activity, Shield, Grid } from 'lucide-react';
+
+/* ─── Animated Counter Component ───────────────────────────── */
+function AnimatedCounter({ end, duration = 2000, isVisible = true }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!isVisible || end === undefined || end === null) return;
+
+    const endValue = Number(end) || 0;
+    if (endValue <= 0) {
+      setCount(0);
+      return;
+    }
+
+    let startTimestamp = null;
+    let animationFrameId;
+
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      // Smooth cubic ease-out calculation
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(easeOut * endValue);
+      
+      setCount(current);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(step);
+      } else {
+        setCount(endValue);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(step);
+
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
+  }, [end, duration, isVisible]);
+
+  return <span>{count.toLocaleString()}</span>;
+}
 
 /* ─── Animated Particles Background ─────────────────────────── */
 function HeroParticles() {
@@ -102,19 +145,10 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, resultsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/public/stats/`),
-          fetch(`${API_BASE_URL}/api/v1/results/?published_only=true`)
-        ]);
-
+        const statsRes = await fetch(`${API_BASE_URL}/api/public/stats/`);
         if (statsRes.ok) {
           const statsJson = await statsRes.json();
           setFestData(statsJson);
-        }
-
-        if (resultsRes.ok) {
-          const resultsJson = await resultsRes.json();
-          setPublishedResults(resultsJson);
         }
       } catch (err) {
         console.error('Failed to fetch home page data:', err);
@@ -133,15 +167,47 @@ export default function HomePage() {
     }
   }, [loading]);
 
+  // Scroll observer for Stats Counter Section
+  const statsRef = useRef(null);
+  const [statsVisible, setStatsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setStatsVisible(true);
+        }
+      },
+      { threshold: 0.15 }
+    );
+
+    if (statsRef.current) {
+      observer.observe(statsRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loading]);
+
   const fest = festData?.fest_settings;
   const leaderboard = festData?.leaderboard || [];
   const publishedPrograms = festData?.programs_with_results || [];
 
-  // Group published results by program
+  // Actual stats count data from backend or dynamic fallback
+  const participantsCount = festData?.stats?.participants ?? 0;
+  const teamsCount = festData?.stats?.teams ?? (festData?.leaderboard?.length || 0);
+  const categoriesCount = festData?.stats?.categories ?? (festData?.categories?.length || 0);
+  const programsCount = festData?.stats?.programs ?? (festData?.schedule?.length || 0);
+  const daysCount = festData?.stats?.days ?? (festData?.fest_settings?.dates?.length || 1);
+
+  // Group published results by program using recent_results from public stats
   const groupedResults = React.useMemo(() => {
-    if (!publishedResults || publishedResults.length === 0) return [];
+    const rawResults = (publishedResults && publishedResults.length > 0)
+      ? publishedResults
+      : (festData?.recent_results || []);
+
+    if (!rawResults || rawResults.length === 0) return [];
     const map = {};
-    publishedResults.forEach(r => {
+    rawResults.forEach(r => {
       const pName = r.program_name || `Program #${r.program}`;
       if (!map[pName]) {
         map[pName] = {
@@ -159,7 +225,7 @@ export default function HomePage() {
       ...p,
       ranks: p.ranks.sort((a, b) => a.rank - b.rank).slice(0, 3)
     })).slice(0, 3);
-  }, [publishedResults]);
+  }, [publishedResults, festData]);
 
   // Top 3 Teams for "Who Will Win?"
   const top3Teams = leaderboard.slice(0, 3);
@@ -229,6 +295,106 @@ export default function HomePage() {
         {/* Scroll indicator */}
         <div className="home-hero-scroll">
           <ChevronDown size={22} />
+        </div>
+      </section>
+
+      {/* ─── STATS COUNT SECTION ─── */}
+      <section className="home-stats-section" ref={statsRef}>
+        <div className="home-container">
+
+          {/* Section Header with Tagline */}
+          <div className="home-section-header text-center home-stats-header">
+            <div className="home-section-badge">
+              <Activity size={15} style={{ color: '#818cf8' }} />
+              <span>Fest Impact</span>
+            </div>
+            <h2 className="home-section-title">
+              The Grand Stage in Numbers
+            </h2>
+            <p className="home-section-subtitle">
+              Uniting passionate contenders across non-stop days of high-octane events and battle for glory.
+            </p>
+          </div>
+
+          <div className="home-stats-grid">
+            
+            {/* Participants Stat Card */}
+            <div className="home-stat-card">
+              <div className="home-stat-card-glow" />
+              <div className="home-stat-icon-wrapper home-stat-icon--participants">
+                <Users size={28} />
+              </div>
+              <div className="home-stat-content">
+                <div className="home-stat-number-wrap">
+                  <AnimatedCounter end={participantsCount} duration={2000} isVisible={statsVisible} />
+                  <span className="home-stat-plus">+</span>
+                </div>
+                <div className="home-stat-label">Participants</div>
+                <div className="home-stat-tag home-stat-tag--participants">Active Contenders</div>
+              </div>
+            </div>
+
+            {/* Teams Stat Card */}
+            <div className="home-stat-card">
+              <div className="home-stat-card-glow" />
+              <div className="home-stat-icon-wrapper home-stat-icon--teams">
+                <Shield size={28} />
+              </div>
+              <div className="home-stat-content">
+                <div className="home-stat-number-wrap">
+                  <AnimatedCounter end={teamsCount} duration={1600} isVisible={statsVisible} />
+                </div>
+                <div className="home-stat-label">Teams</div>
+                <div className="home-stat-tag home-stat-tag--teams">Championship Houses</div>
+              </div>
+            </div>
+
+            {/* Categories Stat Card */}
+            <div className="home-stat-card">
+              <div className="home-stat-card-glow" />
+              <div className="home-stat-icon-wrapper home-stat-icon--categories">
+                <Grid size={28} />
+              </div>
+              <div className="home-stat-content">
+                <div className="home-stat-number-wrap">
+                  <AnimatedCounter end={categoriesCount} duration={1700} isVisible={statsVisible} />
+                </div>
+                <div className="home-stat-label">Categories</div>
+                <div className="home-stat-tag home-stat-tag--categories">Skill Divisions</div>
+              </div>
+            </div>
+
+            {/* Programs Stat Card */}
+            <div className="home-stat-card">
+              <div className="home-stat-card-glow" />
+              <div className="home-stat-icon-wrapper home-stat-icon--programs">
+                <Layers size={28} />
+              </div>
+              <div className="home-stat-content">
+                <div className="home-stat-number-wrap">
+                  <AnimatedCounter end={programsCount} duration={1800} isVisible={statsVisible} />
+                </div>
+                <div className="home-stat-label">Programs</div>
+                <div className="home-stat-tag home-stat-tag--programs">Competitive Events</div>
+              </div>
+            </div>
+
+            {/* Days Stat Card */}
+            <div className="home-stat-card">
+              <div className="home-stat-card-glow" />
+              <div className="home-stat-icon-wrapper home-stat-icon--days">
+                <Calendar size={28} />
+              </div>
+              <div className="home-stat-content">
+                <div className="home-stat-number-wrap">
+                  <AnimatedCounter end={daysCount} duration={1500} isVisible={statsVisible} />
+                </div>
+                <div className="home-stat-label">Days Fest</div>
+                <div className="home-stat-tag home-stat-tag--days">Non-stop Thrill</div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </section>
 

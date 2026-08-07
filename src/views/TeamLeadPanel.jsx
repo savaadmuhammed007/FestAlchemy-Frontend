@@ -19,7 +19,7 @@ export default function TeamLeadPanel() {
   const fetchSchedule = async () => {
     setScheduleLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/reports/?type=schedule`, {
+      const res = await fetch(`${API_BASE_URL}/api/reports/?type=schedule`, {
         headers: { 'Authorization': `Token ${token}` }
       });
       if (res.ok) {
@@ -154,7 +154,16 @@ export default function TeamLeadPanel() {
       const json = await res.json();
 
       if (!res.ok) {
-        throw new Error(json.error || "Failed to add member");
+        let msg = "Failed to add member";
+        if (json.error) {
+          msg = json.error;
+        } else if (json.detail) {
+          msg = json.detail;
+        } else if (typeof json === 'object') {
+          const firstErr = Object.values(json).flat()[0];
+          if (firstErr) msg = typeof firstErr === 'string' ? firstErr : JSON.stringify(firstErr);
+        }
+        throw new Error(msg);
       }
 
       setSuccessMsg(`Member added successfully! Chest No: ${json.chest_no}`);
@@ -192,7 +201,16 @@ export default function TeamLeadPanel() {
       const json = await res.json();
 
       if (!res.ok) {
-        throw new Error(json.error || "Failed to update programs");
+        let msg = "Failed to update programs";
+        if (json.error) {
+          msg = json.error;
+        } else if (json.detail) {
+          msg = json.detail;
+        } else if (typeof json === 'object') {
+          const firstErr = Object.values(json).flat()[0];
+          if (firstErr) msg = typeof firstErr === 'string' ? firstErr : JSON.stringify(firstErr);
+        }
+        throw new Error(msg);
       }
 
       setSuccessMsg("Event registrations updated successfully!");
@@ -325,9 +343,13 @@ export default function TeamLeadPanel() {
               grouped[d] = [];
             });
             const otherScheduled = [];
+            const unscheduled = [];
             
             scheduleData.forEach((p) => {
-              if (!p.schedule) return;
+              if (!p.schedule) {
+                unscheduled.push(p);
+                return;
+              }
               const dt = new Date(p.schedule);
               const year = dt.getFullYear();
               const month = String(dt.getMonth() + 1).padStart(2, '0');
@@ -340,6 +362,8 @@ export default function TeamLeadPanel() {
                 otherScheduled.push(p);
               }
             });
+
+            const hasAnyScheduled = festDates.some(d => (grouped[d] || []).length > 0) || otherScheduled.length > 0;
 
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -394,7 +418,7 @@ export default function TeamLeadPanel() {
                         </div>
                       ) : (
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', marginTop: '0.5rem' }}>
-                          No programs scheduled on this day.
+                          No programs scheduled on this day yet.
                         </p>
                       )}
                     </div>
@@ -440,6 +464,51 @@ export default function TeamLeadPanel() {
                               </tr>
                             );
                           })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {unscheduled.length > 0 && (
+                  <div>
+                    <h4 style={{ 
+                      fontFamily: 'var(--font-display)', 
+                      color: 'var(--text-secondary)', 
+                      borderBottom: '1px solid var(--border-glass)', 
+                      paddingBottom: '0.4rem', 
+                      marginBottom: '1rem',
+                      fontSize: '1.15rem',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'baseline'
+                    }}>
+                      <span>All Events / Pending Timetable</span>
+                      <span className="tag tag-secondary" style={{ fontSize: '0.75rem' }}>{unscheduled.length} Events</span>
+                    </h4>
+                    <div className="table-container">
+                      <table className="custom-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '60px' }}>Sl No</th>
+                            <th>Event Name</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Stage Type</th>
+                            <th>Schedule Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {unscheduled.map((p, sIdx) => (
+                            <tr key={p.id}>
+                              <td>{sIdx + 1}</td>
+                              <td style={{ fontWeight: 600 }}>{p.name}</td>
+                              <td><span className="tag tag-primary">{p.category_name}</span></td>
+                              <td style={{ textTransform: 'capitalize' }}>{p.type}</td>
+                              <td style={{ textTransform: 'capitalize' }}>{p.stage_type || 'onstage'}</td>
+                              <td><span className="tag tag-secondary">To Be Scheduled</span></td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>

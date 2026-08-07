@@ -1,7 +1,9 @@
-import React from 'react';
-import { Printer } from 'lucide-react';
+import React, { useState } from 'react';
+import { Printer, Filter } from 'lucide-react';
 
 export default function ReportViewer({ reportType, reportData }) {
+  const [selectedStageFilter, setSelectedStageFilter] = useState('ALL');
+
   if (!reportData) return null;
 
   return (
@@ -13,11 +15,56 @@ export default function ReportViewer({ reportType, reportData }) {
         alignItems: 'center',
         borderBottom: '1px solid var(--border-glass)',
         paddingBottom: '1rem',
-        marginBottom: '1.5rem'
+        marginBottom: '1.5rem',
+        flexWrap: 'wrap',
+        gap: '1rem'
       }}>
-        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Report generated successfully. Ready to print.
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Report generated successfully. Ready to print.
+          </span>
+          {reportType === 'schedule' && reportData.schedule && (() => {
+            const rawSchedule = reportData.schedule || [];
+            const uniqueStages = Array.from(new Set(rawSchedule.map(p => p.venue).filter(Boolean)));
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 600 }}>
+                  <Filter size={14} /> Stage Filter:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedStageFilter('ALL')}
+                  className={`btn ${selectedStageFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', borderRadius: '15px' }}
+                >
+                  All ({rawSchedule.length})
+                </button>
+                {uniqueStages.map(stg => {
+                  const count = rawSchedule.filter(p => p.venue === stg).length;
+                  return (
+                    <button
+                      type="button"
+                      key={stg}
+                      onClick={() => setSelectedStageFilter(stg)}
+                      className={`btn ${selectedStageFilter === stg ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', borderRadius: '15px' }}
+                    >
+                      {stg} ({count})
+                    </button>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => setSelectedStageFilter('UNASSIGNED')}
+                  className={`btn ${selectedStageFilter === 'UNASSIGNED' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', borderRadius: '15px' }}
+                >
+                  Unassigned ({rawSchedule.filter(p => !p.venue).length})
+                </button>
+              </div>
+            );
+          })()}
+        </div>
         <button onClick={() => window.print()} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Printer size={16} /> Print Report
         </button>
@@ -29,7 +76,8 @@ export default function ReportViewer({ reportType, reportData }) {
           {reportType === 'results' ? 'Event Results & Scoreboard' : 
            reportType === 'members' ? 'Registered Members Directory' : 
            reportType === 'marksheets' ? 'Marksheets Entry Log' : 
-           reportType === 'teampoints' ? 'Overall Team Standings' : ''}
+           reportType === 'teampoints' ? 'Overall Team Standings' : 
+           reportType === 'schedule' ? (selectedStageFilter === 'ALL' ? 'Fest Schedule — All Venues' : `Fest Schedule — ${selectedStageFilter}`) : ''}
         </h4>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
           Generated on: {new Date().toLocaleString()}
@@ -73,7 +121,7 @@ export default function ReportViewer({ reportType, reportData }) {
             <div key={prog.program_id} style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
               <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
+                justify: 'space-between',
                 alignItems: 'baseline',
                 borderBottom: '1px solid var(--border-glass)',
                 paddingBottom: '0.4rem',
@@ -119,8 +167,8 @@ export default function ReportViewer({ reportType, reportData }) {
                   </table>
                 </div>
               ) : (
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', margin: '0.5rem 0 0 0' }}>
-                  No results published yet for this program.
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', marginTop: '0.5rem' }}>
+                  No published results for this program yet.
                 </p>
               )}
             </div>
@@ -133,49 +181,26 @@ export default function ReportViewer({ reportType, reportData }) {
           <table className="custom-table">
             <thead>
               <tr>
+                <th>Sl No</th>
                 <th>Chest No</th>
-                <th>Member Name</th>
+                <th>Name</th>
                 <th>Team</th>
                 <th>Category</th>
-                <th>Events Count</th>
+                <th>Registered Programs</th>
               </tr>
             </thead>
             <tbody>
-              {reportData.members.map(m => (
+              {reportData.members.map((m, idx) => (
                 <tr key={m.id}>
-                  <td style={{ fontWeight: 'bold' }}>{m.chest_no}</td>
+                  <td>{idx + 1}</td>
+                  <td style={{ fontWeight: 'bold', color: 'var(--primary-neon)' }}>{m.chest_number}</td>
                   <td style={{ fontWeight: 600 }}>{m.name}</td>
                   <td>{m.team_name}</td>
-                  <td>{m.category_name}</td>
-                  <td>{m.registered_programs_details.length}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {reportType === 'marksheets' && reportData.sheets && (
-        <div className="table-container">
-          <table className="custom-table">
-            <thead>
-              <tr>
-                <th>Judge Code</th>
-                <th>Judge Name</th>
-                <th>Marks Card</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportData.sheets.map(s => (
-                <tr key={s.id}>
-                  <td style={{ fontWeight: 'bold' }}>CODE: {s.judge_code}</td>
-                  <td>{s.judge_username}</td>
-                  <td style={{ fontWeight: 'bold' }}>{s.score}</td>
+                  <td><span className="tag tag-primary">{m.category_name}</span></td>
                   <td>
-                    <span className={`tag ${s.submitted ? 'tag-success' : 'tag-warning'}`}>
-                      {s.submitted ? 'Submitted' : 'Draft'}
-                    </span>
+                    {m.programs && m.programs.length > 0 
+                      ? m.programs.map(p => p.name).join(', ')
+                      : <span style={{ color: 'var(--text-muted)' }}>None</span>}
                   </td>
                 </tr>
               ))}
@@ -184,7 +209,36 @@ export default function ReportViewer({ reportType, reportData }) {
         </div>
       )}
 
-      {reportType === 'teampoints' && reportData.teampoints && (
+      {reportType === 'marksheets' && reportData.marksheets && (
+        <div className="table-container">
+          <table className="custom-table">
+            <thead>
+              <tr>
+                <th>Sl No</th>
+                <th>Program</th>
+                <th>Judge</th>
+                <th>Participant</th>
+                <th>Marks</th>
+                <th>Submitted At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reportData.marksheets.map((ms, idx) => (
+                <tr key={ms.id}>
+                  <td>{idx + 1}</td>
+                  <td style={{ fontWeight: 600 }}>{ms.program_name}</td>
+                  <td>{ms.judge_username}</td>
+                  <td>{ms.member_name} ({ms.chest_number})</td>
+                  <td style={{ fontWeight: 'bold', color: 'var(--primary-neon)' }}>{ms.total_marks}</td>
+                  <td>{new Date(ms.submitted_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {reportType === 'teampoints' && reportData.standings && (
         <div className="table-container">
           <table className="custom-table">
             <thead>
@@ -195,8 +249,8 @@ export default function ReportViewer({ reportType, reportData }) {
               </tr>
             </thead>
             <tbody>
-              {reportData.teampoints.map((t, idx) => (
-                <tr key={t.id}>
+              {reportData.standings.map((t, idx) => (
+                <tr key={t.team_id}>
                   <td style={{ fontWeight: 'bold' }}>#{idx + 1}</td>
                   <td style={{ fontWeight: 600 }}>{t.team_name}</td>
                   <td style={{ fontWeight: 'bold', color: 'var(--secondary-neon)' }}>{t.total_points}</td>
@@ -209,8 +263,14 @@ export default function ReportViewer({ reportType, reportData }) {
 
       {reportType === 'schedule' && reportData.schedule && (() => {
         const getScheduleByDay = () => {
-          const schedule = reportData.schedule || [];
+          const rawSchedule = reportData.schedule || [];
           const festDates = reportData.fest_dates || [];
+
+          const schedule = rawSchedule.filter(p => {
+            if (selectedStageFilter === 'ALL') return true;
+            if (selectedStageFilter === 'UNASSIGNED') return !p.venue;
+            return p.venue === selectedStageFilter;
+          });
           
           // Group programs by YYYY-MM-DD
           const grouped = {};
@@ -253,7 +313,7 @@ export default function ReportViewer({ reportType, reportData }) {
                     marginBottom: '1rem',
                     fontSize: '1.25rem',
                     display: 'flex',
-                    justifyContent: 'space-between',
+                    justify: 'space-between',
                     alignItems: 'baseline'
                   }}>
                     <span>Day {idx + 1}</span>
@@ -294,7 +354,7 @@ export default function ReportViewer({ reportType, reportData }) {
                     </div>
                   ) : (
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', marginTop: '0.5rem' }}>
-                      No programs scheduled on this day.
+                      No programs scheduled on this day matching stage filter.
                     </p>
                   )}
                 </div>

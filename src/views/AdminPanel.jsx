@@ -7,7 +7,7 @@ import {
   Play, CheckSquare, PlusCircle, Trash, Edit, 
   Save, FileText, CheckCircle, Award, UserCheck, 
   Sliders, ClipboardList, Clock, Search, Filter, Shield,
-  Printer, UserPlus, Image, Medal
+  Printer, UserPlus, Image, Medal, ArrowUp, ArrowDown
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import DashboardOverview from '../components/DashboardOverview';
@@ -231,6 +231,46 @@ export default function AdminPanel() {
   const [autoTargetDay, setAutoTargetDay] = useState('all');
   const [autoProgramsList, setAutoProgramsList] = useState([]);
   const [autoSelectedPrograms, setAutoSelectedPrograms] = useState([]);
+  const [autoProgramStages, setAutoProgramStages] = useState({});
+
+  const getEffectiveStageForProgram = (pObj) => {
+    if (!pObj) return 'Unassigned / Auto';
+    const custom = autoProgramStages[pObj.id];
+    if (custom) return custom;
+    if (stages && stages.length > 0) {
+      const match = stages.find(s => s.type === pObj.stage_type);
+      if (match) return match.name;
+    }
+    return pObj.stage_type === 'offstage' ? 'Offstage Stage' : 'Stage 1';
+  };
+
+  const handleMoveProgramStagePriority = (pId, direction) => {
+    const pObj = autoProgramsList.find(p => p.id === pId);
+    if (!pObj) return;
+    const stageName = getEffectiveStageForProgram(pObj);
+
+    const stagePids = autoSelectedPrograms.filter(id => {
+      const item = autoProgramsList.find(p => p.id === id);
+      return item && getEffectiveStageForProgram(item) === stageName;
+    });
+
+    const currentIndex = stagePids.indexOf(pId);
+    const targetIndex = currentIndex + direction;
+    if (currentIndex === -1 || targetIndex < 0 || targetIndex >= stagePids.length) return;
+
+    const otherPid = stagePids[targetIndex];
+
+    setAutoSelectedPrograms(prev => {
+      const next = [...prev];
+      const pos1 = next.indexOf(pId);
+      const pos2 = next.indexOf(otherPid);
+      if (pos1 !== -1 && pos2 !== -1) {
+        next[pos1] = otherPid;
+        next[pos2] = pId;
+      }
+      return next;
+    });
+  };
 
   // Stage creator states
   const [stageType, setStageType] = useState('onstage');
@@ -248,6 +288,12 @@ export default function AdminPanel() {
       date: `${year}-${month}-${day}`,
       time: `${hours}:${minutes}`
     };
+  };
+
+  const toLocalISOString = (isoString) => {
+    if (!isoString) return '';
+    const parts = getLocalDateTimeParts(isoString);
+    return parts.date ? `${parts.date}T${parts.time}` : '';
   };
 
   useEffect(() => {
@@ -482,7 +528,7 @@ export default function AdminPanel() {
     const parts = getLocalDateTimeParts(prog.schedule);
     setSelectedFestDate(parts.date);
     setSelectedFestTime(parts.time);
-    setProgSchedule(prog.schedule ? new Date(prog.schedule).toISOString().slice(0, 16) : '');
+    setProgSchedule(toLocalISOString(prog.schedule));
     openModal('edit-schedule');
   };
 
@@ -563,7 +609,8 @@ export default function AdminPanel() {
           interval_between: parseInt(autoInterval),
           reschedule_all: autoRescheduleAll,
           target_day: autoTargetDay,
-          program_ids: autoSelectedPrograms
+          program_ids: autoSelectedPrograms,
+          program_stages: autoProgramStages
         })
       });
       if (res.ok) {
@@ -879,10 +926,10 @@ export default function AdminPanel() {
       setProgWeight3(item.point_weightage_3rd);
       setProgMaxMarks(item.max_marks);
       setProgVenue(item.venue || '');
-      setProgSchedule(item.schedule ? new Date(item.schedule).toISOString().slice(0, 16) : '');
       const parts = getLocalDateTimeParts(item.schedule);
       setSelectedFestDate(parts.date);
       setSelectedFestTime(parts.time);
+      setProgSchedule(toLocalISOString(item.schedule));
       setProgJudges(item.judges || []);
     } else if (type === 'auto-schedule') {
       setAutoStartTime('09:00');
@@ -893,6 +940,7 @@ export default function AdminPanel() {
       setAutoProgramsList(programs);
       const unscheduled = programs.filter(p => !p.schedule).map(p => p.id);
       setAutoSelectedPrograms(unscheduled);
+      setAutoProgramStages({});
     } else if (type === 'add-team') {
       setTeamName('');
       setTeamLeadUser('');
@@ -1553,6 +1601,7 @@ export default function AdminPanel() {
         {activeTab === 'schedule-planner' && (
           <SchedulePlanner
             programs={programs}
+            stages={stages}
             onOpenScheduleEdit={handleOpenScheduleEdit}
             onOpenAutoSchedule={() => openModal('auto-schedule')}
             onResetSchedule={handleResetSchedule}
@@ -1870,6 +1919,7 @@ export default function AdminPanel() {
         isOpen={!!modalType}
         onClose={() => setModalType('')}
         title={modalType.replace('-', ' ')}
+        maxWidth={modalType === 'auto-schedule' ? '920px' : '520px'}
       >
         {formError && (
           <div style={{ background: 'var(--danger-soft)', border: '1px solid rgba(239, 68, 68, 0.25)', padding: '0.7rem 1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', color: 'var(--danger)', fontSize: '0.875rem' }}>
@@ -2621,15 +2671,16 @@ export default function AdminPanel() {
         {/* Auto Schedule Form */}
         {modalType === 'auto-schedule' && (
           <form onSubmit={handleAutoScheduleSubmit}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <p style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--primary-neon)', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <div style={{ marginBottom: '1.25rem' }}>
+              <p style={{ fontWeight: 600, fontSize: '1.1rem', color: 'var(--primary-neon)', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0 }}>
                 <Clock size={18} /> Auto Schedule Generator
               </p>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Automatically distribute and schedule programs across onstage/offstage venues and fest dates.</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.2rem 0 0 0' }}>Automatically distribute and schedule programs across onstage/offstage venues and fest dates.</p>
             </div>
             
-            <div className="grid-cols-2">
-              <div className="form-group">
+            {/* Top Grid: Time, Target Day, Interval */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Daily Start Time</label>
                 <input 
                   type="time" 
@@ -2639,7 +2690,7 @@ export default function AdminPanel() {
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="form-group" style={{ margin: 0 }}>
                 <label className="form-label">Daily End Time</label>
                 <input 
                   type="time" 
@@ -2649,156 +2700,285 @@ export default function AdminPanel() {
                   required
                 />
               </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Target Day Selection</label>
+                <select 
+                  className="form-control"
+                  value={autoTargetDay}
+                  onChange={e => setAutoTargetDay(e.target.value)}
+                >
+                  <option value="all">All Days (Auto Rollover)</option>
+                  {festDates && festDates.map((date, idx) => (
+                    <option key={date} value={idx.toString()}>
+                      Day {idx + 1} ({date})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Interval (Minutes)</label>
+                <input 
+                  type="number" 
+                  className="form-control" 
+                  min="0"
+                  value={autoInterval} 
+                  onChange={e => setAutoInterval(e.target.value)} 
+                  required
+                />
+              </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Target Day Selection</label>
-              <select 
-                className="form-control"
-                value={autoTargetDay}
-                onChange={e => setAutoTargetDay(e.target.value)}
-              >
-                <option value="all">All Days (Auto Rollover)</option>
-                {festDates && festDates.map((date, idx) => (
-                  <option key={date} value={idx.toString()}>
-                    Day {idx + 1} ({date})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Main 2-Column Grid Layout */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: '1.25rem', marginBottom: '1rem' }}>
+              
+              {/* LEFT COLUMN: Program Selection */}
+              <div className="form-group" style={{ margin: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Select Programs</label>
+                  <div style={{ display: 'flex', gap: '0.4rem' }}>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      style={{ padding: '0.15rem 0.45rem', fontSize: '0.75rem' }}
+                      onClick={() => setAutoSelectedPrograms(autoProgramsList.map(p => p.id))}
+                    >
+                      Select All
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary" 
+                      style={{ padding: '0.15rem 0.45rem', fontSize: '0.75rem' }}
+                      onClick={() => setAutoSelectedPrograms([])}
+                    >
+                      Clear All
+                    </button>
+                  </div>
+                </div>
+                
+                <div style={{ 
+                  maxHeight: '340px', 
+                  overflowY: 'auto', 
+                  background: 'rgba(255,255,255,0.02)', 
+                  border: '1px solid var(--border-glass)', 
+                  borderRadius: '8px', 
+                  padding: '0.75rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem'
+                }}>
+                  {(() => {
+                    const groupedPrograms = {};
+                    autoProgramsList.forEach(p => {
+                      const cat = p.category_name || 'General';
+                      if (!groupedPrograms[cat]) groupedPrograms[cat] = [];
+                      groupedPrograms[cat].push(p);
+                    });
 
-            <div className="form-group">
-              <label className="form-label">Interval between programs (Minutes)</label>
-              <input 
-                type="number" 
-                className="form-control" 
-                min="0"
-                value={autoInterval} 
-                onChange={e => setAutoInterval(e.target.value)} 
-                required
-              />
-            </div>
-
-            <div className="form-group" style={{ marginTop: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <label className="form-label" style={{ margin: 0 }}>Select Programs to Schedule</label>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
-                    onClick={() => setAutoSelectedPrograms(autoProgramsList.map(p => p.id))}
-                  >
-                    Select All
-                  </button>
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }}
-                    onClick={() => setAutoSelectedPrograms([])}
-                  >
-                    Clear All
-                  </button>
+                    return Object.entries(groupedPrograms).map(([catName, list]) => (
+                      <div key={catName}>
+                        <div style={{ 
+                          fontSize: '0.75rem', 
+                          textTransform: 'uppercase', 
+                          letterSpacing: '0.05em', 
+                          color: 'var(--primary-neon)', 
+                          fontWeight: 'bold',
+                          marginBottom: '0.4rem',
+                          borderBottom: '1px solid rgba(255,255,255,0.05)',
+                          paddingBottom: '0.2rem'
+                        }}>
+                          {catName}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.4rem' }}>
+                          {list.map(p => {
+                            const isChecked = autoSelectedPrograms.includes(p.id);
+                            return (
+                              <div 
+                                key={p.id} 
+                                onClick={() => {
+                                  if (isChecked) {
+                                    setAutoSelectedPrograms(prev => prev.filter(id => id !== p.id));
+                                  } else {
+                                    setAutoSelectedPrograms(prev => [...prev, p.id]);
+                                  }
+                                }}
+                                style={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justify: 'space-between',
+                                  background: isChecked ? 'rgba(0, 242, 254, 0.05)' : 'rgba(255,255,255,0.01)', 
+                                  border: isChecked ? '1px solid var(--primary-neon)' : '1px solid rgba(255,255,255,0.05)',
+                                  borderRadius: '6px', 
+                                  padding: '0.45rem 0.65rem',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                  userSelect: 'none'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                                  <input 
+                                    type="checkbox" 
+                                    checked={isChecked}
+                                    onChange={() => {}} 
+                                    style={{ cursor: 'pointer', pointerEvents: 'none' }}
+                                  />
+                                  <span style={{ fontWeight: 600, fontSize: '0.825rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</span>
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                                  <span className="tag" style={{ 
+                                    fontSize: '0.65rem', 
+                                    background: p.stage_type === 'onstage' ? 'rgba(123, 31, 162, 0.2)' : 'rgba(0, 150, 136, 0.2)',
+                                    color: p.stage_type === 'onstage' ? '#e040fb' : '#1de9b6',
+                                    border: 'none'
+                                  }}>
+                                    {p.stage_type === 'onstage' ? 'Onstage' : 'Offstage'}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                  Selected: {autoSelectedPrograms.length} / {autoProgramsList.length} programs
                 </div>
               </div>
-              
-              <div style={{ 
-                maxHeight: '220px', 
-                overflowY: 'auto', 
-                background: 'rgba(255,255,255,0.02)', 
-                border: '1px solid var(--border-glass)', 
-                borderRadius: '8px', 
-                padding: '0.75rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem'
-              }}>
-                {(() => {
-                  const groupedPrograms = {};
-                  autoProgramsList.forEach(p => {
-                    const cat = p.category_name || 'General';
-                    if (!groupedPrograms[cat]) groupedPrograms[cat] = [];
-                    groupedPrograms[cat].push(p);
-                  });
 
-                  return Object.entries(groupedPrograms).map(([catName, list]) => (
-                    <div key={catName}>
-                      <div style={{ 
-                        fontSize: '0.75rem', 
-                        textTransform: 'uppercase', 
-                        letterSpacing: '0.05em', 
-                        color: 'var(--primary-neon)', 
-                        fontWeight: 'bold',
-                        marginBottom: '0.4rem',
-                        borderBottom: '1px solid rgba(255,255,255,0.05)',
-                        paddingBottom: '0.2rem'
-                      }}>
-                        {catName}
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.4rem' }}>
-                        {list.map(p => {
-                          const isChecked = autoSelectedPrograms.includes(p.id);
-                          return (
-                            <div 
-                              key={p.id} 
-                              onClick={() => {
-                                if (isChecked) {
-                                  setAutoSelectedPrograms(prev => prev.filter(id => id !== p.id));
-                                } else {
-                                  setAutoSelectedPrograms(prev => [...prev, p.id]);
-                                }
-                              }}
-                              style={{ 
-                                display: 'flex', 
-                                alignItems: 'center', 
+              {/* RIGHT COLUMN: Per-Stage Program Priority & Stage Assignment */}
+              <div className="form-group" style={{ margin: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label className="form-label" style={{ margin: 0 }}>Stage Priority & Choice</label>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--primary-neon)', fontWeight: 'normal' }}>
+                    #1 starts at {autoStartTime}
+                  </span>
+                </div>
+
+                {autoSelectedPrograms.length > 0 ? (
+                  <div style={{
+                    maxHeight: '340px',
+                    overflowY: 'auto',
+                    background: 'rgba(0,0,0,0.2)',
+                    border: '1px solid var(--border-glass)',
+                    borderRadius: '8px',
+                    padding: '0.65rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem'
+                  }}>
+                    {(() => {
+                      const stageGroups = {};
+                      autoSelectedPrograms.forEach(pId => {
+                        const pObj = autoProgramsList.find(p => p.id === pId);
+                        if (!pObj) return;
+                        const sName = getEffectiveStageForProgram(pObj);
+                        if (!stageGroups[sName]) stageGroups[sName] = [];
+                        stageGroups[sName].push(pObj);
+                      });
+
+                      return Object.entries(stageGroups).map(([stgName, pList]) => (
+                        <div key={stgName}>
+                          <div style={{
+                            fontSize: '0.75rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            color: 'var(--primary-neon)',
+                            fontWeight: 'bold',
+                            marginBottom: '0.4rem',
+                            borderBottom: '1px solid rgba(255,255,255,0.08)',
+                            paddingBottom: '0.2rem',
+                            display: 'flex',
+                            justify: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <span>Venue / Stage: {stgName}</span>
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{pList.length} Event{pList.length > 1 ? 's' : ''}</span>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                            {pList.map((progObj, idx) => (
+                              <div key={progObj.id} style={{
+                                display: 'flex',
+                                alignItems: 'center',
                                 justifyContent: 'space-between',
-                                background: isChecked ? 'rgba(0, 242, 254, 0.05)' : 'rgba(255,255,255,0.01)', 
-                                border: isChecked ? '1px solid var(--primary-neon)' : '1px solid rgba(255,255,255,0.05)',
-                                borderRadius: '6px', 
-                                padding: '0.5rem 0.75rem',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                userSelect: 'none'
-                              }}
-                            >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <input 
-                                  type="checkbox" 
-                                  checked={isChecked}
-                                  onChange={() => {}} 
-                                  style={{ cursor: 'pointer', pointerEvents: 'none' }}
-                                />
-                                <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.name}</span>
+                                background: 'rgba(255,255,255,0.02)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                                borderRadius: '6px',
+                                padding: '0.4rem 0.6rem',
+                                gap: '0.5rem'
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flex: 1, minWidth: 0 }}>
+                                  <span className="tag tag-primary" style={{ fontSize: '0.7rem', padding: '0.15rem 0.45rem', fontWeight: 'bold' }}>
+                                    #{idx + 1}
+                                  </span>
+                                  <span style={{ fontSize: '0.825rem', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {progObj.name}
+                                  </span>
+                                </div>
+
+                                {/* Stage Choice Dropdown */}
+                                <select
+                                  className="form-control"
+                                  style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', width: 'auto', maxWidth: '130px' }}
+                                  value={autoProgramStages[progObj.id] || ''}
+                                  onChange={(e) => setAutoProgramStages(prev => ({ ...prev, [progObj.id]: e.target.value }))}
+                                >
+                                  <option value="">Auto Stage</option>
+                                  {stages && stages.map(stg => (
+                                    <option key={stg.id} value={stg.name}>{stg.name}</option>
+                                  ))}
+                                </select>
+
+                                {/* Priority Move Buttons (Within Stage Group) */}
+                                <div style={{ display: 'flex', gap: '0.2rem' }}>
+                                  <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    disabled={idx === 0}
+                                    onClick={() => handleMoveProgramStagePriority(progObj.id, -1)}
+                                    style={{ padding: '0.15rem 0.4rem', fontSize: '0.7rem', opacity: idx === 0 ? 0.4 : 1 }}
+                                    title="Move Up in Stage Queue"
+                                  >
+                                    <ArrowUp size={12} />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    disabled={idx === pList.length - 1}
+                                    onClick={() => handleMoveProgramStagePriority(progObj.id, 1)}
+                                    style={{ padding: '0.15rem 0.4rem', fontSize: '0.7rem', opacity: idx === pList.length - 1 ? 0.4 : 1 }}
+                                    title="Move Down in Stage Queue"
+                                  >
+                                    <ArrowDown size={12} />
+                                  </button>
+                                </div>
                               </div>
-                              <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-                                <span className="tag" style={{ 
-                                  fontSize: '0.65rem', 
-                                  background: p.stage_type === 'onstage' ? 'rgba(123, 31, 162, 0.2)' : 'rgba(0, 150, 136, 0.2)',
-                                  color: p.stage_type === 'onstage' ? '#e040fb' : '#1de9b6',
-                                  border: 'none'
-                                }}>
-                                  {p.stage_type === 'onstage' ? 'On Stage' : 'Offstage'}
-                                </span>
-                                {p.schedule ? (
-                                  <span className="tag tag-success" style={{ fontSize: '0.65rem' }}>Scheduled</span>
-                                ) : (
-                                  <span className="tag" style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.05)', color: 'var(--text-muted)', border: 'none' }}>Unscheduled</span>
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ));
-                })()}
+                            ))}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                ) : (
+                  <div style={{
+                    height: '340px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justify: 'center',
+                    background: 'rgba(0,0,0,0.1)',
+                    border: '1px dashed rgba(255,255,255,0.1)',
+                    borderRadius: '8px',
+                    color: 'var(--text-muted)',
+                    fontSize: '0.85rem'
+                  }}>
+                    Select programs on the left to set priority & stages.
+                  </div>
+                )}
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
-                Selected: {autoSelectedPrograms.length} / {autoProgramsList.length} programs
-              </div>
+
             </div>
 
-            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1.25rem', cursor: 'pointer' }}>
+            <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.5rem', cursor: 'pointer' }}>
               <input 
                 type="checkbox" 
                 id="reschedule-all"
@@ -2806,12 +2986,12 @@ export default function AdminPanel() {
                 onChange={e => setAutoRescheduleAll(e.target.checked)} 
                 style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
-              <label htmlFor="reschedule-all" style={{ fontSize: '0.9rem', color: 'var(--text-primary)', cursor: 'pointer', margin: 0 }}>
+              <label htmlFor="reschedule-all" style={{ fontSize: '0.875rem', color: 'var(--text-primary)', cursor: 'pointer', margin: 0 }}>
                 Reschedule all programs (Overwrite existing schedules)
               </label>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.25rem', padding: '0.75rem', fontSize: '1rem', fontWeight: 600 }}>
               Generate Auto Schedule
             </button>
           </form>
