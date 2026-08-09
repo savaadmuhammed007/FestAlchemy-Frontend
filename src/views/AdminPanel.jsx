@@ -376,10 +376,17 @@ export default function AdminPanel() {
     }
   };
 
+  // Load setup data once on component mount
   useEffect(() => {
-    fetchStats();
     loadFestSettings();
     loadSetupData();
+  }, []);
+
+  // Fetch stats only when dashboard tab is active
+  useEffect(() => {
+    if (activeTab === 'dashboard') {
+      fetchStats();
+    }
   }, [activeTab]);
 
   // Handle Save Fest Settings

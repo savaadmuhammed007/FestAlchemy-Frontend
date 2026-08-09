@@ -29,7 +29,11 @@ export default function ResultsPage() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -173,9 +177,6 @@ export default function ResultsPage() {
                       <span className="rs-winner-team">{res.team_name}</span>
                       {res.member_chest_no && <span className="rs-winner-chest">Chest #{res.member_chest_no}</span>}
                       <div className="rs-winner-score-row">
-                        {res.total_marks != null && (
-                          <span className="rs-winner-score">{res.total_marks} marks</span>
-                        )}
                         {res.grade && (
                           <span className="rs-winner-grade">{res.grade}</span>
                         )}
@@ -193,7 +194,6 @@ export default function ResultsPage() {
                       <th style={{ width: '60px' }}>Rank</th>
                       <th>Participant</th>
                       <th className="rs-desktop-only">Team</th>
-                      <th style={{ width: '90px', textAlign: 'center' }}>Score</th>
                       <th style={{ width: '80px', textAlign: 'center' }}>Grade</th>
                     </tr>
                   </thead>
@@ -226,9 +226,6 @@ export default function ResultsPage() {
                           </td>
                           <td className="rs-desktop-only" style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
                             {res.team_name}
-                          </td>
-                          <td style={{ textAlign: 'center', fontWeight: 600 }}>
-                            {res.total_marks != null ? res.total_marks : '—'}
                           </td>
                           <td style={{ textAlign: 'center' }}>
                             {res.grade ? (

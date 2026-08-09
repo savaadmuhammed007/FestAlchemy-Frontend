@@ -34,7 +34,11 @@ export default function PublicDashboard() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -361,7 +365,6 @@ export default function PublicDashboard() {
                             <th style={{ width: '60px' }}>Rank</th>
                             <th>Participant</th>
                             <th className="desktop-only">Team</th>
-                            <th style={{ width: '80px', textAlign: 'center' }}>Score</th>
                             <th style={{ width: '80px', textAlign: 'center' }}>Grade</th>
                           </tr>
                         </thead>
@@ -391,9 +394,6 @@ export default function PublicDashboard() {
                                   </div>
                                 </td>
                                 <td className="desktop-only" style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{res.team_name}</td>
-                                <td style={{ textAlign: 'center', fontWeight: 600 }}>
-                                  {res.total_marks != null ? res.total_marks : '—'}
-                                </td>
                                 <td style={{ textAlign: 'center' }}>
                                   {res.grade ? (
                                     <span className="tag tag-success" style={{ fontSize: '0.7rem' }}>{res.grade}</span>
