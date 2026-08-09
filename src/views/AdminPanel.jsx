@@ -1896,10 +1896,17 @@ export default function AdminPanel() {
               onSaveFestSettings={handleSaveFestSettings}
               teams={teams}
               judges={judges}
+              categories={categories}
+              programs={programs}
+              members={members}
+              stages={stages}
               onOpenModal={openModal}
               onDeleteItem={handleDeleteItem}
               festDates={festDates}
               setFestDates={setFestDates}
+              token={token}
+              loadSetupData={loadSetupData}
+              fetchStats={fetchStats}
             />
           </div>
         )}

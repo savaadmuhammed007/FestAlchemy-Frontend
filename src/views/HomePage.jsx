@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../context/AuthContext';
 import { Award, Trophy, Sparkles, ChevronDown, Crown, Medal, Flame, ArrowRight, BarChart2, CheckCircle2, Users, Calendar, Layers, Activity, Shield, Grid } from 'lucide-react';
 
 /* ─── Animated Counter Component ───────────────────────────── */
-function AnimatedCounter({ end, duration = 2000, isVisible = true }) {
+function AnimatedCounter({ end, duration = 500, isVisible = true }) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
@@ -172,13 +172,22 @@ export default function HomePage() {
   const [statsVisible, setStatsVisible] = useState(false);
 
   useEffect(() => {
+    if (loading) return;
+
+    if (statsRef.current) {
+      const rect = statsRef.current.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom >= 0) {
+        setStatsVisible(true);
+      }
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setStatsVisible(true);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.01 }
     );
 
     if (statsRef.current) {
@@ -326,7 +335,7 @@ export default function HomePage() {
               </div>
               <div className="home-stat-content">
                 <div className="home-stat-number-wrap">
-                  <AnimatedCounter end={participantsCount} duration={2000} isVisible={statsVisible} />
+                  <AnimatedCounter end={participantsCount} duration={650} isVisible={statsVisible} />
                   <span className="home-stat-plus">+</span>
                 </div>
                 <div className="home-stat-label">Participants</div>
@@ -342,7 +351,7 @@ export default function HomePage() {
               </div>
               <div className="home-stat-content">
                 <div className="home-stat-number-wrap">
-                  <AnimatedCounter end={teamsCount} duration={1600} isVisible={statsVisible} />
+                  <AnimatedCounter end={teamsCount} duration={500} isVisible={statsVisible} />
                 </div>
                 <div className="home-stat-label">Teams</div>
                 <div className="home-stat-tag home-stat-tag--teams">Championship Houses</div>
@@ -357,7 +366,7 @@ export default function HomePage() {
               </div>
               <div className="home-stat-content">
                 <div className="home-stat-number-wrap">
-                  <AnimatedCounter end={categoriesCount} duration={1700} isVisible={statsVisible} />
+                  <AnimatedCounter end={categoriesCount} duration={520} isVisible={statsVisible} />
                 </div>
                 <div className="home-stat-label">Categories</div>
                 <div className="home-stat-tag home-stat-tag--categories">Skill Divisions</div>
@@ -372,7 +381,7 @@ export default function HomePage() {
               </div>
               <div className="home-stat-content">
                 <div className="home-stat-number-wrap">
-                  <AnimatedCounter end={programsCount} duration={1800} isVisible={statsVisible} />
+                  <AnimatedCounter end={programsCount} duration={580} isVisible={statsVisible} />
                 </div>
                 <div className="home-stat-label">Programs</div>
                 <div className="home-stat-tag home-stat-tag--programs">Competitive Events</div>
@@ -387,7 +396,7 @@ export default function HomePage() {
               </div>
               <div className="home-stat-content">
                 <div className="home-stat-number-wrap">
-                  <AnimatedCounter end={daysCount} duration={1500} isVisible={statsVisible} />
+                  <AnimatedCounter end={daysCount} duration={450} isVisible={statsVisible} />
                 </div>
                 <div className="home-stat-label">Days Fest</div>
                 <div className="home-stat-tag home-stat-tag--days">Non-stop Thrill</div>
