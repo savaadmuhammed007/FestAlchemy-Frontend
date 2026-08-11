@@ -354,7 +354,9 @@ export default function HomePage() {
                   <AnimatedCounter end={teamsCount} duration={500} isVisible={statsVisible} />
                 </div>
                 <div className="home-stat-label">Teams</div>
-                <div className="home-stat-tag home-stat-tag--teams">Championship Houses</div>
+                <div className="home-stat-tag home-stat-tag--teams">
+                  {fest?.published_standings_limit > 0 ? `After ${fest.published_standings_limit} Results` : 'Championship Houses'}
+                </div>
               </div>
             </div>
 
@@ -415,12 +417,19 @@ export default function HomePage() {
             <div className="home-section-badge">
               <Flame size={15} style={{ color: 'var(--gold)' }} />
               <span>Championship Race</span>
+              {fest?.published_standings_limit > 0 && (
+                <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', padding: '0.1rem 0.45rem', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 600 }}>
+                  After {fest.published_standings_limit} Results
+                </span>
+              )}
             </div>
             <h2 className="home-section-title">
               Who Will Win?
             </h2>
             <p className="home-section-subtitle">
-              The top 3 team contenders leading the leaderboard in points right now.
+              {fest?.published_standings_limit > 0
+                ? `The top 3 team contenders leading the leaderboard in points (After ${fest.published_standings_limit} Results).`
+                : 'The top 3 team contenders leading the leaderboard in points right now.'}
             </p>
           </div>
 
@@ -491,7 +500,9 @@ export default function HomePage() {
           <div className="home-section-cta">
             <Link to="/team-status" className="home-redirect-btn home-redirect-btn--team">
               <Trophy size={18} />
-              <span>Redirect to Team Stats</span>
+              <span>
+                Redirect to Team Stats {fest?.published_standings_limit > 0 ? `(After ${fest.published_standings_limit} Results)` : ''}
+              </span>
               <ArrowRight size={18} />
             </Link>
           </div>

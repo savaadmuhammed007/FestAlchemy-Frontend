@@ -71,9 +71,18 @@ export default function TeamStatsPage() {
             <Flame size={14} />
             <span>Live Scoreboard</span>
           </div>
-          <h1 className="ts-page-title">Team Standings</h1>
+          <h1 className="ts-page-title">
+            Team Standings
+            {fest?.published_standings_limit > 0 && (
+              <span className="tag tag-primary" style={{ fontSize: '0.8rem', marginLeft: '0.75rem', verticalAlign: 'middle' }}>
+                After {fest.published_standings_limit} Results
+              </span>
+            )}
+          </h1>
           <p className="ts-page-subtitle">
-            {fest?.fest_name || 'FestAlchemy'} {fest?.year || new Date().getFullYear()} — Real-time team points and individual performer rankings.
+            {fest?.published_standings_limit > 0
+              ? `${fest?.fest_name || 'FestAlchemy'} ${fest?.year || new Date().getFullYear()} — Team points calculated after first ${fest.published_standings_limit} published results.`
+              : `${fest?.fest_name || 'FestAlchemy'} ${fest?.year || new Date().getFullYear()} — Real-time team points and individual performer rankings.`}
           </p>
         </div>
 
@@ -89,6 +98,13 @@ export default function TeamStatsPage() {
             <span className="ts-qs-val">{publishedCount}</span>
             <span className="ts-qs-label">Events Scored</span>
           </div>
+          {fest?.published_standings_limit > 0 && (
+            <div className="ts-qs-item">
+              <Award size={18} />
+              <span className="ts-qs-val">After {fest.published_standings_limit}</span>
+              <span className="ts-qs-label">Result Limit</span>
+            </div>
+          )}
           {leaderboard.length > 0 && (
             <div className="ts-qs-item ts-qs-item--highlight">
               <Crown size={18} />
@@ -150,6 +166,11 @@ export default function TeamStatsPage() {
           <h2 className="ts-section-title">
             <BarChart2 size={20} />
             Full Team Leaderboard
+            {fest?.published_standings_limit > 0 && (
+              <span className="tag tag-primary" style={{ fontSize: '0.75rem', marginLeft: '0.5rem', fontWeight: 'normal' }}>
+                After {fest.published_standings_limit} Results
+              </span>
+            )}
           </h2>
         </div>
 

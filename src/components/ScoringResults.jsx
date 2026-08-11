@@ -55,16 +55,16 @@ export default function ScoringResults({
       if (!res.ok) throw new Error("Failed to save standings limit");
       const updated = await res.json();
       if (onUpdateFestSettings) onUpdateFestSettings(updated);
-      showToast(limitVal > 0 ? `Public team standings updated to show first ${limitVal} events!` : 'Public team standings updated to show all events!', 'success');
+      showToast(limitVal > 0 ? `Public team standings updated to show first ${limitVal} results!` : 'Public team standings updated to show all results!', 'success');
     } catch (err) {
       console.error(err);
       showToast("Error updating standings limit.", "error");
     }
   };
 
-  // Only show spin-lotted programs in scoring and results
+  // Include spin-lotted, submitted, or published programs in scoring and results
   const spinLottedPrograms = useMemo(() => {
-    return programs.filter(p => p.lot_completed);
+    return programs.filter(p => p.lot_completed || p.has_results || p.is_published);
   }, [programs]);
 
   // Close menus on click outside
@@ -91,7 +91,7 @@ export default function ScoringResults({
 
   useEffect(() => {
     fetchResultsData();
-  }, [spinLottedPrograms, token, publishStatus]);
+  }, [programs, token, publishStatus]);
 
   // Determine target programs based on whether we filter only published or all calculated results
   const targetPrograms = useMemo(() => {
@@ -559,7 +559,7 @@ export default function ScoringResults({
                   color: 'var(--text-secondary)',
                   flexWrap: 'wrap'
                 }}>
-                  <span>Show standings after:</span>
+                  <span style={{ fontWeight: 600 }}>Show standings after:</span>
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                     <input
                       type="number"
@@ -580,7 +580,7 @@ export default function ScoringResults({
                         fontWeight: 'bold'
                       }}
                     />
-                    <span>events</span>
+                    <span>results</span>
                     <button
                       onClick={handleSaveStandingsLimit}
                       className="btn btn-secondary"
@@ -589,8 +589,8 @@ export default function ScoringResults({
                       Save Limit
                     </button>
                   </div>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                    ({festSettings?.published_standings_limit > 0 ? `Currently showing first ${festSettings.published_standings_limit} events` : 'Showing all events'})
+                  <span style={{ fontSize: '0.72rem', color: 'var(--accent)', fontWeight: 600 }}>
+                    ({festSettings?.published_standings_limit > 0 ? `Set to show after ${festSettings.published_standings_limit} results` : 'Showing all results'})
                   </span>
                 </div>
               </div>

@@ -780,6 +780,7 @@ export default function AdminPanel() {
       if (json.data.length > 0) {
         setPublishStatus(json.data[0].published);
       }
+      await loadSetupData();
     } catch (err) {
       alert(err.message);
     } finally {
@@ -803,7 +804,7 @@ export default function AdminPanel() {
       if (res.ok) {
         alert(json.message);
         setPublishStatus(json.published);
-        fetchCoreData();
+        await loadSetupData();
       } else {
         alert(json.error || "Failed to toggle publish");
       }
@@ -1601,6 +1602,7 @@ export default function AdminPanel() {
             token={token}
             festSettings={festSettings}
             onTogglePublishTeamStandings={handleTogglePublishTeamStandings}
+            onUpdateFestSettings={(updated) => setFestSettings(updated)}
           />
         )}
 

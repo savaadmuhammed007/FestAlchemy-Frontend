@@ -219,7 +219,7 @@ export default function PublicDashboard() {
 
           <div className="db-stats-grid" style={{ flex: '1 1 320px', gap: '0.85rem' }}>
             {[
-              { icon: <Users size={20} />, value: leaderboard?.length || 0, label: 'Teams', color: 'var(--accent)', soft: 'var(--accent-soft)' },
+              { icon: <Users size={20} />, value: leaderboard?.length || 0, label: fest_settings?.published_standings_limit > 0 ? `Teams (After ${fest_settings.published_standings_limit})` : 'Teams', color: 'var(--accent)', soft: 'var(--accent-soft)' },
               { icon: <Award size={20} />, value: programs_with_results?.length || 0, label: 'Events Published', color: 'var(--success)', soft: 'var(--success-soft)' },
               { icon: <Medal size={20} />, value: categoryCount, label: 'Categories', color: 'var(--info)', soft: 'var(--info-soft)' },
             ].map((stat) => (
@@ -240,7 +240,7 @@ export default function PublicDashboard() {
       {/* ─── Section Tabs ─── */}
       <div ref={contentRef} className="dashboard-tabs" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
         {[
-          { key: 'standings', label: 'Team Standings', icon: <Trophy size={16} /> },
+          { key: 'standings', label: fest_settings?.published_standings_limit > 0 ? `Team Standings (After ${fest_settings.published_standings_limit})` : 'Team Standings', icon: <Trophy size={16} /> },
           { key: 'results', label: 'Results', icon: <Award size={16} /> },
         ].map(tab => (
           <button
@@ -260,14 +260,19 @@ export default function PublicDashboard() {
         {/* ═══ TEAM STANDINGS ═══ */}
         {activeSection === 'standings' && (
           <div>
-            <h2 style={{ marginBottom: '1.25rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem', flexWrap: 'wrap' }}>
+            <h2 style={{ marginBottom: '0.4rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.35rem', flexWrap: 'wrap' }}>
               <Trophy size={22} style={{ color: 'var(--gold)' }} /> Live Team Standings
               {fest_settings?.published_standings_limit > 0 && (
                 <span className="tag tag-primary" style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-full)' }}>
-                  After {fest_settings.published_standings_limit} Events
+                  After {fest_settings.published_standings_limit} Results
                 </span>
               )}
             </h2>
+            {fest_settings?.published_standings_limit > 0 && (
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+                Points and rankings calculated after the first {fest_settings.published_standings_limit} published results.
+              </p>
+            )}
             {fest_settings?.publish_team_standings === false ? (
               <div className="empty-state" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
                 <Trophy size={36} style={{ color: 'var(--text-muted)', marginBottom: '0.75rem' }} />
