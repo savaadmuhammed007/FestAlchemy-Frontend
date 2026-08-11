@@ -137,6 +137,9 @@ export function UIProvider({ children }) {
           </div>
         </div>
       )}
+
+      {/* Global Custom Cursor rendered on top of all popups & overlays */}
+      <CustomCursor />
     </UIContext.Provider>
   );
 }
@@ -308,7 +311,6 @@ function AppContent() {
   const location = useLocation();
   return (
     <div className="app-container">
-      <CustomCursor />
       <Navbar />
       <main className={`main-content ${location.pathname === '/' ? 'main-content--home' : ''}`}>
         <Routes>

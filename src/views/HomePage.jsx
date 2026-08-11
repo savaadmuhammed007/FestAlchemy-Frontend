@@ -500,9 +500,7 @@ export default function HomePage() {
           <div className="home-section-cta">
             <Link to="/team-status" className="home-redirect-btn home-redirect-btn--team">
               <Trophy size={18} />
-              <span>
-                Redirect to Team Stats {fest?.published_standings_limit > 0 ? `(After ${fest.published_standings_limit} Results)` : ''}
-              </span>
+              <span>Redirect to Team Point Stats</span>
               <ArrowRight size={18} />
             </Link>
           </div>

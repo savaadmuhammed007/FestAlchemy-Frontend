@@ -20,21 +20,33 @@ export default function CustomCursor() {
     if ('ontouchstart' in window && !window.matchMedia('(pointer: fine)').matches) return;
 
     const onMouseMove = (e) => {
+      setIsHidden(false);
       pos.current = { x: e.clientX, y: e.clientY };
       if (dotRef.current) {
         dotRef.current.style.transform = `translate(${e.clientX}px, ${e.clientY}px)`;
       }
 
-      // Check if hovering a clickable element
+      // Check if hovering a clickable element (including buttons, inputs, modals, popups, etc.)
       const target = e.target;
-      const clickable = target.closest('a, button, [role="button"], input, select, textarea, label, [onclick], .rs-event-card, .ts-table-row');
-      setIsPointer(!!clickable);
+      if (!target || !(target instanceof Element)) {
+        setIsPointer(false);
+        return;
+      }
+
+      const clickable = target.closest('a, button, [role="button"], input, select, textarea, label, [onclick], .rs-event-card, .ts-table-row, .btn, .confirm-modal-box, .glass-panel');
+      let isPointerStyle = false;
+      try {
+        isPointerStyle = window.getComputedStyle(target).cursor === 'pointer';
+      } catch (_) {}
+
+      setIsPointer(!!clickable || isPointerStyle);
     };
 
     const onMouseDown = () => setIsClicking(true);
     const onMouseUp = () => setIsClicking(false);
     const onMouseLeave = () => setIsHidden(true);
     const onMouseEnter = () => setIsHidden(false);
+    const onFocus = () => setIsHidden(false);
 
     // Smooth ring follow with requestAnimationFrame
     let frameId;
@@ -59,6 +71,7 @@ export default function CustomCursor() {
     document.addEventListener('mouseup', onMouseUp);
     document.addEventListener('mouseleave', onMouseLeave);
     document.addEventListener('mouseenter', onMouseEnter);
+    window.addEventListener('focus', onFocus);
 
     return () => {
       cancelAnimationFrame(frameId);
@@ -67,6 +80,7 @@ export default function CustomCursor() {
       document.removeEventListener('mouseup', onMouseUp);
       document.removeEventListener('mouseleave', onMouseLeave);
       document.removeEventListener('mouseenter', onMouseEnter);
+      window.removeEventListener('focus', onFocus);
     };
   }, []);
 

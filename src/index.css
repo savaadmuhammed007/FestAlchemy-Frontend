@@ -1418,7 +1418,7 @@ select.form-control option {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999;
+  z-index: 999990;
   padding: 1.5rem;
   animation: fadeIn 0.2s ease-out;
 }
@@ -3495,7 +3495,7 @@ div.desktop-only, span.desktop-only {
   top: 0;
   left: 0;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 9999999;
   border-radius: 50%;
   will-change: transform;
 }

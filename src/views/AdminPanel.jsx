@@ -636,7 +636,7 @@ export default function AdminPanel() {
   };
 
   const handleResetSchedule = async () => {
-    const confirmed = window.confirm("Are you sure you want to clear all program schedules and stages? This action cannot be undone.");
+    const confirmed = await confirm("Clear Schedule & Stages", "Are you sure you want to clear all program schedules and stages? This action cannot be undone.");
     if (!confirmed) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/programs/reset_schedule/`, {

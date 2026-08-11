@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { API_BASE_URL } from '../context/AuthContext';
-import { Trophy, Medal, Users, RefreshCw, ArrowLeft, Crown, Flame, ChevronUp, ChevronDown, BarChart2 } from 'lucide-react';
+import { Trophy, Medal, Users, RefreshCw, ArrowLeft, Crown, Flame, ChevronUp, ChevronDown, BarChart2, Award } from 'lucide-react';
 
 export default function TeamStatsPage() {
   const [data, setData] = useState(null);
@@ -81,7 +81,7 @@ export default function TeamStatsPage() {
           </h1>
           <p className="ts-page-subtitle">
             {fest?.published_standings_limit > 0
-              ? `${fest?.fest_name || 'FestAlchemy'} ${fest?.year || new Date().getFullYear()} — Team points calculated after first ${fest.published_standings_limit} published results.`
+              ? `${fest?.fest_name || 'FestAlchemy'} ${fest?.year || new Date().getFullYear()} — Team points calculated after first ${fest.published_standings_limit} published events.`
               : `${fest?.fest_name || 'FestAlchemy'} ${fest?.year || new Date().getFullYear()} — Real-time team points and individual performer rankings.`}
           </p>
         </div>
@@ -102,7 +102,7 @@ export default function TeamStatsPage() {
             <div className="ts-qs-item">
               <Award size={18} />
               <span className="ts-qs-val">After {fest.published_standings_limit}</span>
-              <span className="ts-qs-label">Result Limit</span>
+              <span className="ts-qs-label">Results</span>
             </div>
           )}
           {leaderboard.length > 0 && (
@@ -168,7 +168,7 @@ export default function TeamStatsPage() {
             Full Team Leaderboard
             {fest?.published_standings_limit > 0 && (
               <span className="tag tag-primary" style={{ fontSize: '0.75rem', marginLeft: '0.5rem', fontWeight: 'normal' }}>
-                After {fest.published_standings_limit} Results
+                After {fest.published_standings_limit} Events
               </span>
             )}
           </h2>
