@@ -120,7 +120,7 @@ export default function PublicDashboard() {
       {/* ─── Public Navbar (reuses the app's real .navbar / .nav-link classes) ─── */}
       <nav className="navbar" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', position: 'sticky', top: 0 }}>
         <div className="nav-brand" onClick={scrollToTop} style={{ cursor: 'pointer' }}>
-          <img src="/logo.png" alt="Logo" className="nav-brand-img" />
+          <Trophy size={22} style={{ color: 'var(--accent)' }} />
           <span className="gradient-text">{fest_settings?.fest_name || 'FestAlchemy'}</span>
         </div>
 
@@ -270,7 +270,7 @@ export default function PublicDashboard() {
             </h2>
             {fest_settings?.published_standings_limit > 0 && (
               <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-                Points and rankings calculated after the first {fest_settings.published_standings_limit} published results.
+                Points and rankings calculated after the first {fest_settings.published_standings_limit} published events.
               </p>
             )}
             {fest_settings?.publish_team_standings === false ? (

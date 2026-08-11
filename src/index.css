@@ -242,7 +242,16 @@ h1, h2, h3, h4, h5, h6 {
 
 .nav-brand:hover .nav-brand-img {
   transform: rotate(-6deg) scale(1.12);
-  filter: drop-shadow(0 0 10px rgba(217, 70, 239, 0.6));
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+}
+
+.nav-brand .gradient-text {
+  background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
 /* ─── Hamburger (mobile) ─── */
