@@ -120,7 +120,7 @@ export default function PublicDashboard() {
       {/* ─── Public Navbar (reuses the app's real .navbar / .nav-link classes) ─── */}
       <nav className="navbar" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', position: 'sticky', top: 0 }}>
         <div className="nav-brand" onClick={scrollToTop} style={{ cursor: 'pointer' }}>
-          <Trophy size={22} style={{ color: 'var(--accent)' }} />
+          <img src="/logo.png" alt="Logo" className="nav-brand-img" />
           <span className="gradient-text">{fest_settings?.fest_name || 'FestAlchemy'}</span>
         </div>
 

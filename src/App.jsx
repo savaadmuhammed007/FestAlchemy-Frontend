@@ -211,9 +211,7 @@ function Navbar() {
   return (
     <nav className={navClass}>
       <Link to="/" className="nav-brand">
-        <div className="nav-brand-icon">
-          <Trophy size={18} />
-        </div>
+        <img src="/logo.png" alt="FestAlchemy Logo" className="nav-brand-img" />
         <span className="gradient-text">FestAlchemy</span>
       </Link>
 
