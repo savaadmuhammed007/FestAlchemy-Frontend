@@ -716,6 +716,24 @@ export default function AdminPanel() {
     return json;
   };
 
+  const handleCallAllMembers = async (programIdOverride = null) => {
+    const targetId = programIdOverride || callingProgramId;
+    if (!targetId) return;
+    const res = await fetch(`${API_BASE_URL}/api/calling/${targetId}/`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ spin_all: true })
+    });
+
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error || "Failed to spin all lots");
+    await loadSetupData();
+    return json;
+  };
+
   const handleRespinLot = async () => {
     const confirmed = await confirm("Reset Program Lots", "Are you sure? This clears all evaluation sheets and computed scores for this program!");
     if (!confirmed) return;
@@ -1571,6 +1589,7 @@ export default function AdminPanel() {
               setCallingData={setCallingData}
               callingLoading={callingLoading}
               onCallMember={handleCallMember}
+              onCallAllMembers={handleCallAllMembers}
               onRespinLot={handleRespinLot}
             />
           </div>

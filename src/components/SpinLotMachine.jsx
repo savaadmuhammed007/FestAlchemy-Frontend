@@ -11,9 +11,11 @@ export default function SpinLotMachine({
   setCallingData,
   callingLoading,
   onCallMember,
+  onCallAllMembers,
   onRespinLot
 }) {
-  const { showToast } = useContext(UIContext);
+  const { showToast, confirm } = useContext(UIContext);
+  const [spinAllLoading, setSpinAllLoading] = useState(false);
 
   // Search & Filter local states
   const [searchQuery, setSearchQuery] = useState('');
@@ -486,6 +488,30 @@ export default function SpinLotMachine({
     spinStateRef.current = 'IDLE';
   };
 
+  const handleSpinAll = async (programIdOverride = null) => {
+    const targetProgId = programIdOverride || callingProgramId;
+    if (!targetProgId || !onCallAllMembers) return;
+
+    const progName = programs.find(p => p.id.toString() === targetProgId.toString())?.name || 'this event';
+    const confirmed = await confirm(
+      "Auto-Spin All Lots",
+      `Are you sure you want to automatically assign random lot codes and generate judge marksheets for ALL waiting participants in "${progName}" with 1 click?`
+    );
+    if (!confirmed) return;
+
+    setSpinAllLoading(true);
+    try {
+      const res = await onCallAllMembers(targetProgId);
+      showToast(res.message || "Successfully assigned lot codes to all participants!", "success");
+      onFetchCallingList(targetProgId);
+      playWinSound();
+    } catch (err) {
+      showToast(err.message || "Failed to auto-spin lot codes.", "error");
+    } finally {
+      setSpinAllLoading(false);
+    }
+  };
+
   return (
     <div>
       {!callingProgramId ? (
@@ -652,14 +678,24 @@ export default function SpinLotMachine({
               </span>
             </div>
             
-            <div className="no-print" style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div className="no-print" style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {!isFinalized && onCallAllMembers && notDoneMembers.length > 0 && (
+                <button 
+                  onClick={() => handleSpinAll()} 
+                  className="btn btn-primary" 
+                  disabled={spinAllLoading}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.82rem', background: 'var(--accent)', borderColor: 'var(--accent)', color: '#ffffff' }}
+                >
+                  <Sparkles size={14} /> {spinAllLoading ? 'Spinning...' : `Auto-Spin All (${notDoneMembers.length})`}
+                </button>
+              )}
               {!isFinalized && onRespinLot && (
                 <button 
                   onClick={onRespinLot} 
                   className="btn btn-danger" 
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
                 >
-                  <RefreshCw size={16} /> Respin & Reset Lots
+                  <RefreshCw size={14} /> Respin & Reset
                 </button>
               )}
             </div>
@@ -684,9 +720,21 @@ export default function SpinLotMachine({
                 
                 {/* Waiting / Not Done */}
                 <div>
-                  <h4 style={{ marginBottom: '0.75rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--warning)', fontSize: '0.95rem' }}>
-                    Waiting Queue ({notDoneMembers.length})
-                  </h4>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <h4 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--warning)', fontSize: '0.95rem' }}>
+                      Waiting Queue ({notDoneMembers.length})
+                    </h4>
+                    {!isFinalized && onCallAllMembers && notDoneMembers.length > 0 && (
+                      <button
+                        onClick={() => handleSpinAll()}
+                        disabled={spinAllLoading}
+                        className="btn btn-primary"
+                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem', height: '28px', background: 'var(--accent)', borderColor: 'var(--accent)', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      >
+                        <Sparkles size={13} /> {spinAllLoading ? 'Spinning...' : '1-Click Spin All'}
+                      </button>
+                    )}
+                  </div>
                   {notDoneMembers.length === 0 ? (
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', background: 'rgba(255,255,255,0.01)', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
                       All participants have been called.
