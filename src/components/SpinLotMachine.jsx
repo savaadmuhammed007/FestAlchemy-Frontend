@@ -185,7 +185,7 @@ export default function SpinLotMachine({
         ledPulseRef.current = (ledPulseRef.current + 0.8) % 10;
       } else if (spinStateRef.current === 'DECELERATING') {
         const elapsed = timestamp - spinDecelStartTimeRef.current;
-        const duration = 3000;
+        const duration = 900;
         const t = Math.min(elapsed / duration, 1);
         
         const easeOutCubic = 1 - Math.pow(1 - t, 3);
@@ -465,7 +465,7 @@ export default function SpinLotMachine({
         targetAngleDiff += 2 * Math.PI;
       }
 
-      const minDecelRotations = 3;
+      const minDecelRotations = 1.2;
       spinTargetAngleRef.current = rotationAngleRef.current + targetAngleDiff + minDecelRotations * 2 * Math.PI;
       spinDecelStartTimeRef.current = performance.now();
       spinDecelStartAngleRef.current = rotationAngleRef.current;
