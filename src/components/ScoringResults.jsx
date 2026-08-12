@@ -62,9 +62,9 @@ export default function ScoringResults({
     }
   };
 
-  // Include spin-lotted, submitted, or published programs in scoring and results
+  // Include spin-lotted, submitted, marksheets, or published programs in scoring and results
   const spinLottedPrograms = useMemo(() => {
-    return programs.filter(p => p.lot_completed || p.has_results || p.is_published);
+    return programs.filter(p => p.lot_completed || p.has_results || p.is_published || p.has_marksheets);
   }, [programs]);
 
   // Close menus on click outside
@@ -428,8 +428,13 @@ export default function ScoringResults({
                               ) : (
                                 <button
                                   onClick={() => {
-                                    setResultsProgramId(p.id.toString());
-                                    onFetchResults(p.id.toString());
+                                    const pIdStr = p.id.toString();
+                                    setResultsProgramId(pIdStr);
+                                    if (onComputeResults) {
+                                      onComputeResults(pIdStr);
+                                    } else {
+                                      onFetchResults(pIdStr);
+                                    }
                                   }}
                                   className="btn btn-primary"
                                   style={{ 

@@ -778,8 +778,9 @@ export default function AdminPanel() {
     }
   };
 
-  const handleComputeResults = async () => {
-    if (!resultsProgramId) return;
+  const handleComputeResults = async (progIdOverride = null) => {
+    const targetId = (progIdOverride && typeof progIdOverride !== 'object') ? progIdOverride : resultsProgramId;
+    if (!targetId) return;
     setResultsLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/results/compute/`, {
@@ -788,7 +789,7 @@ export default function AdminPanel() {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ program_id: parseInt(resultsProgramId) })
+        body: JSON.stringify({ program_id: parseInt(targetId) })
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to compute results");
