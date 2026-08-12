@@ -885,6 +885,9 @@ export default function AdminPanel() {
         if (reportFilterTeam) url += `&team=${reportFilterTeam}`;
         if (reportFilterCategory) url += `&category=${reportFilterCategory}`;
       }
+      if (reportType === 'performers') {
+        if (reportFilterCategory) url += `&category=${reportFilterCategory}`;
+      }
       if (reportType === 'marksheets' && reportFilterProgram) {
         url += `&program=${reportFilterProgram}`;
       }
@@ -1695,10 +1698,12 @@ export default function AdminPanel() {
                     {reportType === 'members' && <Users size={18} style={{ color: 'var(--primary-neon)' }} />}
                     {reportType === 'marksheets' && <ClipboardList size={18} style={{ color: 'var(--primary-neon)' }} />}
                     {reportType === 'teampoints' && <FileText size={18} style={{ color: 'var(--primary-neon)' }} />}
+                    {reportType === 'performers' && <Medal size={18} style={{ color: 'var(--gold)' }} />}
                     {reportType === 'results' ? 'Event Results Configurator' : 
                      reportType === 'members' ? 'Registered Members Directory Configurator' : 
                      reportType === 'marksheets' ? 'Marksheets Entry Log Configurator' : 
-                     reportType === 'teampoints' ? 'Overall Team Standings Configurator' : 'Report Configurator'}
+                     reportType === 'teampoints' ? 'Overall Team Standings Configurator' : 
+                     reportType === 'performers' ? 'Top Performers (Individual Leaderboard) Configurator' : 'Report Configurator'}
                   </h3>
 
                   <div style={{ 
@@ -1707,6 +1712,17 @@ export default function AdminPanel() {
                     gap: '1rem',
                     alignItems: 'flex-start'
                   }}>
+                    {reportType === 'performers' && (
+                      <div className="form-group" style={{ minWidth: '220px', maxWidth: '350px', marginBottom: 0 }}>
+                        <label className="form-label">Filter Category</label>
+                        <select className="form-control" value={reportFilterCategory} onChange={e => setReportFilterCategory(e.target.value)}>
+                          <option value="">All Categories</option>
+                          {categories.map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                     {reportType === 'results' && (
                       <div style={{ width: '100%' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>

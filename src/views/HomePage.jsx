@@ -56,6 +56,7 @@ function HeroParticles() {
     const ctx = canvas.getContext('2d');
     let animationId;
     let particles = [];
+    let isVisible = true;
 
     const resize = () => {
       canvas.width = canvas.offsetWidth * window.devicePixelRatio;
@@ -65,50 +66,57 @@ function HeroParticles() {
     resize();
     window.addEventListener('resize', resize);
 
-    // Create particles
-    for (let i = 0; i < 65; i++) {
+    const observer = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+    }, { threshold: 0.05 });
+    observer.observe(canvas);
+
+    // Create particles (optimized count)
+    for (let i = 0; i < 28; i++) {
       particles.push({
         x: Math.random() * canvas.offsetWidth,
         y: Math.random() * canvas.offsetHeight,
-        size: Math.random() * 2.5 + 0.5,
-        speedX: (Math.random() - 0.5) * 0.4,
-        speedY: (Math.random() - 0.5) * 0.4,
-        opacity: Math.random() * 0.5 + 0.15,
+        size: Math.random() * 2.2 + 0.6,
+        speedX: (Math.random() - 0.5) * 0.35,
+        speedY: (Math.random() - 0.5) * 0.35,
+        opacity: Math.random() * 0.45 + 0.15,
         hue: Math.random() > 0.5 ? 245 : 285,
       });
     }
 
     const animate = () => {
-      ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
+      if (document.visibilityState === 'visible' && isVisible) {
+        ctx.clearRect(0, 0, canvas.offsetWidth, canvas.offsetHeight);
 
-      particles.forEach(p => {
-        p.x += p.speedX;
-        p.y += p.speedY;
+        particles.forEach(p => {
+          p.x += p.speedX;
+          p.y += p.speedY;
 
-        if (p.x < 0) p.x = canvas.offsetWidth;
-        if (p.x > canvas.offsetWidth) p.x = 0;
-        if (p.y < 0) p.y = canvas.offsetHeight;
-        if (p.y > canvas.offsetHeight) p.y = 0;
+          if (p.x < 0) p.x = canvas.offsetWidth;
+          if (p.x > canvas.offsetWidth) p.x = 0;
+          if (p.y < 0) p.y = canvas.offsetHeight;
+          if (p.y > canvas.offsetHeight) p.y = 0;
 
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue}, 85%, 70%, ${p.opacity})`;
-        ctx.fill();
-      });
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue}, 85%, 70%, ${p.opacity})`;
+          ctx.fill();
+        });
 
-      // Connection lines
-      for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 110) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(99, 102, 241, ${0.09 * (1 - dist / 110)})`;
-            ctx.lineWidth = 0.6;
-            ctx.stroke();
+        // Connection lines
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 90) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.strokeStyle = `rgba(99, 102, 241, ${0.08 * (1 - dist / 90)})`;
+              ctx.lineWidth = 0.6;
+              ctx.stroke();
+            }
           }
         }
       }
@@ -120,6 +128,7 @@ function HeroParticles() {
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', resize);
+      observer.disconnect();
     };
   }, []);
 
@@ -208,29 +217,29 @@ export default function HomePage() {
   const programsCount = festData?.stats?.programs ?? (festData?.schedule?.length || 0);
   const daysCount = festData?.stats?.days ?? (festData?.fest_settings?.dates?.length || 1);
 
-  // Group published results by program using recent_results from public stats
+  // Group published results by program using recent_results from public stats (latest published first)
   const groupedResults = React.useMemo(() => {
     const rawResults = (publishedResults && publishedResults.length > 0)
       ? publishedResults
       : (festData?.recent_results || []);
 
     if (!rawResults || rawResults.length === 0) return [];
-    const map = {};
+    const map = new Map();
     rawResults.forEach(r => {
       const pName = r.program_name || `Program #${r.program}`;
-      if (!map[pName]) {
-        map[pName] = {
+      if (!map.has(pName)) {
+        map.set(pName, {
           programId: r.program,
           programName: pName,
           categoryName: r.category_name || '',
           ranks: []
-        };
+        });
       }
-      map[pName].ranks.push(r);
+      map.get(pName).ranks.push(r);
     });
 
-    // Sort ranks inside each program & pick top 3 programs
-    return Object.values(map).map(p => ({
+    // Sort ranks inside each program & preserve latest program order
+    return Array.from(map.values()).map(p => ({
       ...p,
       ranks: p.ranks.sort((a, b) => a.rank - b.rank).slice(0, 3)
     })).slice(0, 3);

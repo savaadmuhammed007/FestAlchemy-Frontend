@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Award, Users, ClipboardList, Clock } from 'lucide-react';
+import { FileText, Award, Users, ClipboardList, Clock, Medal } from 'lucide-react';
 
 export default function ReportSelector({ onNavigate }) {
   return (
@@ -160,6 +160,43 @@ export default function ReportSelector({ onNavigate }) {
           <div>
             <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.2rem', fontFamily: 'var(--font-display)' }}>Team Standings</h4>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Overall scoreboards and standings</p>
+          </div>
+        </div>
+
+        {/* Top Performers Card */}
+        <div 
+          onClick={() => onNavigate('/admin/reports/performers')}
+          style={{
+            cursor: 'pointer',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            border: '1px solid var(--border-glass)',
+            background: 'var(--bg-glass)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.75rem',
+            textAlign: 'center',
+            transition: 'all 0.2s ease-in-out'
+          }}
+          className="report-card-hover"
+        >
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            background: 'rgba(255, 215, 0, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--gold)',
+            transition: 'background 0.2s'
+          }}>
+            <Medal size={20} />
+          </div>
+          <div>
+            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.2rem', fontFamily: 'var(--font-display)' }}>Top Performers</h4>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Individual leaderboard by category</p>
           </div>
         </div>
 

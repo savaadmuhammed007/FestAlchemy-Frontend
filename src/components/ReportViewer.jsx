@@ -77,6 +77,7 @@ export default function ReportViewer({ reportType, reportData }) {
            reportType === 'members' ? 'Registered Members Directory' : 
            reportType === 'marksheets' ? 'Marksheets Entry Log' : 
            reportType === 'teampoints' ? 'Overall Team Standings' : 
+           reportType === 'performers' ? 'Top Performers — Individual Leaderboard' : 
            reportType === 'schedule' ? (selectedStageFilter === 'ALL' ? 'Fest Schedule — All Venues' : `Fest Schedule — ${selectedStageFilter}`) : ''}
         </h4>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
@@ -258,6 +259,58 @@ export default function ReportViewer({ reportType, reportData }) {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {reportType === 'performers' && reportData.individual_leaderboard && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          {reportData.individual_leaderboard.map((catGroup) => (
+            <div key={catGroup.category_id || catGroup.category_name} style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              <h3 style={{ 
+                fontFamily: 'var(--font-display)', 
+                color: 'var(--gold)', 
+                borderBottom: '1px solid var(--border-glass)', 
+                paddingBottom: '0.4rem', 
+                marginBottom: '1rem',
+                fontSize: '1.2rem'
+              }}>
+                Category: {catGroup.category_name}
+              </h3>
+              
+              {catGroup.performers && catGroup.performers.length > 0 ? (
+                <div className="table-container">
+                  <table className="custom-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '60px' }}>Rank</th>
+                        <th>Chest No</th>
+                        <th>Participant Name</th>
+                        <th>Team</th>
+                        <th style={{ width: '110px' }}>Events Count</th>
+                        <th style={{ width: '110px' }}>Total Points</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {catGroup.performers.map((p, pIdx) => (
+                        <tr key={p.member_id}>
+                          <td style={{ fontWeight: 'bold' }}>#{pIdx + 1}</td>
+                          <td style={{ fontWeight: 'bold', color: 'var(--primary-neon)' }}>{p.chest_number || '—'}</td>
+                          <td style={{ fontWeight: 600 }}>{p.member_name}</td>
+                          <td>{p.team_name}</td>
+                          <td style={{ fontWeight: 600 }}>{p.events_count} event{p.events_count > 1 ? 's' : ''}</td>
+                          <td style={{ fontWeight: 'bold', color: 'var(--success-neon)' }}>{p.total_points} pts</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                  No published single event scores recorded for this category yet.
+                </p>
+              )}
+            </div>
+          ))}
         </div>
       )}
 

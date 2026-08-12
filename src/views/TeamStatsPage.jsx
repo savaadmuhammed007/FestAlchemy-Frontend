@@ -24,7 +24,11 @@ export default function TeamStatsPage() {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchData();
+      }
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
