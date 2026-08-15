@@ -157,7 +157,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/" replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/ilalhabeeb" replace />;
   return children;
 }
 
@@ -170,8 +170,8 @@ function Navbar() {
   const [showHomeNav, setShowHomeNav] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isHomePage = location.pathname === '/';
-  const isPublicPage = ['/', '/results', '/team-status'].includes(location.pathname);
+  const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
+  const isPublicPage = ['/', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
 
   // Detect scroll for showing navbar on home page only after reaching "Stage in Numbers"
   useEffect(() => {
@@ -222,22 +222,24 @@ function Navbar() {
   // Only show Results/Team Status on public pages
   const publicLinks = isPublicPage
     ? [
-        { to: '/', label: 'Home', exact: true },
+        { to: '/ilalhabeeb', label: 'Home', exact: true },
         { to: '/results', label: 'Results' },
         { to: '/team-status', label: 'Team Status' },
       ]
     : [
-        { to: '/', label: 'Home', exact: true },
+        { to: '/ilalhabeeb', label: 'Home', exact: true },
       ];
 
   const isActive = (link) => {
-    if (link.exact) return location.pathname === link.to;
+    if (link.to === '/ilalhabeeb' || link.to === '/') {
+      return location.pathname === '/' || location.pathname === '/ilalhabeeb';
+    }
     return location.pathname === link.to;
   };
 
   return (
     <nav className={navClass}>
-      <Link to="/" className="nav-brand">
+      <Link to="/ilalhabeeb" className="nav-brand">
         <img src="/logo.png" alt="FestAlchemy Logo" className="nav-brand-img" />
         <span className="gradient-text">FestAlchemy</span>
       </Link>
@@ -334,12 +336,15 @@ function Navbar() {
 // ── App Shell ─────────────────────────────────────────────────
 function AppContent() {
   const location = useLocation();
+  const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
+
   return (
     <div className="app-container">
       <Navbar />
-      <main className={`main-content ${location.pathname === '/' ? 'main-content--home' : ''}`}>
+      <main className={`main-content ${isHomePage ? 'main-content--home' : ''}`}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<Navigate to="/ilalhabeeb" replace />} />
+          <Route path="/ilalhabeeb" element={<HomePage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/team-status" element={<TeamStatsPage />} />
           <Route path="/login" element={<Login />} />
@@ -362,7 +367,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/ilalhabeeb" replace />} />
         </Routes>
       </main>
     </div>

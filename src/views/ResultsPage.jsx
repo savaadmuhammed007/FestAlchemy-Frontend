@@ -109,7 +109,7 @@ export default function ResultsPage() {
 
       {/* ─── Page Header ─── */}
       <div className="rs-page-header">
-        <Link to="/" className="rs-back-link">
+        <Link to="/ilalhabeeb" className="rs-back-link">
           <ArrowLeft size={18} />
           <span>Back to Home</span>
         </Link>

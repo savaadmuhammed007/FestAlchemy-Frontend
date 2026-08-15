@@ -66,7 +66,7 @@ export default function TeamStatsPage() {
 
       {/* ─── Page Header ─── */}
       <div className="ts-page-header">
-        <Link to="/" className="ts-back-link">
+        <Link to="/ilalhabeeb" className="ts-back-link">
           <ArrowLeft size={18} />
           <span>Back to Home</span>
         </Link>

@@ -566,7 +566,7 @@ export default function HomePage() {
             </div>
 
             <div className="home-footer-links">
-              <Link to="/">Home</Link>
+              <Link to="/ilalhabeeb">Home</Link>
               <Link to="/team-status">Team Standings</Link>
               <Link to="/results">Event Results</Link>
               <Link to="/login">Portal Login</Link>
