@@ -83,7 +83,7 @@
 .cinematic-scroll-track {
   position: relative;
   width: 100%;
-  height: 520vh; /* Generous scroll room for all 6 acts */
+  height: 300vh; /* Smooth scroll room for the 3 acts */
   background-color: var(--madinah-dark);
 }
 

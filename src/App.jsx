@@ -167,18 +167,45 @@ function Navbar() {
   const { theme, toggleTheme } = React.useContext(ThemeContext);
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const [showHomeNav, setShowHomeNav] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isHomePage = location.pathname === '/';
   const isPublicPage = ['/', '/results', '/team-status'].includes(location.pathname);
 
-  // Detect scroll for transparent → solid navbar on home page
+  // Detect scroll for showing navbar on home page only after reaching "Stage in Numbers"
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50);
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      setScrolled(scrollY > 50);
+
+      if (isHomePage) {
+        const targetSection = document.getElementById('stage-in-numbers') ||
+                              document.querySelector('.cinematic-live-section-wrapper') ||
+                              document.querySelector('.home-stats-section');
+        if (targetSection) {
+          const rect = targetSection.getBoundingClientRect();
+          // Reveal navbar when Stage in Numbers is within or above viewport top
+          setShowHomeNav(rect.top <= 100);
+        } else {
+          // Fallback based on track boundary
+          const track = document.querySelector('.cinematic-scroll-track');
+          if (track) {
+            const trackRect = track.getBoundingClientRect();
+            setShowHomeNav(trackRect.bottom <= 120);
+          } else {
+            setShowHomeNav(scrollY > window.innerHeight * 1.5);
+          }
+        }
+      } else {
+        setShowHomeNav(true);
+      }
+    };
+
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [isHomePage]);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -187,7 +214,7 @@ function Navbar() {
 
   const navClass = [
     'navbar',
-    isHomePage && !scrolled ? 'navbar--transparent' : '',
+    isHomePage ? (showHomeNav ? 'navbar--home-visible' : 'navbar--home-hidden') : '',
     scrolled ? 'navbar--scrolled' : '',
     mobileMenuOpen ? 'navbar--menu-open' : '',
   ].filter(Boolean).join(' ');

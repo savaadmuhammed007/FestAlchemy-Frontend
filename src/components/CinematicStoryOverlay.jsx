@@ -60,67 +60,40 @@ export default function CinematicStoryOverlay({
 }) {
   const navigate = useNavigate();
 
-  // Determine current active act index (1 to 6)
+  // Determine current active act index (1 to 3)
   let currentAct = 1;
-  if (scrollProgress >= 0.87) currentAct = 6;
-  else if (scrollProgress >= 0.71) currentAct = 5;
-  else if (scrollProgress >= 0.53) currentAct = 4;
-  else if (scrollProgress >= 0.35) currentAct = 3;
-  else if (scrollProgress >= 0.17) currentAct = 2;
+  if (scrollProgress >= 0.67) currentAct = 3;
+  else if (scrollProgress >= 0.33) currentAct = 2;
 
   const actsList = [
-    { num: 1, label: 'Intro', target: 0.03 },
-    { num: 2, label: 'Intercession', target: 0.25 },
-    { num: 3, label: 'Identity', target: 0.43 },
-    { num: 4, label: 'Meelad Fest', target: 0.61 },
-    { num: 5, label: 'Reveal', target: 0.78 },
-    { num: 6, label: 'Explore', target: 0.95 },
+    { num: 1, label: 'Intro', target: 0.05 },
+    { num: 2, label: 'Intercession', target: 0.50 },
+    { num: 3, label: 'Explore', target: 0.95 },
   ];
 
-  // ── ACT 1 PROGRESSIVE PIECES (0.00 to 0.16) ──
-  const isAct1Active = scrollProgress < 0.165;
-  const a1Badge = getItemStyle(scrollProgress, 0.0, 0.02, 0.13, 0.16);
-  const a1Title = getItemStyle(scrollProgress, 0.0, 0.03, 0.13, 0.16); // 1. First "ഇലൽ ഹബീബ്"
-  const a1Sub = getItemStyle(scrollProgress, 0.035, 0.07, 0.13, 0.16); // 2. Then "MEELAD FEST"
-  const a1Inst = getItemStyle(scrollProgress, 0.075, 0.115, 0.13, 0.16); // 3. Then "Smart Vacation Madrasa & Kanzul Ulama Centre"
-  const a1Prompt = getItemStyle(scrollProgress, 0.0, 0.02, 0.045, 0.065);
+  // ── ACT 1 PROGRESSIVE PIECES (0.00 to 0.33) ──
+  const isAct1Active = scrollProgress < 0.33;
+  const a1Badge = getItemStyle(scrollProgress, 0.0, 0.04, 0.27, 0.33);
+  const a1Title = getItemStyle(scrollProgress, 0.0, 0.06, 0.27, 0.33); // 1. First "ഇലൽ ഹബീബ്"
+  const a1Sub = getItemStyle(scrollProgress, 0.06, 0.13, 0.27, 0.33); // 2. Then "MEELAD FEST"
+  const a1Inst = getItemStyle(scrollProgress, 0.13, 0.20, 0.27, 0.33); // 3. Then "Smart Vacation Madrasa & Kanzul Ulama Centre"
+  const a1Prompt = getItemStyle(scrollProgress, 0.0, 0.04, 0.09, 0.13);
 
-  // ── ACT 2 PROGRESSIVE PIECES (0.17 to 0.34) ──
-  const isAct2Active = scrollProgress >= 0.165 && scrollProgress < 0.345;
-  const a2Badge = getItemStyle(scrollProgress, 0.17, 0.20, 0.31, 0.34);
-  const a2Heading = getItemStyle(scrollProgress, 0.18, 0.22, 0.31, 0.34); // "A Journey of Love"
-  const a2Desc = getItemStyle(scrollProgress, 0.22, 0.26, 0.31, 0.34); // Supporting copy
-  const a2Arabic = getItemStyle(scrollProgress, 0.25, 0.29, 0.31, 0.34); // Calligraphy
+  // ── ACT 2 PROGRESSIVE PIECES (0.33 to 0.67) ──
+  const isAct2Active = scrollProgress >= 0.33 && scrollProgress < 0.67;
+  const a2Badge = getItemStyle(scrollProgress, 0.33, 0.39, 0.60, 0.67);
+  const a2Heading = getItemStyle(scrollProgress, 0.35, 0.43, 0.60, 0.67); // "A Journey of Love"
+  const a2Desc = getItemStyle(scrollProgress, 0.42, 0.50, 0.60, 0.67); // Supporting copy
+  const a2Arabic = getItemStyle(scrollProgress, 0.48, 0.56, 0.60, 0.67); // Calligraphy
 
-  // ── ACT 3 PROGRESSIVE PIECES (0.35 to 0.52) ──
-  const isAct3Active = scrollProgress >= 0.345 && scrollProgress < 0.525;
-  const a3Eyebrow = getItemStyle(scrollProgress, 0.35, 0.38, 0.49, 0.52);
-  const a3Title = getItemStyle(scrollProgress, 0.36, 0.40, 0.49, 0.52); // "ഇലൽ ഹബീബ്"
-  const a3Sub = getItemStyle(scrollProgress, 0.40, 0.44, 0.49, 0.52); // "Towards the Beloved"
-  const a3Copy = getItemStyle(scrollProgress, 0.43, 0.47, 0.49, 0.52); // Supporting copy
-  const a3Pill = getItemStyle(scrollProgress, 0.46, 0.49, 0.49, 0.52);
-
-  // ── ACT 4 PROGRESSIVE PIECES (0.53 to 0.70) ──
-  const isAct4Active = scrollProgress >= 0.525 && scrollProgress < 0.705;
-  const a4Badge = getItemStyle(scrollProgress, 0.53, 0.56, 0.67, 0.70);
-  const a4Heading = getItemStyle(scrollProgress, 0.54, 0.58, 0.67, 0.70); // "MEELAD FEST"
-  const a4Box = getItemStyle(scrollProgress, 0.58, 0.62, 0.67, 0.70); // "Smart Vacation Madrasa"
-  const a4Tags = getItemStyle(scrollProgress, 0.62, 0.66, 0.67, 0.70); // Identity chips
-
-  // ── ACT 5 PROGRESSIVE PIECES (0.71 to 0.86) ──
-  const isAct5Active = scrollProgress >= 0.705 && scrollProgress < 0.865;
-  const a5Brand = getItemStyle(scrollProgress, 0.71, 0.75, 0.83, 0.86); // "ഇലൽ ഹബീബ്"
-  const a5Sub = getItemStyle(scrollProgress, 0.75, 0.79, 0.83, 0.86); // "MEELAD FEST"
-  const a5Quote = getItemStyle(scrollProgress, 0.79, 0.83, 0.83, 0.86); // "A celebration of love for the Beloved ﷺ"
-
-  // ── ACT 6 PROGRESSIVE PIECES (0.87 to 1.00) ──
-  const isAct6Active = scrollProgress >= 0.865;
-  const a6Badge = getItemStyle(scrollProgress, 0.87, 0.90, 1.05, 1.05);
-  const a6Title = getItemStyle(scrollProgress, 0.88, 0.91, 1.05, 1.05); // "ഇലൽ ഹബീബ്"
-  const a6Sub = getItemStyle(scrollProgress, 0.90, 0.93, 1.05, 1.05);
-  const a6Inst = getItemStyle(scrollProgress, 0.92, 0.95, 1.05, 1.05);
-  const a6Buttons = getItemStyle(scrollProgress, 0.94, 0.97, 1.05, 1.05);
-  const a6Hint = getItemStyle(scrollProgress, 0.96, 0.99, 1.05, 1.05);
+  // ── ACT 3 PROGRESSIVE PIECES (0.67 to 1.00) ──
+  const isAct3Active = scrollProgress >= 0.67;
+  const a3Badge = getItemStyle(scrollProgress, 0.67, 0.73, 1.05, 1.05);
+  const a3Title = getItemStyle(scrollProgress, 0.70, 0.76, 1.05, 1.05); // "ഇലൽ ഹബീബ്"
+  const a3Sub = getItemStyle(scrollProgress, 0.74, 0.80, 1.05, 1.05);
+  const a3Inst = getItemStyle(scrollProgress, 0.78, 0.84, 1.05, 1.05);
+  const a3Buttons = getItemStyle(scrollProgress, 0.82, 0.89, 1.05, 1.05);
+  const a3Hint = getItemStyle(scrollProgress, 0.87, 0.94, 1.05, 1.05);
 
   return (
     <div className="cinematic-overlay-container">
@@ -128,7 +101,7 @@ export default function CinematicStoryOverlay({
       <div className="cinematic-side-stepper">
         <div className="cinematic-stepper-header">
           <span className="cinematic-stepper-brand cinematic-font-malayalam">ഇലൽ ഹബീബ്</span>
-          <span className="cinematic-stepper-act">ACT {currentAct}/6</span>
+          <span className="cinematic-stepper-act">ACT {currentAct}/3</span>
         </div>
         <div className="cinematic-stepper-track">
           {actsList.map((act) => {
@@ -149,7 +122,7 @@ export default function CinematicStoryOverlay({
         </div>
       </div>
 
-      {/* ── ACT 1: PROGRESSIVE INTRODUCTION (0.00 - 0.16) ── */}
+      {/* ── ACT 1: PROGRESSIVE INTRODUCTION (0.00 - 0.33) ── */}
       <div
         className="cinematic-story-card cinematic-story-card--center"
         style={{ display: isAct1Active ? 'flex' : 'none' }}
@@ -184,7 +157,7 @@ export default function CinematicStoryOverlay({
         <div
           className="cinematic-scroll-prompt"
           style={a1Prompt}
-          onClick={() => onJumpToProgress && onJumpToProgress(0.25)}
+          onClick={() => onJumpToProgress && onJumpToProgress(0.50)}
           role="button"
           tabIndex={0}
         >
@@ -193,7 +166,7 @@ export default function CinematicStoryOverlay({
         </div>
       </div>
 
-      {/* ── ACT 2: THE HOPE OF INTERCESSION (0.17 - 0.34) ── */}
+      {/* ── ACT 2: THE HOPE OF INTERCESSION (0.33 - 0.67) ── */}
       <div
         className="cinematic-story-card cinematic-story-card--left"
         style={{ display: isAct2Active ? 'flex' : 'none' }}
@@ -215,96 +188,32 @@ export default function CinematicStoryOverlay({
         </div>
       </div>
 
-      {/* ── ACT 3: ILAL HABEEB IDENTITY (0.35 - 0.52) ── */}
-      <div
-        className="cinematic-story-card cinematic-story-card--center-editorial"
-        style={{ display: isAct3Active ? 'flex' : 'none' }}
-      >
-        <span className="cinematic-eyebrow" style={a3Eyebrow}>THE THEME</span>
-        <h2
-          className="cinematic-title--malayalam-2line"
-          style={{ ...a3Title, fontSize: 'clamp(2.8rem, 7.5vw, 6.2rem)' }}
-        >
-          <span className="cinematic-malayalam-word">ഇലൽ</span>
-          <span className="cinematic-malayalam-word">ഹബീബ്</span>
-        </h2>
-        <div className="cinematic-translation-tag" style={a3Sub}>Towards the Beloved</div>
-        <p className="cinematic-identity-copy" style={a3Copy}>
-          An immersive Meelad celebration inspired by love, remembrance and the timeless connection to the Messenger of Allah ﷺ.
-        </p>
-        <div className="cinematic-decor-pill" style={a3Pill}>
-          <span>Peace & Blessings Upon the Final Messenger</span>
-        </div>
-      </div>
-
-      {/* ── ACT 4: THE MEELAD FEST (0.53 - 0.70) ── */}
-      <div
-        className="cinematic-story-card cinematic-story-card--right"
-        style={{ display: isAct4Active ? 'flex' : 'none' }}
-      >
-        <div className="cinematic-badge" style={a4Badge}>
-          <Trophy size={14} className="cinematic-badge-icon" />
-          <span>OFFICIAL EVENT FEST</span>
-        </div>
-        <h2 className="cinematic-heading-editorial" style={a4Heading}>
-          MEELAD<br />
-          <span className="cinematic-gold-gradient">FEST</span>
-        </h2>
-        <div className="cinematic-institution-box" style={a4Box}>
-          <div className="cinematic-inst-title">Smart Vacation Madrasa</div>
-          <div className="cinematic-inst-subtitle">Kanzul Ulama Cultural Centre, Kannapuram</div>
-        </div>
-        <div className="cinematic-tags-group" style={a4Tags}>
-          <span className="cinematic-chip cinematic-font-malayalam">ഇലൽ ഹബീബ്</span>
-          <span className="cinematic-chip">MEELAD CELEBRATION</span>
-          <span className="cinematic-chip">SMART VACATION MADRASA</span>
-        </div>
-      </div>
-
-      {/* ── ACT 5: THE REVEAL (0.71 - 0.86) ── */}
-      <div
-        className="cinematic-story-card cinematic-story-card--reveal"
-        style={{ display: isAct5Active ? 'flex' : 'none' }}
-      >
-        <h1
-          className="cinematic-title--malayalam-2line"
-          style={a5Brand}
-        >
-          <span className="cinematic-malayalam-word">ഇലൽ</span>
-          <span className="cinematic-malayalam-word">ഹബീബ്</span>
-        </h1>
-        <h2 className="cinematic-reveal-sub" style={a5Sub}>MEELAD FEST</h2>
-        <div className="cinematic-reveal-quote" style={a5Quote}>
-          “A celebration of love for the Beloved ﷺ”
-        </div>
-      </div>
-
-      {/* ── ACT 6: FINAL CLIMAX & CTA (0.87 - 1.00) ── */}
+      {/* ── ACT 3: FINAL CLIMAX & CTA (0.67 - 1.00) ── */}
       <div
         className="cinematic-story-card cinematic-story-card--cta"
-        style={{ display: isAct6Active ? 'flex' : 'none' }}
+        style={{ display: isAct3Active ? 'flex' : 'none' }}
       >
         <div className="cinematic-cta-card-inner">
-          <div className="cinematic-badge cinematic-badge--glow" style={a6Badge}>
+          <div className="cinematic-badge cinematic-badge--glow" style={a3Badge}>
             <Sparkles size={14} className="cinematic-badge-icon" />
             <span>KANZUL ULAMA CULTURAL CENTRE</span>
           </div>
 
           <h2
             className="cinematic-title--malayalam-2line"
-            style={{ ...a6Title, fontSize: 'clamp(2.4rem, 5.5vw, 4.4rem)', margin: '0.2rem 0 0.6rem' }}
+            style={{ ...a3Title, fontSize: 'clamp(2.4rem, 5.5vw, 4.4rem)', margin: '0.2rem 0 0.6rem' }}
           >
             <span className="cinematic-malayalam-word">ഇലൽ</span>
             <span className="cinematic-malayalam-word">ഹബീബ്</span>
           </h2>
-          <div className="cinematic-cta-subtitle" style={a6Sub}>MEELAD FESTIVAL</div>
+          <div className="cinematic-cta-subtitle" style={a3Sub}>MEELAD FESTIVAL</div>
 
-          <p className="cinematic-cta-inst" style={a6Inst}>
+          <p className="cinematic-cta-inst" style={a3Inst}>
             Smart Vacation Madrasa • Kannapuram
           </p>
 
           {/* Luxury Action Buttons */}
-          <div className="cinematic-cta-buttons" style={a6Buttons}>
+          <div className="cinematic-cta-buttons" style={a3Buttons}>
             <button
               onClick={() => navigate('/results')}
               className="cinematic-btn cinematic-btn--primary"
@@ -331,7 +240,7 @@ export default function CinematicStoryOverlay({
           {/* Quick jump to live scoreboard */}
           <div
             className="cinematic-live-hint"
-            style={a6Hint}
+            style={a3Hint}
             onClick={onScrollToLive}
             role="button"
             tabIndex={0}

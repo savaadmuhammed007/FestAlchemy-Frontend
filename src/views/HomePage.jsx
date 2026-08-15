@@ -202,7 +202,7 @@ export default function HomePage() {
             className="cinematic-sequence-view"
           />
 
-          {/* 6-Phase Scroll Story Overlay */}
+          {/* 3-Phase Scroll Story Overlay */}
           <CinematicStoryOverlay
             scrollProgress={scrollProgress}
             onScrollToLive={handleScrollToLive}
@@ -214,7 +214,7 @@ export default function HomePage() {
       {/* ─────────────────────────────────────────────────────────────
           2. LIVE FEST IMPACT METRICS ("Grand Stage in Numbers")
       ───────────────────────────────────────────────────────────── */}
-      <div ref={liveSectionRef} className="cinematic-live-section-wrapper">
+      <div ref={liveSectionRef} id="stage-in-numbers" className="cinematic-live-section-wrapper">
         <section className="home-stats-section" ref={statsRef}>
           <div className="home-container">
             <div className="home-section-header text-center home-stats-header">
@@ -575,10 +575,10 @@ export default function HomePage() {
 
           <div className="home-footer-bottom">
             <p>
-              © {new Date().getFullYear()} Ilal Habeeb Meelad Fest — Smart Vacation Madrasa.
+              © {new Date().getFullYear()} FestAlchemy
             </p>
             <p className="home-footer-sub">
-              Organized by <strong>Kanzul Ulama Cultural Centre, Kannapuram</strong>
+              Managed by <strong>FestAlchemy</strong>
             </p>
           </div>
         </footer>

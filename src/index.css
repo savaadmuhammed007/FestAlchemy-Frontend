@@ -1628,27 +1628,36 @@ div.desktop-only, span.desktop-only {
   max-width: 100% !important;
 }
 
-/* Transparent navbar on home page */
-.navbar--transparent {
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border-bottom-color: transparent !important;
-  box-shadow: none !important;
-  position: absolute;
+/* Home page navbar handling: hidden during cinematic story intro, reveals at 'Stage in Numbers' section */
+.navbar--home-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateY(-100%) !important;
+  position: fixed !important;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 100 !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease, visibility 0.4s ease !important;
 }
 
-/* When scrolled on home page, restore solid bg */
-.navbar--transparent.navbar--scrolled {
+.navbar--home-visible {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateY(0) !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
   background: color-mix(in srgb, var(--bg-raised) 92%, transparent) !important;
   backdrop-filter: blur(16px) saturate(1.4) !important;
   -webkit-backdrop-filter: blur(16px) saturate(1.4) !important;
-  border-bottom-color: rgba(99, 102, 241, 0.12) !important;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.25) !important;
+  border-bottom: 1px solid rgba(230, 200, 135, 0.22) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  z-index: 100 !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease !important;
 }
 
 .home-page {
