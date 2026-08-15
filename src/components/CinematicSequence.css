@@ -1,0 +1,872 @@
+/* ─────────────────────────────────────────────────────────────
+   CINEMATIC SCROLL EXPERIENCE & IMAGE-SEQUENCE SYSTEM
+   "Ilal Habeeb — Meelad Fest"
+───────────────────────────────────────────────────────────── */
+
+/* Google Fonts Import for editorial luxury typography */
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400;600;700;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+
+/* Custom Malayalam Font: TA-Vaaka */
+@font-face {
+  font-family: 'TA-Vaaka';
+  src: url('/fonts/TA-Vaaka.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --madinah-dark: #0c080b;
+  --madinah-dark-overlay: rgba(12, 8, 11, 0.72);
+  --madinah-gold-light: #fae8c8;
+  --madinah-gold: #e6c887;
+  --madinah-gold-deep: #c49746;
+  --madinah-gold-glow: rgba(230, 200, 135, 0.28);
+  --madinah-font-arabic: 'Amiri', serif;
+  --madinah-font-cinzel: 'Cinzel', serif;
+  --madinah-font-editorial: 'Playfair Display', serif;
+  --madinah-font-modern: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  --madinah-font-malayalam: 'TA-Vaaka', 'Cinzel', sans-serif;
+}
+
+/* Malayalam Typography Utilities */
+.cinematic-title--malayalam {
+  font-family: var(--madinah-font-malayalam) !important;
+  letter-spacing: 0.03em !important;
+  text-transform: none !important;
+  line-height: 1.25 !important;
+  padding-bottom: 0.15em;
+}
+
+.cinematic-title--malayalam-2line {
+  font-family: var(--madinah-font-malayalam) !important;
+  font-size: clamp(3.8rem, 11vw, 9.2rem) !important;
+  font-weight: 700 !important;
+  line-height: 0.98 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.2rem !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fae8c8 45%, #d4af37 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0 8px 36px rgba(0, 0, 0, 0.95)) !important;
+  margin: 0.4rem 0 1.2rem !important;
+}
+
+.cinematic-malayalam-word {
+  display: block;
+  line-height: 0.98;
+}
+
+.cinematic-font-malayalam {
+  font-family: var(--madinah-font-malayalam) !important;
+  letter-spacing: 0.03em !important;
+  text-transform: none !important;
+}
+
+/* Base page container */
+.cinematic-home-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--madinah-dark);
+  color: #ffffff;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   1. PINNED SCROLL TRACK & CANVAS STAGE
+───────────────────────────────────────────────────────────── */
+.cinematic-scroll-track {
+  position: relative;
+  width: 100%;
+  height: 520vh; /* Generous scroll room for all 6 acts */
+  background-color: var(--madinah-dark);
+}
+
+.cinematic-sticky-stage {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--madinah-dark);
+  z-index: 10;
+}
+
+/* Canvas Wrapper */
+.cinematic-canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.cinematic-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* Semi-transparent dark overlay for softened image intensity and crisp text clarity */
+.cinematic-dark-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, rgba(12, 8, 11, 0.42) 0%, rgba(12, 8, 11, 0.62) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Atmospheric vignette / blend overlays */
+.cinematic-edge-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.cinematic-edge-overlay--top {
+  top: 0;
+  height: 140px;
+  background: linear-gradient(to bottom, rgba(12, 8, 11, 0.85) 0%, rgba(12, 8, 11, 0) 100%);
+}
+
+.cinematic-edge-overlay--bottom {
+  bottom: 0;
+  height: 220px;
+  background: linear-gradient(to top, var(--madinah-dark) 0%, rgba(12, 8, 11, 0.6) 50%, rgba(12, 8, 11, 0) 100%);
+}
+
+/* Subtle sequence preloader progress line */
+.cinematic-loader-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2.5px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.cinematic-loader-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #c49746, #fae8c8, #e6c887);
+  box-shadow: 0 0 10px rgba(230, 200, 135, 0.8);
+  transition: width 0.2s ease-out;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. STORYTELLING OVERLAYS & TYPOGRAPHY PHASES
+───────────────────────────────────────────────────────────── */
+.cinematic-overlay-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ── Interactive Side Stepper ── */
+.cinematic-side-stepper {
+  position: absolute;
+  right: 2.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 30;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .cinematic-side-stepper {
+    display: none;
+  }
+}
+
+.cinematic-stepper-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+.cinematic-stepper-brand {
+  font-family: var(--madinah-font-cinzel);
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.cinematic-stepper-act {
+  font-family: var(--madinah-font-modern);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--madinah-gold);
+  letter-spacing: 0.1em;
+}
+
+.cinematic-stepper-track {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.cinematic-stepper-dot {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.25s ease;
+  outline: none;
+}
+
+.cinematic-stepper-dot:hover {
+  color: #ffffff;
+}
+
+.cinematic-dot-pill {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: all 0.25s ease;
+}
+
+.cinematic-stepper-dot--active .cinematic-dot-pill {
+  width: 8px;
+  height: 22px;
+  background: var(--madinah-gold);
+  box-shadow: 0 0 12px rgba(230, 200, 135, 0.8);
+}
+
+.cinematic-dot-label {
+  font-family: var(--madinah-font-modern);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transform: translateX(6px);
+  transition: all 0.2s ease;
+}
+
+.cinematic-stepper-dot:hover .cinematic-dot-label,
+.cinematic-stepper-dot--active .cinematic-dot-label {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--madinah-gold-light);
+  font-weight: 600;
+}
+
+/* Story Cards layout */
+.cinematic-story-card {
+  position: absolute;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  padding: 1.5rem;
+}
+
+/* Smooth progressive animations for all sub-elements */
+.cinematic-title--hero,
+.cinematic-subtitle-wrapper,
+.cinematic-institution-info,
+.cinematic-scroll-prompt,
+.cinematic-badge,
+.cinematic-heading-editorial,
+.cinematic-description-editorial,
+.cinematic-arabic-calligraphy,
+.cinematic-eyebrow,
+.cinematic-identity-title,
+.cinematic-translation-tag,
+.cinematic-identity-copy,
+.cinematic-decor-pill,
+.cinematic-institution-box,
+.cinematic-tags-group,
+.cinematic-reveal-brand,
+.cinematic-reveal-sub,
+.cinematic-reveal-quote,
+.cinematic-cta-title,
+.cinematic-cta-subtitle,
+.cinematic-cta-inst,
+.cinematic-cta-buttons,
+.cinematic-live-hint {
+  will-change: opacity, transform, filter;
+  transition: opacity 0.15s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), filter 0.15s ease;
+}
+
+/* Badge */
+.cinematic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 1.1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(230, 200, 135, 0.28);
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--madinah-gold-light);
+  font-family: var(--madinah-font-modern);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.cinematic-badge--glow {
+  background: rgba(230, 200, 135, 0.1);
+  border-color: rgba(230, 200, 135, 0.45);
+  box-shadow: 0 0 25px rgba(230, 200, 135, 0.2);
+}
+
+.cinematic-badge-icon {
+  color: var(--madinah-gold);
+}
+
+/* ── Phase 1: Hero Typography ── */
+.cinematic-title--hero {
+  font-family: var(--madinah-font-cinzel);
+  font-size: clamp(2.8rem, 7.5vw, 6.5rem);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0;
+  line-height: 1.05;
+  background: linear-gradient(180deg, #ffffff 0%, #fae8c8 45%, #d4af37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 4px 24px rgba(0, 0, 0, 0.8));
+}
+
+.cinematic-subtitle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.cinematic-gold-line {
+  width: 40px;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--madinah-gold), transparent);
+}
+
+.cinematic-subtitle {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(1.1rem, 2.8vw, 1.8rem);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  color: var(--madinah-gold-light);
+  text-transform: uppercase;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.cinematic-institution-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cinematic-madrasa-name {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.cinematic-centre-name {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.cinematic-scroll-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 2.5rem;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.cinematic-scroll-prompt:hover {
+  color: var(--madinah-gold-light);
+}
+
+.cinematic-scroll-text {
+  font-size: 0.76rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: var(--madinah-font-modern);
+  font-weight: 500;
+}
+
+.cinematic-scroll-icon {
+  animation: floatDown 2s ease-in-out infinite;
+  color: var(--madinah-gold);
+}
+
+@keyframes floatDown {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(7px);
+    opacity: 1;
+  }
+}
+
+/* ── Phase 2: Spiritual Journey (Editorial Left-aligned) ── */
+.cinematic-story-card--left {
+  align-items: flex-start;
+  text-align: left;
+  left: 6%;
+  max-width: 580px;
+}
+
+@media (max-width: 768px) {
+  .cinematic-story-card--left {
+    left: auto;
+    align-items: center;
+    text-align: center;
+    max-width: 90%;
+  }
+}
+
+.cinematic-heading-editorial {
+  font-family: var(--madinah-font-editorial);
+  font-size: clamp(2.4rem, 5.5vw, 4.2rem);
+  font-weight: 600;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0 0 1rem;
+  filter: drop-shadow(0 2px 14px rgba(0, 0, 0, 0.8));
+}
+
+.cinematic-gold-italic {
+  font-style: italic;
+  background: linear-gradient(135deg, #fae8c8, #e6c887, #c49746);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cinematic-gold-gradient {
+  background: linear-gradient(135deg, #fae8c8 0%, #e6c887 50%, #c49746 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cinematic-description-editorial {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 1.5rem;
+  max-width: 520px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.cinematic-arabic-calligraphy {
+  font-family: var(--madinah-font-arabic);
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  color: var(--madinah-gold-light);
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+  text-shadow: 0 0 20px rgba(230, 200, 135, 0.35);
+  direction: rtl;
+}
+
+/* ── Phase 3: Ilal Habeeb Identity ── */
+.cinematic-story-card--center-editorial {
+  max-width: 780px;
+}
+
+.cinematic-eyebrow {
+  font-family: var(--madinah-font-modern);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  color: var(--madinah-gold);
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.cinematic-identity-title {
+  font-family: var(--madinah-font-cinzel);
+  font-size: clamp(2.6rem, 6vw, 5.2rem);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #ffffff;
+  margin: 0 0 0.4rem;
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+}
+
+.cinematic-translation-tag {
+  font-family: var(--madinah-font-editorial);
+  font-style: italic;
+  font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+  color: var(--madinah-gold-light);
+  margin-bottom: 1.25rem;
+}
+
+.cinematic-identity-copy {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(0.95rem, 1.6vw, 1.2rem);
+  font-weight: 400;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 650px;
+  margin: 0 auto 1.5rem;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.cinematic-decor-pill {
+  padding: 0.45rem 1.3rem;
+  background: rgba(12, 8, 11, 0.6);
+  border: 1px solid rgba(230, 200, 135, 0.25);
+  border-radius: 9999px;
+  backdrop-filter: blur(10px);
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Phase 4: The Meelad Fest (Right-aligned) ── */
+.cinematic-story-card--right {
+  align-items: flex-end;
+  text-align: right;
+  right: 6%;
+  max-width: 580px;
+}
+
+@media (max-width: 768px) {
+  .cinematic-story-card--right {
+    right: auto;
+    align-items: center;
+    text-align: center;
+    max-width: 90%;
+  }
+}
+
+.cinematic-institution-box {
+  margin: 0.75rem 0 1.25rem;
+  padding: 0.8rem 1.4rem;
+  background: rgba(12, 8, 11, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+}
+
+.cinematic-inst-title {
+  font-family: var(--madinah-font-modern);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+}
+
+.cinematic-inst-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.cinematic-tags-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .cinematic-tags-group {
+    justify-content: center;
+  }
+}
+
+.cinematic-chip {
+  padding: 0.35rem 0.85rem;
+  background: rgba(230, 200, 135, 0.08);
+  border: 1px solid rgba(230, 200, 135, 0.2);
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--madinah-gold-light);
+}
+
+/* ── Phase 5: The Reveal (Serene Emotional Peak) ── */
+.cinematic-story-card--reveal {
+  max-width: 850px;
+}
+
+.cinematic-reveal-brand {
+  font-family: var(--madinah-font-cinzel);
+  font-size: clamp(3rem, 8vw, 6.8rem);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9);
+}
+
+.cinematic-reveal-sub {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(1.2rem, 3vw, 2.2rem);
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: var(--madinah-gold);
+  margin: 0.75rem 0 1.5rem;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.8);
+}
+
+.cinematic-reveal-quote {
+  font-family: var(--madinah-font-editorial);
+  font-style: italic;
+  font-size: clamp(1.15rem, 2.2vw, 1.7rem);
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.03em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+/* ── Phase 6: Climax & CTA Hub ── */
+.cinematic-story-card--cta {
+  max-width: 720px;
+}
+
+.cinematic-cta-card-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.2rem 2.8rem;
+  background: rgba(16, 11, 15, 0.65);
+  border: 1px solid rgba(230, 200, 135, 0.22);
+  border-radius: 24px;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .cinematic-cta-card-inner {
+    padding: 1.5rem 1.2rem;
+  }
+}
+
+.cinematic-cta-title {
+  font-family: var(--madinah-font-cinzel);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #ffffff;
+  margin: 0;
+  line-height: 1.05;
+}
+
+.cinematic-cta-subtitle {
+  font-family: var(--madinah-font-modern);
+  font-size: clamp(0.95rem, 2vw, 1.35rem);
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--madinah-gold);
+  margin: 0.35rem 0 0.6rem;
+}
+
+.cinematic-cta-inst {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 1.8rem;
+  letter-spacing: 0.05em;
+}
+
+/* Luxury Action Buttons */
+.cinematic-cta-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.cinematic-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1.8rem;
+  border-radius: 12px;
+  font-family: var(--madinah-font-modern);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+  min-width: 200px;
+}
+
+.cinematic-btn--primary {
+  background: linear-gradient(135deg, #fae8c8 0%, #e6c887 50%, #c49746 100%);
+  color: #0c080b;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 4px 20px rgba(230, 200, 135, 0.35);
+}
+
+.cinematic-btn--primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px rgba(230, 200, 135, 0.55);
+  background: linear-gradient(135deg, #ffffff 0%, #fae8c8 50%, #e6c887 100%);
+}
+
+.cinematic-btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.cinematic-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(230, 200, 135, 0.4);
+  transform: translateY(-2px) scale(1.02);
+  color: var(--madinah-gold-light);
+}
+
+.cinematic-live-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1.4rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  user-select: none;
+}
+
+.cinematic-live-hint:hover {
+  color: var(--madinah-gold-light);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. INTEGRATED LIVE SECTIONS & ATMOSPHERIC STYLING
+───────────────────────────────────────────────────────────── */
+.cinematic-live-section-wrapper {
+  position: relative;
+  width: 100%;
+  background: radial-gradient(circle at 50% 0%, #1c131a 0%, var(--madinah-dark) 55%);
+  z-index: 20;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(230, 200, 135, 0.12);
+}
+
+/* Elevated Live Stats & Podium overrides */
+.cinematic-live-section-wrapper .home-section-title {
+  color: #ffffff;
+  font-family: var(--madinah-font-cinzel);
+  letter-spacing: 0.04em;
+}
+
+.cinematic-live-section-wrapper .home-section-subtitle {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.cinematic-live-section-wrapper .home-stat-card {
+  background: rgba(24, 16, 22, 0.7);
+  border: 1px solid rgba(230, 200, 135, 0.15);
+  backdrop-filter: blur(16px);
+}
+
+.cinematic-live-section-wrapper .home-stat-card:hover {
+  border-color: rgba(230, 200, 135, 0.35);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 0 20px rgba(230, 200, 135, 0.1);
+}
+
+.cinematic-live-section-wrapper .home-podium-card--1st {
+  background: linear-gradient(180deg, rgba(38, 26, 35, 0.9) 0%, rgba(20, 14, 19, 0.95) 100%);
+  border: 1.5px solid rgba(230, 200, 135, 0.45);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.6), 0 0 30px rgba(230, 200, 135, 0.15);
+}
+
+.cinematic-live-section-wrapper .home-result-card {
+  background: rgba(24, 16, 22, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.cinematic-live-section-wrapper .home-result-card:hover {
+  border-color: rgba(230, 200, 135, 0.35);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+
+.cinematic-live-section-wrapper .home-redirect-btn--team,
+.cinematic-live-section-wrapper .home-redirect-btn--results {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(230, 200, 135, 0.25);
+  color: var(--madinah-gold-light);
+}
+
+.cinematic-live-section-wrapper .home-redirect-btn--team:hover,
+.cinematic-live-section-wrapper .home-redirect-btn--results:hover {
+  background: rgba(230, 200, 135, 0.12);
+  border-color: rgba(230, 200, 135, 0.5);
+  box-shadow: 0 4px 20px rgba(230, 200, 135, 0.2);
+}
+
+/* Footer styling */
+.cinematic-footer {
+  background: #080507;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cinematic-footer-glow-icon {
+  margin-right: 0.5rem;
+  font-size: 1.1rem;
+}
