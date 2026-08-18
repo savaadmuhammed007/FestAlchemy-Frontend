@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, Trash, Users } from 'lucide-react';
+import { Search, Filter, Trash, Users, RefreshCw } from 'lucide-react';
 
 export default function MembersDirectory({
   filteredMembers,
@@ -11,7 +11,8 @@ export default function MembersDirectory({
   setMemberFilterCategory,
   teams,
   categories,
-  onDelete
+  onDelete,
+  onRefresh
 }) {
   return (
     <div className="glass-panel">
@@ -19,9 +20,21 @@ export default function MembersDirectory({
         <h3 style={{ fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Users size={20} /> Registered Members Directory
         </h3>
-        <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-          Total Listed: <strong>{filteredMembers.length}</strong>
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Total Listed: <strong>{filteredMembers.length}</strong>
+          </span>
+          {onRefresh && (
+            <button 
+              onClick={onRefresh} 
+              className="btn btn-secondary" 
+              title="Refresh Members"
+              style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <RefreshCw size={13} /> Refresh
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filters row */}
@@ -90,12 +103,20 @@ export default function MembersDirectory({
                 <td><span className="tag tag-primary">{m.category_name}</span></td>
                 <td>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                    {m.registered_programs_details.map(p => (
-                      <span key={p.id} className="tag tag-success" style={{ fontSize: '0.7rem' }}>{p.name}</span>
-                    ))}
-                    {m.registered_programs_details.length === 0 && (
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No registrations</span>
-                    )}
+                    {(() => {
+                      const progList = m.registered_programs_details || m.programs || [];
+                      if (!progList || progList.length === 0) {
+                        return <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No registrations</span>;
+                      }
+                      return progList.map((p, idx) => {
+                        const progName = typeof p === 'string' ? p : (p?.name || `Program #${p?.id || p}`);
+                        return (
+                          <span key={p?.id || idx} className="tag tag-success" style={{ fontSize: '0.7rem' }}>
+                            {progName}
+                          </span>
+                        );
+                      });
+                    })()}
                   </div>
                 </td>
                 <td style={{ textAlign: 'right' }}>

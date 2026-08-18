@@ -48,7 +48,9 @@ export default function MemberRegistry({
   const handleOpenEdit = (member) => {
     setSelectedMember(member);
     // Preset pre-existing registrations
-    const programIds = member.registered_programs_details?.map(p => p.id) || [];
+    const programIds = member.registered_programs_details?.map(p => p.id) || 
+                       (Array.isArray(member.registered_programs) && member.registered_programs.length > 0 && typeof member.registered_programs[0] === 'number' ? member.registered_programs : member.registered_programs?.map(p => p.id)) || 
+                       member.programs?.map(p => p.id) || [];
     setSelectedPrograms(programIds);
     setErrorMsg('');
     setSuccessMsg('');
@@ -406,12 +408,20 @@ export default function MemberRegistry({
                     <td><span className="tag tag-primary">{m.category_name}</span></td>
                     <td>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                        {m.registered_programs_details?.map(p => (
-                          <span key={p.id} className="tag tag-success" style={{ fontSize: '0.7rem' }}>{p.name}</span>
-                        )) || []}
-                        {(!m.registered_programs_details || m.registered_programs_details.length === 0) && (
-                          <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No registrations</span>
-                        )}
+                        {(() => {
+                          const progList = m.registered_programs_details || m.programs || [];
+                          if (!progList || progList.length === 0) {
+                            return <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>No registrations</span>;
+                          }
+                          return progList.map((p, idx) => {
+                            const progName = typeof p === 'string' ? p : (p?.name || `Program #${p?.id || p}`);
+                            return (
+                              <span key={p?.id || idx} className="tag tag-success" style={{ fontSize: '0.7rem' }}>
+                                {progName}
+                              </span>
+                            );
+                          });
+                        })()}
                       </div>
                     </td>
                     <td style={{ textAlign: 'right' }}>

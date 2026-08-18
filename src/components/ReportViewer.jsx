@@ -191,20 +191,42 @@ export default function ReportViewer({ reportType, reportData }) {
               </tr>
             </thead>
             <tbody>
-              {reportData.members.map((m, idx) => (
-                <tr key={m.id}>
-                  <td>{idx + 1}</td>
-                  <td style={{ fontWeight: 'bold', color: 'var(--primary-neon)' }}>{m.chest_number}</td>
-                  <td style={{ fontWeight: 600 }}>{m.name}</td>
-                  <td>{m.team_name}</td>
-                  <td><span className="tag tag-primary">{m.category_name}</span></td>
-                  <td>
-                    {m.programs && m.programs.length > 0 
-                      ? m.programs.map(p => p.name).join(', ')
-                      : <span style={{ color: 'var(--text-muted)' }}>None</span>}
-                  </td>
-                </tr>
-              ))}
+              {reportData.members.map((m, idx) => {
+                const chestNo = m.chest_no ?? m.chest_number ?? 'TBD';
+                const progList = m.registered_programs_details || m.programs || [];
+
+                return (
+                  <tr key={m.id}>
+                    <td>{idx + 1}</td>
+                    <td style={{ fontWeight: 'bold', color: 'var(--primary-neon)' }}>
+                      {chestNo}
+                    </td>
+                    <td style={{ fontWeight: 600 }}>{m.name}</td>
+                    <td>{m.team_name || '—'}</td>
+                    <td><span className="tag tag-primary">{m.category_name || '—'}</span></td>
+                    <td>
+                      {progList && progList.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                          {progList.map((p, pIdx) => {
+                            const progName = typeof p === 'string' ? p : (p?.name || `Program #${p?.id}`);
+                            return (
+                              <span 
+                                key={p?.id || pIdx} 
+                                className="tag tag-secondary" 
+                                style={{ fontSize: '0.75rem', padding: '0.15rem 0.45rem' }}
+                              >
+                                {progName}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)' }}>None</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

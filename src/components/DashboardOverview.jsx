@@ -1,6 +1,5 @@
-import React from 'react';
 import { 
-  Users, Trophy, Flag, FileText, Award, Gavel, RefreshCw, Shield
+  Users, Trophy, Flag, FileText, Award, Gavel, RefreshCw, Shield, Sparkles, Activity
 } from 'lucide-react';
 
 // Color mapper for categories to match the image aesthetics
@@ -356,19 +355,19 @@ export default function DashboardOverview({ statsLoading, stats, onNavigate }) {
 
           {/* ─── Right Section (Team Leaderboard) ─── */}
           <div className="glass-panel db-leaderboard-card">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-              <h3 style={{ fontSize: '1rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)' }}>
-                <Trophy size={16} style={{ color: 'var(--gold)' }} />
-                Team Leaderboard
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.05rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-primary)', margin: 0 }}>
+                <Trophy size={18} style={{ color: 'var(--gold)' }} /> Team Leaderboard
               </h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                Points from published results
+              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                Overall Standings
               </span>
             </div>
             
-            <div className="divider" style={{ margin: '0' }} />
+            <div className="divider" style={{ margin: '0.75rem 0' }} />
             
-            <div className="db-leaderboard-list" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px' }}>
+            <div className="db-leaderboard-list" style={{ overflowY: 'auto', flex: 1, paddingRight: '4px', maxHeight: '680px' }}>
               {rankedTeams.length === 0 ? (
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '300px', color: 'var(--text-muted)' }}>
                   No published scores yet
@@ -402,6 +401,7 @@ export default function DashboardOverview({ statsLoading, stats, onNavigate }) {
                 ))
               )}
             </div>
+
           </div>
 
         </div>

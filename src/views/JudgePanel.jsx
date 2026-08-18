@@ -27,20 +27,19 @@ export default function JudgePanel() {
   const fetchAssignedPrograms = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/programs/?judge_only=true`, {
-        headers: {
-          'Authorization': `Token ${token}`
-        }
-      });
-      if (!res.ok) throw new Error("Failed to load assigned programs");
-      const json = await res.json();
-      setPrograms(json);
+      const [res, mRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/programs/?judge_only=true`, {
+          headers: { 'Authorization': `Token ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/api/v1/marksheets/`, {
+          headers: { 'Authorization': `Token ${token}` }
+        })
+      ]);
 
-      const mRes = await fetch(`${API_BASE_URL}/api/v1/marksheets/`, {
-        headers: {
-          'Authorization': `Token ${token}`
-        }
-      });
+      if (res.ok) {
+        const json = await res.json();
+        setPrograms(json);
+      }
       if (mRes.ok) {
         const mJson = await mRes.json();
         setAllMarksheets(mJson);

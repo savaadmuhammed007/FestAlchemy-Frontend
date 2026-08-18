@@ -41,8 +41,7 @@ import {
 import './ProductDemo.css';
 
 export default function ProductDemoPage() {
-  // ── State for Interactive Elements ──────────────────────────────
-  const [adminTab, setAdminTab] = useState('overview'); // 'overview' | 'monitor' | 'activity'
+  const [adminTab, setAdminTab] = useState('overview'); // 'overview' | 'monitor'
   const [editorMode, setEditorMode] = useState('studio'); // 'studio' | 'public_view'
   
   // Poster Template Editor replica state
@@ -280,45 +279,23 @@ export default function ProductDemoPage() {
                     </div>
                   </div>
 
-                  {/* Leaderboard & Live Feeds Side by Side */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Trophy size={13} style={{ color: '#f59e0b' }} /> Live Points Leaderboard
-                      </div>
-                      <div style={{ fontSize: '0.72rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 6px', background: 'rgba(245,158,11,0.1)', borderRadius: '4px', color: '#fbbf24', fontWeight: 600 }}>
-                          <span>1. Team Al Noor</span>
-                          <span>840 pts</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 6px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                          <span>2. Team Markaz</span>
-                          <span>795 pts</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 6px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
-                          <span>3. Team Noorul Huda</span>
-                          <span>710 pts</span>
-                        </div>
-                      </div>
+                  {/* Leaderboard */}
+                  <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Trophy size={13} style={{ color: '#f59e0b' }} /> Live Points Leaderboard
                     </div>
-
-                    <div style={{ background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                      <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Activity size={13} style={{ color: '#22c55e' }} /> Recent Activities
+                    <div style={{ fontSize: '0.72rem', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 6px', background: 'rgba(245,158,11,0.1)', borderRadius: '4px', color: '#fbbf24', fontWeight: 600 }}>
+                        <span>1. Team Al Noor</span>
+                        <span>840 pts</span>
                       </div>
-                      <div style={{ fontSize: '0.7rem', color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
-                          <span>Quran Recitation results published</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8' }} />
-                          <span>Judge 4 submitted marksheet</span>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#f59e0b' }} />
-                          <span>SpinLot draw finalized for Stage 2</span>
-                        </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 6px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                        <span>2. Team Markaz</span>
+                        <span>795 pts</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 6px', background: 'rgba(255,255,255,0.03)', borderRadius: '4px' }}>
+                        <span>3. Team Noorul Huda</span>
+                        <span>710 pts</span>
                       </div>
                     </div>
                   </div>
@@ -849,12 +826,6 @@ export default function ProductDemoPage() {
             >
               Live Marksheet Monitor
             </button>
-            <button
-              onClick={() => setAdminTab('activity')}
-              className={`demo-deepdive-tab-btn ${adminTab === 'activity' ? 'active' : ''}`}
-            >
-              Recent Activities & Logs
-            </button>
           </div>
 
           {/* Large Immersive Desktop Window */}
@@ -993,32 +964,6 @@ export default function ProductDemoPage() {
                       </tr>
                     </tbody>
                   </table>
-                </div>
-              )}
-
-              {/* Tab 3: Recent Activity */}
-              {adminTab === 'activity' && (
-                <div>
-                  <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.3rem', color: '#ffffff', fontFamily: 'Sora' }}>Festival Activity Stream</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                    {[
-                      { icon: <CheckCircle2 size={16} color="#22c55e" />, title: 'Program results published', desc: 'Results for Quran Recitation Senior finalized and published to Public Board', time: '1 min ago' },
-                      { icon: <Users size={16} color="#38bdf8" />, title: '24 new participants registered', desc: 'Team Markaz completed contingent roster validation for Junior events', time: '8 mins ago' },
-                      { icon: <Award size={16} color="#f59e0b" />, title: 'Judge assignment updated', desc: 'Prof. Tariq confirmed as Chief Evaluator for Stage 1', time: '22 mins ago' },
-                      { icon: <Zap size={16} color="#a855f7" />, title: 'SpinLot draw completed', desc: 'Randomized chest allocation finalized for Speech General competition', time: '35 mins ago' },
-                    ].map((act, i) => (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {act.icon}
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 700, color: '#ffffff', fontSize: '0.88rem' }}>{act.title}</div>
-                          <div style={{ color: '#94a3b8', fontSize: '0.78rem' }}>{act.desc}</div>
-                        </div>
-                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>{act.time}</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
               )}
             </div>

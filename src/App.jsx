@@ -158,7 +158,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/ilalhabeeb" replace />;
+  if (allowedRoles && (!user || !allowedRoles.includes(user.role))) return <Navigate to="/ilalhabeeb" replace />;
   return children;
 }
 
@@ -477,6 +477,11 @@ function AppContent() {
           <Route path="/team-status" element={<TeamStatsPage />} />
           <Route path="/login" element={<Login />} />
 
+          <Route path="/admin" element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminPanel />
+            </ProtectedRoute>
+          } />
           <Route path="/admin/*" element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminPanel />

@@ -49,23 +49,23 @@ export default function TeamLeadPanel() {
   const fetchTeamData = async () => {
     setLoading(true);
     try {
-      // Fetch members
-      const membersRes = await fetch(`${API_BASE_URL}/api/v1/members/`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
-      if (!membersRes.ok) throw new Error("Failed to load team members");
-      const membersJson = await membersRes.json();
-      setMembers(membersJson);
+      const [membersRes, catsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/members/`, {
+          headers: { 'Authorization': `Token ${token}` }
+        }),
+        fetch(`${API_BASE_URL}/api/v1/categories/`, {
+          headers: { 'Authorization': `Token ${token}` }
+        })
+      ]);
 
-      // Fetch categories
-      const catsRes = await fetch(`${API_BASE_URL}/api/v1/categories/`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
+      if (membersRes.ok) {
+        const membersJson = await membersRes.json();
+        setMembers(membersJson);
+      }
       if (catsRes.ok) {
         const catsJson = await catsRes.json();
         setCategories(catsJson);
       }
-
     } catch (err) {
       console.error(err);
     } finally {

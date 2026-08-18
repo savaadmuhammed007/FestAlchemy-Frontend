@@ -7,7 +7,7 @@ import {
   Play, CheckSquare, PlusCircle, Trash, Edit, 
   Save, FileText, CheckCircle, Award, UserCheck, 
   Sliders, ClipboardList, Clock, Search, Filter, Shield,
-  Printer, UserPlus, Image, Medal, ArrowUp, ArrowDown
+  Printer, UserPlus, Image, Medal, ArrowUp, ArrowDown, Sparkles
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import DashboardOverview from '../components/DashboardOverview';
@@ -349,43 +349,69 @@ export default function AdminPanel() {
 
   const loadSetupData = async () => {
     try {
-      const catsRes = await fetch(`${API_BASE_URL}/api/v1/categories/`);
+      // 1. Superfast unified bootstrap endpoint
+      const bootRes = await fetch(`${API_BASE_URL}/api/admin/bootstrap/`, {
+        headers: { 'Authorization': `Token ${token}` }
+      });
+
+      if (bootRes.ok) {
+        const data = await bootRes.json();
+        if (data.fest_settings) {
+          setFestSettings(data.fest_settings);
+          setFestName(data.fest_settings.fest_name);
+          setFestYear(data.fest_settings.year);
+          setFestTagline(data.fest_settings.tagline || '');
+          setFestDescription(data.fest_settings.description || '');
+          setFestDates(data.fest_settings.dates || []);
+          const ps = data.fest_settings.point_system;
+          if (ps) {
+            setPoint1st(ps['1st'] || 5);
+            setPoint2nd(ps['2nd'] || 3);
+            setPoint3rd(ps['3rd'] || 1);
+          }
+        }
+        if (Array.isArray(data.categories)) setCategories(data.categories);
+        if (Array.isArray(data.programs)) setPrograms(data.programs);
+        if (Array.isArray(data.teams)) setTeams(data.teams);
+        if (Array.isArray(data.judges)) setJudges(data.judges);
+        if (Array.isArray(data.members)) setMembers(data.members);
+        if (Array.isArray(data.stages)) setStages(data.stages);
+        return;
+      }
+
+      // 2. High-speed concurrent parallel fallback (Promise.all)
+      const [catsRes, progsRes, teamsRes, judgesRes, membersRes, stagesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/categories/`),
+        fetch(`${API_BASE_URL}/api/v1/programs/`),
+        fetch(`${API_BASE_URL}/api/v1/teams/`),
+        fetch(`${API_BASE_URL}/api/v1/users/?role=judge`, { headers: { 'Authorization': `Token ${token}` } }),
+        fetch(`${API_BASE_URL}/api/v1/members/`, { headers: { 'Authorization': `Token ${token}` } }),
+        fetch(`${API_BASE_URL}/api/v1/stages/`)
+      ]);
+
       if (catsRes.ok) setCategories(await catsRes.json());
-
-      const progsRes = await fetch(`${API_BASE_URL}/api/v1/programs/`);
       if (progsRes.ok) setPrograms(await progsRes.json());
-
-      const teamsRes = await fetch(`${API_BASE_URL}/api/v1/teams/`);
       if (teamsRes.ok) setTeams(await teamsRes.json());
-
-      const judgesRes = await fetch(`${API_BASE_URL}/api/v1/users/?role=judge`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
       if (judgesRes.ok) setJudges(await judgesRes.json());
-
-      const membersRes = await fetch(`${API_BASE_URL}/api/v1/members/`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
       if (membersRes.ok) setMembers(await membersRes.json());
-
-      const stagesRes = await fetch(`${API_BASE_URL}/api/v1/stages/`);
       if (stagesRes.ok) setStages(await stagesRes.json());
 
     } catch (err) {
-      console.error(err);
+      console.error("Fast data fetch error:", err);
     }
   };
 
   // Load setup data once on component mount
   useEffect(() => {
-    loadFestSettings();
     loadSetupData();
   }, []);
 
-  // Fetch stats only when dashboard tab is active
+  // Fetch stats or reload setup data when switching tabs
   useEffect(() => {
     if (activeTab === 'dashboard') {
       fetchStats();
+    } else if (['members', 'registry', 'setup', 'calling', 'schedule-planner', 'rankings', 'assignments'].includes(activeTab)) {
+      loadSetupData();
     }
   }, [activeTab]);
 
@@ -1378,6 +1404,7 @@ export default function AdminPanel() {
       if (res.ok) {
         showToast("Item deleted successfully.", "success");
         loadSetupData();
+        fetchStats();
         if (type === 'results') {
           handleFetchResults(resultsProgramId);
         }
@@ -1556,6 +1583,7 @@ export default function AdminPanel() {
             teams={teams}
             categories={categories}
             onDelete={handleDeleteItem}
+            onRefresh={loadSetupData}
           />
         )}
 
@@ -1567,7 +1595,10 @@ export default function AdminPanel() {
             categories={categories}
             programs={programs}
             token={token}
-            onRefreshData={loadSetupData}
+            onRefreshData={() => {
+              loadSetupData();
+              fetchStats();
+            }}
           />
         )}
 
