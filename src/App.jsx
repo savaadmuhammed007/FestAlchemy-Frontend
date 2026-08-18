@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import HomePage from './views/HomePage';
 import TeamStatsPage from './views/TeamStatsPage';
 import ResultsPage from './views/ResultsPage';
+import ProductDemoPage from './views/ProductDemoPage';
 import CustomCursor from './components/CustomCursor';
 import Login from './views/Login';
 import AdminPanel from './views/AdminPanel';
@@ -171,7 +172,7 @@ function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
-  const isPublicPage = ['/', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
+  const isPublicPage = ['/', '/ilalhabeeb', '/results', '/team-status', '/demo'].includes(location.pathname);
 
   // Detect scroll for showing navbar on home page only after reaching "Stage in Numbers"
   useEffect(() => {
@@ -219,7 +220,7 @@ function Navbar() {
     mobileMenuOpen ? 'navbar--menu-open' : '',
   ].filter(Boolean).join(' ');
 
-  // Only show Results/Team Status on public pages
+  // Public links in navigation bar
   const publicLinks = isPublicPage
     ? [
         { to: '/ilalhabeeb', label: 'Home', exact: true },
@@ -337,14 +338,16 @@ function Navbar() {
 function AppContent() {
   const location = useLocation();
   const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
+  const isFullWidthPage = isHomePage || location.pathname === '/demo';
 
   return (
     <div className="app-container">
       <Navbar />
-      <main className={`main-content ${isHomePage ? 'main-content--home' : ''}`}>
+      <main className={`main-content ${isFullWidthPage ? 'main-content--home' : ''}`}>
         <Routes>
           <Route path="/" element={<Navigate to="/ilalhabeeb" replace />} />
           <Route path="/ilalhabeeb" element={<HomePage />} />
+          <Route path="/demo" element={<ProductDemoPage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/team-status" element={<TeamStatsPage />} />
           <Route path="/login" element={<Login />} />
