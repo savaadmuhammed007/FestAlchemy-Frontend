@@ -153,7 +153,7 @@ export default function ProductDemoPage() {
       <div className="demo-bg-grid" />
 
       {/* ── HERO SECTION ────────────────────────────────────────────── */}
-      <section className="demo-hero-section">
+      <section id="demo-hero" className="demo-hero-section">
         <div className="demo-container">
           <div className="demo-hero-grid">
             {/* Hero Left Content */}
@@ -1027,7 +1027,7 @@ export default function ProductDemoPage() {
       </section>
 
       {/* ── SPINLOT FEATURE SECTION (SECRET JUDGE CODES A, B, C...) ── */}
-      <section className="demo-spinlot-section">
+      <section id="spinlot-section" className="demo-spinlot-section">
         <div className="demo-container">
           <div className="demo-spinlot-grid">
             <div>
@@ -1191,7 +1191,7 @@ export default function ProductDemoPage() {
       </section>
 
       {/* ── RESULTS COMPILATION SECTION ──────────────────────────────── */}
-      <section className="demo-results-section">
+      <section id="results-pipeline" className="demo-results-section">
         <div className="demo-container">
           <div className="demo-section-title-wrap">
             <div className="demo-section-subtitle">Automated Compilation</div>
@@ -1326,7 +1326,7 @@ export default function ProductDemoPage() {
       </section>
 
       {/* ── POSTER STUDIO & PUBLIC VIEW POSTER SECTION ─────────────── */}
-      <section className="demo-editor-section">
+      <section id="poster-studio" className="demo-editor-section">
         <div className="demo-container">
           <div className="demo-section-title-wrap">
             <div className="demo-section-subtitle">Visual Engine & Public Experience</div>
@@ -1731,7 +1731,7 @@ export default function ProductDemoPage() {
       </section>
 
       {/* ── MOBILE EXPERIENCE SECTION ────────────────────────────────── */}
-      <section className="demo-mobile-section">
+      <section id="mobile-experience" className="demo-mobile-section">
         <div className="demo-container">
           <div className="demo-section-title-wrap">
             <div className="demo-section-subtitle">Pocket Productivity</div>
@@ -1993,7 +1993,7 @@ export default function ProductDemoPage() {
       </section>
 
       {/* ── SECURITY SECTION ─────────────────────────────────────────── */}
-      <section className="demo-security-section">
+      <section id="security-section" className="demo-security-section">
         <div className="demo-container">
           <div className="demo-section-title-wrap">
             <div className="demo-section-subtitle">Security Architecture</div>

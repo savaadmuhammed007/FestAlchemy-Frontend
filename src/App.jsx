@@ -14,7 +14,7 @@ import JudgePanel from './views/JudgePanel';
 import TeamLeadPanel from './views/TeamLeadPanel';
 
 // Icons
-import { Trophy, LogIn, LogOut, Shield, Award, Users, RefreshCw, Moon, Sun, CheckCircle2, AlertTriangle, Info, XCircle, X, Menu } from 'lucide-react';
+import { Trophy, LogIn, LogOut, Shield, Award, Users, RefreshCw, Moon, Sun, CheckCircle2, AlertTriangle, Info, XCircle, X, Menu, Sparkles, ArrowRight } from 'lucide-react';
 
 
 // ── Theme Context ────────────────────────────────────────────
@@ -172,7 +172,66 @@ function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
+  const isDemoPage = location.pathname === '/demo';
   const isPublicPage = ['/', '/ilalhabeeb', '/results', '/team-status', '/demo'].includes(location.pathname);
+
+  const [activeDemoSection, setActiveDemoSection] = useState('demo-hero');
+
+  const demoNavSections = [
+    { id: 'demo-hero', label: 'Overview' },
+    { id: 'portals-showcase', label: '4 Portals' },
+    { id: 'control-room', label: 'Control Room' },
+    { id: 'spinlot-section', label: 'SpinLot' },
+    { id: 'results-pipeline', label: 'Compilation' },
+    { id: 'poster-studio', label: 'Poster Studio' },
+    { id: 'mobile-experience', label: 'Mobile App' },
+    { id: 'security-section', label: 'Security' },
+  ];
+
+  // Scroll to section handler
+  const handleScrollToSection = (sectionId) => {
+    setMobileMenuOpen(false);
+    const elem = document.getElementById(sectionId);
+    if (elem) {
+      const navHeight = 70;
+      const elementPosition = elem.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navHeight;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Section observer on Demo page
+  useEffect(() => {
+    if (!isDemoPage) return;
+    const sectionIds = [
+      'demo-hero',
+      'portals-showcase',
+      'control-room',
+      'spinlot-section',
+      'results-pipeline',
+      'poster-studio',
+      'mobile-experience',
+      'security-section'
+    ];
+
+    const handleScroll = () => {
+      const scrollPos = window.scrollY + 140;
+      for (let i = sectionIds.length - 1; i >= 0; i--) {
+        const el = document.getElementById(sectionIds[i]);
+        if (el && el.offsetTop <= scrollPos) {
+          setActiveDemoSection(sectionIds[i]);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isDemoPage]);
 
   // Detect scroll for showing navbar on home page only after reaching "Stage in Numbers"
   useEffect(() => {
@@ -219,6 +278,72 @@ function Navbar() {
     scrolled ? 'navbar--scrolled' : '',
     mobileMenuOpen ? 'navbar--menu-open' : '',
   ].filter(Boolean).join(' ');
+
+  // Dedicated Navbar when viewing the Demo page
+  if (isDemoPage) {
+    return (
+      <nav className={`navbar navbar--demo ${scrolled ? 'navbar--scrolled' : ''} ${mobileMenuOpen ? 'navbar--menu-open' : ''}`}>
+        <div className="nav-brand-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <Link to="/ilalhabeeb" className="nav-brand">
+            <img src="/logo.png" alt="FestAlchemy Logo" className="nav-brand-img" />
+            <span className="gradient-text">FestAlchemy</span>
+          </Link>
+          <span className="demo-nav-badge">
+            <Sparkles size={11} style={{ color: '#fbbf24' }} /> DEMO
+          </span>
+        </div>
+
+        {/* Hamburger toggle for mobile */}
+        <button
+          className={`nav-hamburger ${mobileMenuOpen ? 'nav-hamburger--active' : ''}`}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label="Toggle demo navigation"
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        {/* Nav menu for demo sections */}
+        <div className={`nav-menu ${mobileMenuOpen ? 'nav-menu--open' : ''}`}>
+          <div className="nav-links-group demo-nav-sections-group">
+            {demoNavSections.map((sec) => (
+              <button
+                key={sec.id}
+                onClick={() => handleScrollToSection(sec.id)}
+                className={`nav-link-item demo-nav-section-btn ${activeDemoSection === sec.id ? 'nav-link-item--active active' : ''}`}
+              >
+                <span className="nav-link-text">{sec.label}</span>
+                {activeDemoSection === sec.id && <span className="nav-link-indicator" />}
+              </button>
+            ))}
+          </div>
+
+          <div className="nav-links-group nav-links-group--auth">
+            <Link to="/ilalhabeeb" className="demo-nav-exit-btn" onClick={() => setMobileMenuOpen(false)}>
+              <span>Live Festival</span>
+              <ArrowRight size={13} />
+            </Link>
+
+            <Link to="/login" className="demo-nav-login-btn" onClick={() => setMobileMenuOpen(false)}>
+              <span>Portal Login</span>
+            </Link>
+
+            {/* Theme Toggle */}
+            <button
+              className="nav-theme-toggle"
+              onClick={toggleTheme}
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              <div className={`nav-theme-icon ${theme === 'dark' ? 'nav-theme-icon--sun' : 'nav-theme-icon--moon'}`}>
+                {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
+              </div>
+            </button>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   // Public links in navigation bar
   const publicLinks = isPublicPage
