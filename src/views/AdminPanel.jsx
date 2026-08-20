@@ -1430,72 +1430,74 @@ export default function AdminPanel() {
           ADMIN SIDEBAR NAVIGATION
       ──────────────────────────────────────────────────────── */}
       <aside className="glass-panel admin-sidebar">
-        <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem', marginBottom: '0.75rem' }}>
-          <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>Admin Control</h3>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>FESTALCHEMY SYSTEM</span>
+        <div className="admin-sidebar-header">
+          <h3 style={{ fontSize: '1.15rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)', margin: 0 }}>Admin Control</h3>
+          <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>FESTALCHEMY SYSTEM</span>
         </div>
         
-        <button onClick={() => navigate('/admin')} className={`btn ${activeTab === 'dashboard' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Shield size={16} /> Overview
-        </button>
-        
-        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)', margin: '0.75rem 0 0.25rem 0.5rem', letterSpacing: '0.05em' }}>SETUP & REGISTRY</div>
-        
-        <button onClick={() => navigate('/admin/setup')} className={`btn ${activeTab === 'setup' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Calendar size={16} /> Programs & Categories
-        </button>
-        <button onClick={() => navigate('/admin/stages')} className={`btn ${activeTab === 'stages' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Layers size={16} /> Manage Stages
-        </button>
-        <button onClick={() => navigate('/admin/settings/users')} className={`btn ${activeTab === 'settings' && settingsSubTab === 'users' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Users size={16} /> Teams & Users
-        </button>
-        <button onClick={() => navigate('/admin/members')} className={`btn ${activeTab === 'members' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Users size={16} /> Members Directory
-        </button>
-        <button onClick={() => navigate('/admin/registry')} className={`btn ${activeTab === 'registry' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <UserPlus size={16} /> Member Registry
-        </button>
-        <button onClick={() => navigate('/admin/assignments')} className={`btn ${activeTab === 'assignments' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <UserCheck size={16} /> Judge Assignment
-        </button>
+        <div className="admin-sidebar-scroll">
+          <button onClick={() => navigate('/admin')} className={`btn ${activeTab === 'dashboard' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Shield size={15} /> Overview
+          </button>
+          
+          <div className="admin-sidebar-section-label">SETUP & REGISTRY</div>
+          
+          <button onClick={() => navigate('/admin/setup')} className={`btn ${activeTab === 'setup' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Calendar size={15} /> Programs & Categories
+          </button>
+          <button onClick={() => navigate('/admin/stages')} className={`btn ${activeTab === 'stages' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Layers size={15} /> Manage Stages
+          </button>
+          <button onClick={() => navigate('/admin/settings/users')} className={`btn ${activeTab === 'settings' && settingsSubTab === 'users' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Users size={15} /> Teams & Users
+          </button>
+          <button onClick={() => navigate('/admin/members')} className={`btn ${activeTab === 'members' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Users size={15} /> Members Directory
+          </button>
+          <button onClick={() => navigate('/admin/registry')} className={`btn ${activeTab === 'registry' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <UserPlus size={15} /> Member Registry
+          </button>
+          <button onClick={() => navigate('/admin/assignments')} className={`btn ${activeTab === 'assignments' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <UserCheck size={15} /> Judge Assignment
+          </button>
 
-        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)', margin: '0.75rem 0 0.25rem 0.5rem', letterSpacing: '0.05em' }}>LIVE OPERATIONS</div>
-        
-        <button onClick={() => navigate('/admin/calling')} className={`btn ${activeTab === 'calling' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Play size={16} /> Spin Lot
-        </button>
-        <button onClick={() => navigate('/admin/marksheets')} className={`btn ${activeTab === 'marksheets' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <ClipboardList size={16} /> Marksheets
-        </button>
-        <button onClick={() => navigate('/admin/rankings')} className={`btn ${activeTab === 'rankings' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Award size={16} /> Scoring & Results
-        </button>
-        <button onClick={() => navigate('/admin/schedule-planner')} className={`btn ${activeTab === 'schedule-planner' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Clock size={16} /> Schedule Planner
-        </button>
-        <button onClick={() => navigate('/admin/performers')} className={`btn ${activeTab === 'performers' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Medal size={16} /> Top Performers
-        </button>
+          <div className="admin-sidebar-section-label">LIVE OPERATIONS</div>
+          
+          <button onClick={() => navigate('/admin/calling')} className={`btn ${activeTab === 'calling' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Play size={15} /> Spin Lot
+          </button>
+          <button onClick={() => navigate('/admin/marksheets')} className={`btn ${activeTab === 'marksheets' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <ClipboardList size={15} /> Marksheets
+          </button>
+          <button onClick={() => navigate('/admin/rankings')} className={`btn ${activeTab === 'rankings' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Award size={15} /> Scoring & Results
+          </button>
+          <button onClick={() => navigate('/admin/schedule-planner')} className={`btn ${activeTab === 'schedule-planner' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Clock size={15} /> Schedule Planner
+          </button>
+          <button onClick={() => navigate('/admin/performers')} className={`btn ${activeTab === 'performers' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Medal size={15} /> Top Performers
+          </button>
 
-        <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: 'var(--text-muted)', margin: '0.75rem 0 0.25rem 0.5rem', letterSpacing: '0.05em' }}>SYSTEM & REPORTS</div>
-        
-        <button onClick={() => navigate('/admin/reports')} className={`btn ${activeTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <FileText size={16} /> Reports Center
-        </button>
-        <button onClick={() => navigate('/admin/poster')} className={`btn ${activeTab === 'poster' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Image size={16} /> Poster Template
-        </button>
-        <button onClick={() => navigate('/admin/settings')} className={`btn ${activeTab === 'settings' && settingsSubTab === 'general' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.6rem 1rem', fontSize: '0.9rem' }}>
-          <Settings size={16} /> Fest Settings
-        </button>
+          <div className="admin-sidebar-section-label">SYSTEM & REPORTS</div>
+          
+          <button onClick={() => navigate('/admin/reports')} className={`btn ${activeTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <FileText size={15} /> Reports Center
+          </button>
+          <button onClick={() => navigate('/admin/poster')} className={`btn ${activeTab === 'poster' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Image size={15} /> Poster Template
+          </button>
+          <button onClick={() => navigate('/admin/settings')} className={`btn ${activeTab === 'settings' && settingsSubTab === 'general' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Settings size={15} /> Fest Settings
+          </button>
+        </div>
 
       </aside>
 
       {/* ────────────────────────────────────────────────────────
           MAIN CONTENT AREA
       ──────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, minWidth: '320px' }}>
+      <div className="admin-main-content">
         
         {/* OVERVIEW TAB */}
         {activeTab === 'dashboard' && (
