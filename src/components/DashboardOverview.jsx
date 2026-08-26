@@ -868,7 +868,8 @@ function CategoryAnalyticsSection({ data = [], programsByCategory = [], totalPro
 function IndividualToppersCard({ topPerformers = [], categoryToppers = [] }) {
   const [activeTab, setActiveTab] = useState('overall'); // 'overall' or 'categories'
 
-  const performersList = activeTab === 'overall' ? topPerformers : categoryToppers;
+  const rawList = activeTab === 'overall' ? topPerformers : categoryToppers;
+  const performersList = (rawList || []).slice(0, 3);
 
   return (
     <div className="db-topper-card">
