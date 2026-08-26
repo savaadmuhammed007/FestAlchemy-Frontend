@@ -7,33 +7,55 @@ export const API_BASE_URL = (import.meta.env.VITE_API_URL || (import.meta.env.DE
 
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  // Sync token changes to localStorage
-  const updateToken = (newToken) => {
+  // If token and user are already cached, avoid initial loading spinner
+  const [loading, setLoading] = useState(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+    return Boolean(savedToken && !savedUser);
+  });
+
+  // Sync token and user changes to localStorage
+  const updateAuth = (newToken, newUser) => {
     if (newToken) {
       localStorage.setItem('token', newToken);
+      setToken(newToken);
     } else {
       localStorage.removeItem('token');
+      setToken(null);
     }
-    setToken(newToken);
+
+    if (newUser) {
+      localStorage.setItem('user', JSON.stringify(newUser));
+      setUser(newUser);
+    } else {
+      localStorage.removeItem('user');
+      setUser(null);
+    }
   };
 
-  // Check auth status on mount
+  // Revalidate auth status in the background on initial application mount
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) {
+      setLoading(false);
+      return;
+    }
 
+    const checkAuth = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/me/`, {
           headers: {
-            'Authorization': `Token ${token}`,
+            'Authorization': `Token ${currentToken}`,
             'Content-Type': 'application/json',
           },
         });
@@ -41,23 +63,22 @@ export const AuthProvider = ({ children }) => {
         if (res.ok) {
           const userData = await res.json();
           setUser(userData);
-        } else {
-          // Invalidate bad token
-          updateToken(null);
-          setUser(null);
+          localStorage.setItem('user', JSON.stringify(userData));
+        } else if (res.status === 401 || res.status === 403) {
+          // Invalidate bad or expired token
+          updateAuth(null, null);
         }
       } catch (err) {
-        console.error("Auth check failed:", err);
-        // Do not delete token on network error, just handle gracefully
+        console.error("Auth background check failed:", err);
       } finally {
         setLoading(false);
       }
     };
 
     checkAuth();
-  }, [token]);
+  }, []);
 
-  // Login handler
+  // Login handler — instantaneous state commitment
   const login = async (username, password) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/auth/login/`, {
@@ -74,8 +95,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || 'Login failed');
       }
 
-      updateToken(data.token);
-      setUser(data.user);
+      updateAuth(data.token, data.user);
+      setLoading(false);
       return data.user;
     } catch (err) {
       console.error("Login failed:", err);
@@ -100,8 +121,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || 'Signup failed');
       }
 
-      updateToken(data.token);
-      setUser(data.user);
+      updateAuth(data.token, data.user);
+      setLoading(false);
       return data.user;
     } catch (err) {
       console.error("Signup failed:", err);
@@ -111,21 +132,22 @@ export const AuthProvider = ({ children }) => {
 
   // Logout handler
   const logout = async () => {
+    const activeToken = token || localStorage.getItem('token');
     try {
-      if (token) {
-        await fetch(`${API_BASE_URL}/api/auth/logout/`, {
+      if (activeToken) {
+        fetch(`${API_BASE_URL}/api/auth/logout/`, {
           method: 'POST',
           headers: {
-            'Authorization': `Token ${token}`,
+            'Authorization': `Token ${activeToken}`,
             'Content-Type': 'application/json',
           },
-        });
+        }).catch(() => {});
       }
     } catch (err) {
       console.error("Logout request failed:", err);
     } finally {
-      updateToken(null);
-      setUser(null);
+      updateAuth(null, null);
+      setLoading(false);
     }
   };
 

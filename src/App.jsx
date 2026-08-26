@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { AccessControlProvider, useAccessControl } from './context/AccessControlContext';
 
 // Views
 import HomePage from './views/HomePage';
@@ -13,8 +12,6 @@ import Login from './views/Login';
 import AdminPanel from './views/AdminPanel';
 import JudgePanel from './views/JudgePanel';
 import TeamLeadPanel from './views/TeamLeadPanel';
-import AccessDeniedPage from './views/AccessDeniedPage';
-import SecretAccessPortal from './views/SecretAccessPortal';
 
 // Icons
 import { Trophy, LogIn, LogOut, Shield, Award, Users, RefreshCw, Moon, Sun, CheckCircle2, AlertTriangle, Info, XCircle, X, Menu, Sparkles, ArrowRight } from 'lucide-react';
@@ -169,7 +166,6 @@ function ProtectedRoute({ children, allowedRoles }) {
 function Navbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const { theme, toggleTheme } = React.useContext(ThemeContext);
-  const { isUnlocked, lock } = useAccessControl();
   const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [showHomeNav, setShowHomeNav] = useState(false);
@@ -333,31 +329,6 @@ function Navbar() {
               <span>Portal Login</span>
             </Link>
 
-            {/* Quick Lock Button */}
-            {isUnlocked && (
-              <button
-                onClick={lock}
-                className="nav-lock-toggle-btn"
-                title="Lock portal (switch to Access Denied)"
-                style={{
-                  background: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  color: '#f87171',
-                  borderRadius: '8px',
-                  padding: '0.35rem 0.65rem',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem'
-                }}
-              >
-                <Shield size={12} />
-                <span>Lock Site</span>
-              </button>
-            )}
-
             {/* Theme Toggle */}
             <button
               className="nav-theme-toggle"
@@ -473,31 +444,6 @@ function Navbar() {
           </div>
         )}
 
-        {/* Lock Site button for Owner */}
-        {isUnlocked && (
-          <button
-            onClick={lock}
-            title="Lock system (switch to Access Denied for all visitors)"
-            style={{
-              background: 'rgba(239, 68, 68, 0.12)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#f87171',
-              borderRadius: '8px',
-              padding: '0.35rem 0.65rem',
-              fontSize: '0.75rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.35rem',
-              marginLeft: '0.5rem'
-            }}
-          >
-            <Shield size={12} />
-            <span>Lock</span>
-          </button>
-        )}
-
         {/* Theme Toggle */}
         <button
           className="nav-theme-toggle"
@@ -515,30 +461,8 @@ function Navbar() {
 
 // ── App Shell ─────────────────────────────────────────────────
 function AppContent() {
-  const { isUnlocked } = useAccessControl();
   const location = useLocation();
 
-  const isSecretRoute = ['/secret-access', '/owner-portal', '/admin-gate'].includes(location.pathname);
-
-  // When system is LOCKED and user is NOT on the secret route:
-  // Render Access Denied page directly on any requested URL
-  if (!isUnlocked && !isSecretRoute) {
-    return <AccessDeniedPage />;
-  }
-
-  // If on secret route while locked, render Secret Access Portal
-  if (!isUnlocked && isSecretRoute) {
-    return (
-      <Routes>
-        <Route path="/secret-access" element={<SecretAccessPortal />} />
-        <Route path="/owner-portal" element={<SecretAccessPortal />} />
-        <Route path="/admin-gate" element={<SecretAccessPortal />} />
-        <Route path="*" element={<Navigate to="/secret-access" replace />} />
-      </Routes>
-    );
-  }
-
-  // If system is UNLOCKED, render the full application normally
   const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
   const isFullWidthPage = isHomePage || location.pathname === '/demo';
 
@@ -553,12 +477,6 @@ function AppContent() {
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/team-status" element={<TeamStatsPage />} />
           <Route path="/login" element={<Login />} />
-
-          {/* Secret Access Portal accessible anytime when unlocked */}
-          <Route path="/secret-access" element={<SecretAccessPortal />} />
-          <Route path="/owner-portal" element={<SecretAccessPortal />} />
-          <Route path="/admin-gate" element={<SecretAccessPortal />} />
-          <Route path="/access-denied" element={<AccessDeniedPage />} />
 
           <Route path="/admin" element={
             <ProtectedRoute allowedRoles={['admin']}>
@@ -594,13 +512,11 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <AccessControlProvider>
-          <UIProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </UIProvider>
-        </AccessControlProvider>
+        <UIProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </UIProvider>
       </AuthProvider>
     </ThemeProvider>
   );
