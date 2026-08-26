@@ -185,11 +185,11 @@ export default function ReportSelector({ onNavigate }) {
             width: '44px',
             height: '44px',
             borderRadius: '50%',
-            background: 'rgba(255, 215, 0, 0.15)',
+            background: 'var(--accent-soft)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'var(--gold)',
+            color: 'var(--accent)',
             transition: 'background 0.2s'
           }}>
             <Medal size={20} />
@@ -222,11 +222,11 @@ export default function ReportSelector({ onNavigate }) {
             width: '44px',
             height: '44px',
             borderRadius: '50%',
-            background: 'var(--primary-soft)',
+            background: 'var(--accent-soft)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: 'var(--primary-neon)',
+            color: 'var(--accent)',
             transition: 'background 0.2s'
           }}>
             <Clock size={20} />

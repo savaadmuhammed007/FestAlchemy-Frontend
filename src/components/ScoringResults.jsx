@@ -266,24 +266,28 @@ export default function ScoringResults({
     if (!confirmed) {
       return;
     }
+
+    // Optimistic local update
+    setResults(prev => prev.map(r => ({ ...r, published: true })));
     for (const prog of unpublished) {
-      try {
-        await fetch(`${API_BASE_URL}/api/v1/results/toggle_publish/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ program_id: prog.id })
-        });
-      } catch (err) {
-        console.error(err);
-      }
+      onTogglePublish(prog.id.toString());
     }
-    showToast("All results published successfully!", "success");
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/results/publish_all/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (res.ok) {
+        const json = await res.json();
+        showToast(json.message || "All results published successfully!", "success");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

@@ -836,6 +836,28 @@ export default function AdminPanel() {
   const handleTogglePublish = async (programId = null) => {
     const targetProgramId = (programId && typeof programId !== 'object') ? programId : resultsProgramId;
     if (!targetProgramId) return;
+
+    const pid = parseInt(targetProgramId, 10);
+    const currentProg = programs.find(p => p.id === pid);
+    const optimisticPublished = currentProg ? !currentProg.is_published : !publishStatus;
+
+    // 1. Instant optimistic state update for 0ms lag
+    setPrograms(prev => prev.map(p => {
+      if (p.id === pid) {
+        return {
+          ...p,
+          is_published: optimisticPublished,
+          results: (p.results || []).map(r => ({ ...r, published: optimisticPublished }))
+        };
+      }
+      return p;
+    }));
+
+    if (resultsProgramId && parseInt(resultsProgramId, 10) === pid) {
+      setPublishStatus(optimisticPublished);
+      setComputedResults(prev => prev.map(r => ({ ...r, published: optimisticPublished })));
+    }
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/results/toggle_publish/`, {
         method: 'POST',
@@ -843,18 +865,60 @@ export default function AdminPanel() {
           'Authorization': `Token ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ program_id: parseInt(targetProgramId) })
+        body: JSON.stringify({ program_id: pid })
       });
       const json = await res.json();
       if (res.ok) {
-        alert(json.message);
+        alert(json.message, json.published ? 'success' : 'info');
         setPublishStatus(json.published);
-        await loadSetupData();
+        setPrograms(prev => prev.map(p => {
+          if (p.id === pid) {
+            return {
+              ...p,
+              is_published: json.published,
+              results: (p.results || []).map(r => ({ ...r, published: json.published }))
+            };
+          }
+          return p;
+        }));
+        if (resultsProgramId && parseInt(resultsProgramId, 10) === pid) {
+          setComputedResults(prev => prev.map(r => ({ ...r, published: json.published })));
+        }
       } else {
-        alert(json.error || "Failed to toggle publish");
+        // Revert on failure
+        setPrograms(prev => prev.map(p => {
+          if (p.id === pid) {
+            return {
+              ...p,
+              is_published: !optimisticPublished,
+              results: (p.results || []).map(r => ({ ...r, published: !optimisticPublished }))
+            };
+          }
+          return p;
+        }));
+        if (resultsProgramId && parseInt(resultsProgramId, 10) === pid) {
+          setPublishStatus(!optimisticPublished);
+          setComputedResults(prev => prev.map(r => ({ ...r, published: !optimisticPublished })));
+        }
+        alert(json.error || "Failed to toggle publish", "error");
       }
     } catch (err) {
-      alert("Error toggling publish status");
+      // Revert on network error
+      setPrograms(prev => prev.map(p => {
+        if (p.id === pid) {
+          return {
+            ...p,
+            is_published: !optimisticPublished,
+            results: (p.results || []).map(r => ({ ...r, published: !optimisticPublished }))
+          };
+        }
+        return p;
+      }));
+      if (resultsProgramId && parseInt(resultsProgramId, 10) === pid) {
+        setPublishStatus(!optimisticPublished);
+        setComputedResults(prev => prev.map(r => ({ ...r, published: !optimisticPublished })));
+      }
+      alert("Error toggling publish status", "error");
     }
   };
 
@@ -867,6 +931,9 @@ export default function AdminPanel() {
     const actionText = nextStatus ? "Publish" : "Hide / Unpublish";
     const confirmed = await confirm(`${actionText} Team Standings`, `Are you sure you want to ${actionText.toLowerCase()} team standings on the public website?`);
     if (!confirmed) return;
+
+    // Instant optimistic update
+    setFestSettings(prev => prev ? ({ ...prev, publish_team_standings: nextStatus }) : prev);
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/fest-settings/${festSettings.id}/`, {
@@ -883,6 +950,7 @@ export default function AdminPanel() {
       alert(`Team standings ${nextStatus ? 'published to public!' : 'hidden from public.'}`, nextStatus ? 'success' : 'info');
     } catch (err) {
       console.error("Error toggling team standings publication:", err);
+      setFestSettings(prev => prev ? ({ ...prev, publish_team_standings: !nextStatus }) : prev);
       alert("Failed to update team standings publication status.", "error");
     }
   };
