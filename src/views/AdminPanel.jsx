@@ -737,7 +737,12 @@ export default function AdminPanel() {
       body: JSON.stringify({ member_id: memberId })
     });
 
-    const json = await res.json();
+    let json = {};
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error(`Server error (${res.status}) while spinning code`);
+    }
     if (!res.ok) throw new Error(json.error || "Failed to spin lot");
     return json;
   };
@@ -754,7 +759,12 @@ export default function AdminPanel() {
       body: JSON.stringify({ spin_all: true })
     });
 
-    const json = await res.json();
+    let json = {};
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error(`Server error (${res.status}) while auto-spinning lots`);
+    }
     if (!res.ok) throw new Error(json.error || "Failed to spin all lots");
     await loadSetupData();
     return json;
