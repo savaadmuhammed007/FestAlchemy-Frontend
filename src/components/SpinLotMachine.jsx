@@ -23,7 +23,11 @@ export default function SpinLotMachine({
   const [selectedStageType, setSelectedStageType] = useState('');
 
   const notDoneMembers = callingData?.members ? callingData.members.filter(m => !m.called) : [];
-  const doneMembers = callingData?.members ? callingData.members.filter(m => m.called) : [];
+  const doneMembers = callingData?.members 
+    ? [...callingData.members.filter(m => m.called)].sort((a, b) => 
+        (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' })
+      )
+    : [];
 
   // Extract unique stages / venues from programs
   const uniqueVenues = useMemo(() => {
@@ -48,7 +52,16 @@ export default function SpinLotMachine({
   }, [programs, searchQuery, selectedVenue, selectedStageType]);
 
   const notDonePrograms = filteredPrograms.filter(p => !p.has_results && !p.lot_completed);
-  const donePrograms = filteredPrograms.filter(p => p.has_results || p.lot_completed);
+  const donePrograms = useMemo(() => {
+    return filteredPrograms
+      .filter(p => p.has_results || p.lot_completed)
+      .sort((a, b) => {
+        if (a.lot_spun_at && b.lot_spun_at) return new Date(a.lot_spun_at) - new Date(b.lot_spun_at);
+        if (a.lot_spun_at) return -1;
+        if (b.lot_spun_at) return 1;
+        return (a.name || '').localeCompare(b.name || '');
+      });
+  }, [filteredPrograms]);
 
   const selectedProgram = programs.find(p => p.id.toString() === callingProgramId);
   const isFinalized = selectedProgram?.has_results;
@@ -793,19 +806,23 @@ export default function SpinLotMachine({
                       <table className="custom-table" style={{ fontSize: '0.85rem' }}>
                         <thead>
                           <tr>
+                            <th style={{ width: '110px' }}>Lot Code</th>
                             <th>Chest No</th>
                             <th>Participant Name</th>
-                            <th style={{ width: '120px', textAlign: 'right' }}>Assigned Code</th>
+                            <th>Team</th>
                           </tr>
                         </thead>
                         <tbody>
                           {doneMembers.map(m => (
-                            <tr key={m.id} style={{ opacity: 0.85 }}>
-                              <td style={{ color: 'var(--text-secondary)' }}>{m.chest_no}</td>
-                              <td style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{m.name}</td>
-                              <td style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--secondary-neon)' }}>
-                                {m.judge_code}
+                            <tr key={m.id} style={{ opacity: 0.95 }}>
+                              <td>
+                                <span className="badge badge-success" style={{ fontWeight: 800, fontSize: '0.9rem', padding: '0.2rem 0.55rem' }}>
+                                  Code {m.judge_code}
+                                </span>
                               </td>
+                              <td style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{m.chest_no}</td>
+                              <td style={{ fontWeight: 600, color: 'var(--text-main)' }}>{m.name}</td>
+                              <td style={{ color: 'var(--text-muted)' }}>{m.team_name || m.team?.name || '—'}</td>
                             </tr>
                           ))}
                         </tbody>

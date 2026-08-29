@@ -62,9 +62,26 @@ export default function ScoringResults({
     }
   };
 
-  // Include spin-lotted, submitted, marksheets, or published programs in scoring and results
+  // Include spin-lotted, submitted, marksheets, or published programs in scoring and results, sorted by order of spin
   const spinLottedPrograms = useMemo(() => {
-    return programs.filter(p => p.lot_completed || p.has_results || p.is_published || p.has_marksheets);
+    const list = programs.filter(p => p.lot_completed || p.has_results || p.is_published || p.has_marksheets);
+    return [...list].sort((a, b) => {
+      // 1. Sort by lot_spun_at (earliest spun lot first)
+      if (a.lot_spun_at && b.lot_spun_at) {
+        return new Date(a.lot_spun_at) - new Date(b.lot_spun_at);
+      }
+      if (a.lot_spun_at) return -1;
+      if (b.lot_spun_at) return 1;
+
+      // 2. If neither has lot_spun_at, sort by schedule or id
+      if (a.schedule && b.schedule) {
+        return new Date(a.schedule) - new Date(b.schedule);
+      }
+      if (a.schedule) return -1;
+      if (b.schedule) return 1;
+
+      return a.id - b.id;
+    });
   }, [programs]);
 
   // Close menus on click outside
@@ -95,8 +112,7 @@ export default function ScoringResults({
 
   // Determine target programs based on whether we filter only published or all calculated results
   const targetPrograms = useMemo(() => {
-    const list = spinLottedPrograms.filter(p => onlyPublished ? p.is_published : p.has_results);
-    return [...list].sort((a, b) => a.id - b.id);
+    return spinLottedPrograms.filter(p => onlyPublished ? p.is_published : p.has_results);
   }, [spinLottedPrograms, onlyPublished]);
 
   const maxLimit = targetPrograms.length;
@@ -820,6 +836,7 @@ export default function ScoringResults({
                     <tr>
                       <th>Sl No</th>
                       <th>Rank</th>
+                      <th>Lot Code</th>
                       <th>Chest No</th>
                       <th>Participant</th>
                       <th>Team</th>
@@ -834,7 +851,12 @@ export default function ScoringResults({
                       <tr key={r.id}>
                         <td>{idx + 1}</td>
                         <td style={{ fontWeight: 'bold' }}>#{r.rank}</td>
-                        <td style={{ color: 'var(--secondary-neon)', fontWeight: 'bold' }}>{r.member_chest_no || 'N/A'}</td>
+                        <td>
+                          <span style={{ fontWeight: 800, color: 'var(--secondary-neon)' }}>
+                            {r.judge_code ? `Code ${r.judge_code}` : '—'}
+                          </span>
+                        </td>
+                        <td style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{r.member_chest_no || 'N/A'}</td>
                         <td style={{ fontWeight: 600 }}>{r.member_name}</td>
                         <td>{r.team_name}</td>
                         <td>{r.total_marks}</td>

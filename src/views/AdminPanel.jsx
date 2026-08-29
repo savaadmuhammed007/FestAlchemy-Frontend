@@ -2703,7 +2703,9 @@ export default function AdminPanel() {
                   }
                   groupedByCode[code].sheets.push(sheet);
                 });
-                const groupedList = Object.values(groupedByCode);
+                const groupedList = Object.values(groupedByCode).sort((a, b) => 
+                  (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' })
+                );
 
                 return (
                   <div className="table-container" style={{ maxHeight: '350px', overflowY: 'auto' }}>
