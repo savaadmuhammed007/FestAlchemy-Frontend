@@ -466,7 +466,7 @@ function Navbar() {
 function AppContent() {
   const location = useLocation();
 
-  const isEduFenstaPage = ['/', '/edufensta', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
+  const isEduFenstaPage = ['/', '/edufensta', '/edufenta', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
   const isFullWidthPage = isEduFenstaPage || location.pathname === '/demo';
 
   return (
@@ -477,6 +477,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to="/edufensta" replace />} />
           <Route path="/edufensta" element={<EduFenstaHomePage />} />
+          <Route path="/edufenta" element={<EduFenstaHomePage />} />
           <Route path="/ilalhabeeb" element={<Navigate to="/edufensta" replace />} />
           <Route path="/demo" element={<ProductDemoPage />} />
 

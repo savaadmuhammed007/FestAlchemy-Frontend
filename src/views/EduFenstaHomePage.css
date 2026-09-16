@@ -1265,3 +1265,341 @@
     gap: 0.3rem;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   UNDER DEVELOPMENT BLUR OVERLAY & CARD
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Full page background blur effect when overlay is active */
+.edufensta-page--blurred > :not(.ef-under-dev-overlay):not(.ef-under-dev-reblur-floating-btn) {
+  filter: blur(14px) brightness(0.65);
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 0.4s ease;
+}
+
+/* Fixed Fullscreen Blur Backdrop */
+.ef-under-dev-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: radial-gradient(circle at 50% 40%, rgba(20, 10, 15, 0.78) 0%, rgba(5, 5, 5, 0.88) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  overflow-y: auto;
+  animation: efOverlayFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes efOverlayFadeIn {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+/* Center Glassmorphic Card */
+.ef-under-dev-card {
+  position: relative;
+  max-width: 540px;
+  width: 100%;
+  padding: 2.75rem 2.25rem 2.25rem 2.25rem;
+  background: linear-gradient(145deg, rgba(18, 14, 18, 0.94) 0%, rgba(10, 8, 11, 0.96) 100%);
+  border: 1px solid rgba(255, 26, 26, 0.32);
+  border-radius: 24px;
+  box-shadow: 
+    0 25px 60px rgba(0, 0, 0, 0.85),
+    0 0 50px rgba(255, 26, 26, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.15rem;
+  overflow: hidden;
+  animation: efCardPop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes efCardPop {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Ambient Radial Glow */
+.ef-under-dev-glow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(255, 26, 26, 0.45) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(35px);
+}
+
+/* Status Pill Badge */
+.ef-under-dev-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: 9999px;
+  background: rgba(255, 26, 26, 0.12);
+  border: 1px solid rgba(255, 26, 26, 0.35);
+  color: #ff4a4a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ef-under-dev-badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff2222;
+  box-shadow: 0 0 8px #ff2222;
+  animation: efPulseDot 1.8s infinite;
+}
+
+@keyframes efPulseDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.4;
+  }
+}
+
+/* Logo Wrap */
+.ef-under-dev-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.ef-under-dev-logo {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 16px rgba(255, 26, 26, 0.55));
+}
+
+/* Typography */
+.ef-under-dev-title {
+  font-family: var(--ef-font-display);
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  margin: 0;
+  color: #ffffff;
+  text-shadow: 0 0 24px rgba(255, 26, 26, 0.4);
+}
+
+.ef-under-dev-subtitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #ff3838;
+  margin-top: -0.4rem;
+}
+
+.ef-under-dev-desc {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: #b0b0b0;
+  max-width: 440px;
+  margin: 0;
+}
+
+/* Button Group */
+.ef-under-dev-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  width: 100%;
+  margin-top: 0.6rem;
+}
+
+.ef-under-dev-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.68rem 1.25rem;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+}
+
+.ef-under-dev-btn--primary {
+  background: var(--ef-crimson);
+  color: #ffffff;
+  border: 1px solid var(--ef-crimson);
+  box-shadow: 0 4px 20px rgba(255, 26, 26, 0.4);
+}
+
+.ef-under-dev-btn--primary:hover {
+  background: #ff3333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(255, 26, 26, 0.6);
+}
+
+.ef-under-dev-btn--secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e5e5e5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.ef-under-dev-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: translateY(-2px);
+}
+
+.ef-under-dev-btn--ghost {
+  background: transparent;
+  color: #a0a0a0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ef-under-dev-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+.ef-under-dev-btn--admin {
+  background: var(--ef-crimson);
+  color: #ffffff;
+  border: 1px solid var(--ef-crimson);
+  padding: 0.85rem 2.2rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(255, 26, 26, 0.45);
+}
+
+.ef-under-dev-btn--admin:hover {
+  background: #ff3333;
+  border-color: #ff3333;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(255, 26, 26, 0.65);
+}
+
+/* Discreet Icon-Only Preview Toggle */
+.ef-under-dev-preview-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #666666;
+  cursor: pointer;
+  margin-top: 0.2rem;
+  transition: all 0.2s ease;
+}
+
+.ef-under-dev-preview-icon-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 26, 26, 0.16);
+  border-color: rgba(255, 26, 26, 0.4);
+  transform: scale(1.1);
+}
+
+/* Floating icon button when in preview mode to re-enable blur */
+.ef-under-dev-reblur-floating-btn {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 99999;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(14, 10, 14, 0.94);
+  border: 1px solid rgba(255, 26, 26, 0.5);
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 26, 26, 0.35);
+  transition: all 0.22s ease;
+  animation: efFloatIn 0.3s ease;
+}
+
+@keyframes efFloatIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ef-under-dev-reblur-floating-btn:hover {
+  background: rgba(255, 26, 26, 0.25);
+  border-color: #ff2a2a;
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 26, 26, 0.6);
+}
+
+@media (max-width: 600px) {
+  .ef-under-dev-card {
+    padding: 2rem 1.5rem 1.75rem 1.5rem;
+    gap: 0.9rem;
+  }
+
+  .ef-under-dev-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ef-under-dev-btn {
+    width: 100%;
+  }
+
+  .ef-under-dev-reblur-floating-btn {
+    bottom: 1rem;
+    right: 1rem;
+    font-size: 0.75rem;
+    padding: 0.6rem 0.95rem;
+  }
+}
+

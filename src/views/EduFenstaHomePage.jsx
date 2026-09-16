@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Eye, EyeOff, Shield } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
 import { RindPeelCard } from '../components/peel-card';
 import './EduFenstaHomePage.css';
@@ -59,6 +60,7 @@ export default function EduFenstaHomePage() {
   const [navHidden, setNavHidden] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [festData, setFestData] = useState(null);
+  const [previewMode, setPreviewMode] = useState(false);
   const lastScrollY = useRef(0);
 
   // Dynamic portal redirect for authenticated users
@@ -249,7 +251,81 @@ export default function EduFenstaHomePage() {
   };
 
   return (
-    <div className="edufensta-page">
+    <div className={`edufensta-page ${!previewMode ? 'edufensta-page--blurred' : ''}`}>
+
+      {/* ════════════════════════════════════════════════════════════
+          UNDER DEVELOPMENT BLUR OVERLAY
+      ════════════════════════════════════════════════════════════ */}
+      {!previewMode && (
+        <div className="ef-under-dev-overlay" role="dialog" aria-modal="true">
+          <div className="ef-under-dev-card">
+            {/* Ambient background aura */}
+            <div className="ef-under-dev-glow" />
+
+            {/* Pulsing status pill */}
+            <div className="ef-under-dev-badge">
+              <span className="ef-under-dev-badge__dot" />
+              <span>UNDER ACTIVE DEVELOPMENT</span>
+            </div>
+
+            {/* Brand Logo or Icon */}
+            <div className="ef-under-dev-logo-wrap">
+              <img 
+                src="/edufensta-logo.png" 
+                alt="EduFensta Logo" 
+                className="ef-under-dev-logo" 
+                onError={(e) => { e.target.style.display = 'none'; }} 
+              />
+            </div>
+
+            <h1 className="ef-under-dev-title">
+              EDUFENSTA 2026
+            </h1>
+
+            <div className="ef-under-dev-subtitle">
+              OFFICIAL FESTIVAL PORTAL IS UNDER CONSTRUCTION
+            </div>
+
+            <p className="ef-under-dev-desc">
+              We are fine-tuning the EduFensta digital experience, live schedules, and competition scoreboards. 
+              The full portal will be officially unveiled soon.
+            </p>
+
+            {/* Admin Panel button only */}
+            <div className="ef-under-dev-actions">
+              <Link to="/admin" className="ef-under-dev-btn ef-under-dev-btn--admin">
+                <Shield size={16} />
+                <span>Admin Panel</span>
+                <ArrowRight size={15} />
+              </Link>
+            </div>
+
+            {/* Developer / Admin preview toggle — Icon only */}
+            <button 
+              type="button"
+              className="ef-under-dev-preview-icon-btn"
+              onClick={() => setPreviewMode(true)}
+              title="Preview page layout"
+              aria-label="Preview page layout"
+            >
+              <Eye size={17} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Floating icon button to re-lock / re-enable blur when in preview mode */}
+      {previewMode && (
+        <button 
+          type="button"
+          className="ef-under-dev-reblur-floating-btn"
+          onClick={() => setPreviewMode(false)}
+          title="Exit preview (Enable blur)"
+          aria-label="Exit preview (Enable blur)"
+        >
+          <EyeOff size={18} />
+        </button>
+      )}
 
       {/* ════════════════════════════════════════════════════════════
           NAVBAR
