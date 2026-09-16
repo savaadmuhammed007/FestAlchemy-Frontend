@@ -32,7 +32,7 @@ export default function Login() {
       } else if (loggedUser.role === 'teamlead') {
         navigate('/teamlead');
       } else {
-        navigate('/ilalhabeeb');
+        navigate('/edufensta');
       }
     } catch (err) {
       setError(err.message || "Invalid username or password.");

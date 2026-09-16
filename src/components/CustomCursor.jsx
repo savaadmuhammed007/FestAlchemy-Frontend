@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
  * CustomCursor — A creative dual-circle cursor with glow trail.
  * Renders a small solid dot (inner) and a larger ring (outer) that
  * follows the mouse with an elastic spring effect.
+ * Dynamically switches to vibrant red (#ff1a1a) on the Home page and EduFensta views.
  */
 export default function CustomCursor() {
   const dotRef = useRef(null);
@@ -14,6 +15,42 @@ export default function CustomCursor() {
   const [isPointer, setIsPointer] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
+
+  // Detect whether current view is the Home / EduFensta page
+  const [isRedCursor, setIsRedCursor] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname;
+    return path === '/' || path === '/edufensta' || path === '/ilalhabeeb' || path === '/results' || path === '/team-status';
+  });
+
+  useEffect(() => {
+    const checkRed = () => {
+      const path = window.location.pathname;
+      const hasEduClass = typeof document !== 'undefined' && !!document.querySelector('.edufensta-page');
+      setIsRedCursor(
+        path === '/' ||
+        path === '/edufensta' ||
+        path === '/ilalhabeeb' ||
+        path === '/results' ||
+        path === '/team-status' ||
+        hasEduClass
+      );
+    };
+
+    checkRed();
+    window.addEventListener('popstate', checkRed);
+
+    // Observe DOM mutations in case route changes via React Router
+    const observer = new MutationObserver(checkRed);
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    return () => {
+      window.removeEventListener('popstate', checkRed);
+      observer.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     // Skip on touch-only devices
@@ -33,7 +70,7 @@ export default function CustomCursor() {
         return;
       }
 
-      const clickable = target.closest('a, button, [role="button"], input, select, textarea, label, [onclick], .rs-event-card, .ts-table-row, .btn, .confirm-modal-box, .glass-panel');
+      const clickable = target.closest('a, button, [role="button"], input, select, textarea, label, [onclick], .rs-event-card, .ts-table-row, .btn, .confirm-modal-box, .glass-panel, .efr-card, .eft-row, .ef-results__card');
       let isPointerStyle = false;
       try {
         isPointerStyle = window.getComputedStyle(target).cursor === 'pointer';
@@ -94,17 +131,17 @@ export default function CustomCursor() {
       {/* Glow trail (largest, most blurred) */}
       <div
         ref={trailRef}
-        className={`custom-cursor-trail ${isHidden ? 'custom-cursor--hidden' : ''} ${isPointer ? 'custom-cursor-trail--pointer' : ''}`}
+        className={`custom-cursor-trail ${isRedCursor ? 'custom-cursor-trail--red' : ''} ${isHidden ? 'custom-cursor--hidden' : ''} ${isPointer ? 'custom-cursor-trail--pointer' : ''}`}
       />
       {/* Outer ring */}
       <div
         ref={ringRef}
-        className={`custom-cursor-ring ${isHidden ? 'custom-cursor--hidden' : ''} ${isPointer ? 'custom-cursor-ring--pointer' : ''} ${isClicking ? 'custom-cursor-ring--click' : ''}`}
+        className={`custom-cursor-ring ${isRedCursor ? 'custom-cursor-ring--red' : ''} ${isHidden ? 'custom-cursor--hidden' : ''} ${isPointer ? 'custom-cursor-ring--pointer' : ''} ${isClicking ? 'custom-cursor-ring--click' : ''}`}
       />
       {/* Inner dot */}
       <div
         ref={dotRef}
-        className={`custom-cursor-dot ${isHidden ? 'custom-cursor--hidden' : ''} ${isPointer ? 'custom-cursor-dot--pointer' : ''} ${isClicking ? 'custom-cursor-dot--click' : ''}`}
+        className={`custom-cursor-dot ${isRedCursor ? 'custom-cursor-dot--red' : ''} ${isHidden ? 'custom-cursor--hidden' : ''} ${isPointer ? 'custom-cursor-dot--pointer' : ''} ${isClicking ? 'custom-cursor-dot--click' : ''}`}
       />
     </>
   );

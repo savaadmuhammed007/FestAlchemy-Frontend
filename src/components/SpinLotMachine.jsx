@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useContext } from 'react';
-import { Play, RefreshCw, Lock, Sparkles, UserCheck, Search, Filter } from 'lucide-react';
+import { Play, RefreshCw, Lock, Sparkles, UserCheck, Search, Filter, Printer, X } from 'lucide-react';
 import { UIContext } from '../App';
 
 export default function SpinLotMachine({
@@ -16,6 +16,8 @@ export default function SpinLotMachine({
 }) {
   const { showToast, confirm } = useContext(UIContext);
   const [spinAllLoading, setSpinAllLoading] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [printFilter, setPrintFilter] = useState('spinned_only'); // 'spinned_only' | 'all'
 
   // Search & Filter local states
   const [searchQuery, setSearchQuery] = useState('');
@@ -692,6 +694,18 @@ export default function SpinLotMachine({
             </div>
             
             <div className="no-print" style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button 
+                type="button"
+                onClick={() => {
+                  setPrintFilter(doneMembers.length > 0 ? 'spinned_only' : 'all');
+                  setShowPrintModal(true);
+                }}
+                className="btn btn-secondary"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.82rem', fontWeight: 600, background: 'rgba(99, 102, 241, 0.12)', borderColor: 'rgba(99, 102, 241, 0.35)', color: 'var(--primary-neon)' }}
+                title="Print Candidate Lot Signing Sheet"
+              >
+                <Printer size={14} /> Print Lot Sheet (Sign)
+              </button>
               {!isFinalized && onCallAllMembers && notDoneMembers.length > 0 && (
                 <button 
                   onClick={() => handleSpinAll()} 
@@ -794,9 +808,25 @@ export default function SpinLotMachine({
 
                 {/* Called / Done */}
                 <div>
-                  <h4 style={{ marginBottom: '0.75rem', fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', fontSize: '0.95rem' }}>
-                    Called / Done ({doneMembers.length})
-                  </h4>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                    <h4 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--success)', fontSize: '0.95rem' }}>
+                      Called / Done ({doneMembers.length})
+                    </h4>
+                    {doneMembers.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPrintFilter('spinned_only');
+                          setShowPrintModal(true);
+                        }}
+                        className="btn btn-secondary"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                        title="Print Spinned Lot Sheet"
+                      >
+                        <Printer size={13} /> Print Sheet ({doneMembers.length})
+                      </button>
+                    )}
+                  </div>
                   {doneMembers.length === 0 ? (
                     <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', background: 'rgba(255,255,255,0.01)', padding: '0.85rem 1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
                       No participants have been called yet.
@@ -964,6 +994,163 @@ export default function SpinLotMachine({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* CANDIDATE SIGNING SHEET PRINT MODAL */}
+      {showPrintModal && (
+        <div className="modal-backdrop" style={{ zIndex: 9999, overflowY: 'auto', padding: '1rem' }}>
+          <div className="modal-content" style={{ maxWidth: '920px', width: '100%', margin: '1.5rem auto', background: 'var(--bg-surface, #18181b)', border: '1px solid var(--border-glass)', borderRadius: '12px', padding: '1.5rem', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
+            
+            {/* Modal Controls Bar (hidden during physical print) */}
+            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div>
+                <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+                  <Printer size={18} style={{ color: 'var(--primary-neon)' }} /> Print Candidate Lot Sheet
+                </h3>
+                <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  Physical sign-in calling sheet for candidates before stage entrance
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.35rem', background: 'rgba(255,255,255,0.04)', padding: '3px', borderRadius: '8px', border: '1px solid var(--border-glass)' }}>
+                  <button
+                    type="button"
+                    onClick={() => setPrintFilter('spinned_only')}
+                    className={`btn ${printFilter === 'spinned_only' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem' }}
+                  >
+                    Spinned Only ({doneMembers.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrintFilter('all')}
+                    className={`btn ${printFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '0.75rem', padding: '0.25rem 0.65rem' }}
+                  >
+                    All Registered ({callingData?.members?.length || 0})
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="btn btn-primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', fontSize: '0.85rem' }}
+                >
+                  <Printer size={15} /> Print Sheet Now
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPrintModal(false)}
+                  className="btn btn-secondary"
+                  style={{ padding: '0.45rem 0.65rem' }}
+                  title="Close"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Paper Sheet View */}
+            <div id="printable-lot-sheet" className="printable-sheet" style={{ background: '#ffffff', color: '#111827', padding: '2rem', borderRadius: '8px', border: '1px solid #e5e7eb', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              
+              {/* Sheet Header */}
+              <div style={{ textAlign: 'center', borderBottom: '2px solid #111827', paddingBottom: '0.85rem', marginBottom: '1.25rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', color: '#111827' }}>
+                  FESTALCHEMY OFFICIAL CALLING SHEET
+                </h2>
+                <h4 style={{ margin: '0.3rem 0 0', fontSize: '1.05rem', fontWeight: 700, color: '#4f46e5', textTransform: 'uppercase' }}>
+                  CANDIDATE LOT DRAW & SIGNATURE VERIFICATION
+                </h4>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '0.65rem', fontSize: '0.85rem', color: '#374151', flexWrap: 'wrap', fontWeight: 600 }}>
+                  <span><strong>Event:</strong> {selectedProgram?.name}</span>
+                  {selectedProgram?.category_name && <span><strong>Category:</strong> {selectedProgram?.category_name}</span>}
+                  {selectedProgram?.venue && <span><strong>Venue:</strong> {selectedProgram?.venue}</span>}
+                  {selectedProgram?.stage_type && <span><strong>Stage:</strong> {selectedProgram?.stage_type?.toUpperCase()}</span>}
+                  <span><strong>Date:</strong> {new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {/* Instructions Notice */}
+              <div style={{ background: '#f8fafc', borderLeft: '4px solid #4f46e5', padding: '0.55rem 0.85rem', marginBottom: '1.25rem', fontSize: '0.78rem', color: '#334155' }}>
+                <strong>Notice to Candidates & Officials:</strong> Verify your Chest Number and Lot Calling Code. Each candidate must physically sign in the signature column prior to proceeding to the stage.
+              </div>
+
+              {/* Candidate Table */}
+              {(() => {
+                const listToPrint = (printFilter === 'spinned_only' ? doneMembers : (callingData?.members || []));
+                if (listToPrint.length === 0) {
+                  return (
+                    <p style={{ textAlign: 'center', padding: '2.5rem', color: '#6b7280', fontStyle: 'italic', margin: 0 }}>
+                      {printFilter === 'spinned_only' 
+                        ? 'No candidates have been spinned yet. Spin lots first or toggle to "All Registered".' 
+                        : 'No registered participants found for this event.'}
+                    </p>
+                  );
+                }
+                return (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', color: '#111827', border: '1px solid #9ca3af' }}>
+                    <thead>
+                      <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #111827' }}>
+                        <th style={{ border: '1px solid #9ca3af', padding: '8px 10px', textAlign: 'center', width: '75px', fontWeight: 700 }}>Lot Code</th>
+                        <th style={{ border: '1px solid #9ca3af', padding: '8px 10px', textAlign: 'center', width: '90px', fontWeight: 700 }}>Chest No</th>
+                        <th style={{ border: '1px solid #9ca3af', padding: '8px 10px', textAlign: 'left', fontWeight: 700 }}>Candidate Name</th>
+                        <th style={{ border: '1px solid #9ca3af', padding: '8px 10px', textAlign: 'left', width: '150px', fontWeight: 700 }}>Team</th>
+                        <th style={{ border: '1px solid #9ca3af', padding: '8px 10px', textAlign: 'center', width: '80px', fontWeight: 700 }}>Status</th>
+                        <th style={{ border: '1px solid #9ca3af', padding: '8px 10px', textAlign: 'center', width: '190px', fontWeight: 700 }}>Candidate Signature</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {listToPrint.map((m, idx) => (
+                        <tr key={m.id || idx} style={{ borderBottom: '1px solid #d1d5db', height: '42px' }}>
+                          <td style={{ border: '1px solid #9ca3af', textAlign: 'center', fontWeight: 800, fontSize: '0.95rem' }}>
+                            {m.judge_code ? `Code ${m.judge_code}` : `#${idx + 1}`}
+                          </td>
+                          <td style={{ border: '1px solid #9ca3af', textAlign: 'center', fontWeight: 700, fontSize: '0.9rem' }}>
+                            {m.chest_no}
+                          </td>
+                          <td style={{ border: '1px solid #9ca3af', padding: '6px 10px', fontWeight: 600 }}>
+                            {m.name}
+                          </td>
+                          <td style={{ border: '1px solid #9ca3af', padding: '6px 10px', color: '#4b5563' }}>
+                            {m.team_name || m.team?.name || '—'}
+                          </td>
+                          <td style={{ border: '1px solid #9ca3af', textAlign: 'center', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>
+                            {m.called ? 'Called' : 'Waiting'}
+                          </td>
+                          <td style={{ border: '1px solid #9ca3af', textAlign: 'center', verticalAlign: 'bottom', padding: '4px 10px 8px' }}>
+                            <div style={{ borderBottom: '1.5px solid #111827', width: '90%', margin: '0 auto', height: '26px' }} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                );
+              })()}
+
+              {/* Sheet Sign-off Footer */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px dashed #9ca3af', fontSize: '0.85rem', color: '#374151' }}>
+                <div style={{ textAlign: 'center', width: '230px' }}>
+                  <div style={{ borderBottom: '1.5px solid #111827', marginBottom: '6px', height: '24px' }} />
+                  <strong>Stage Calling Officer</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>Name & Signature</div>
+                </div>
+                <div style={{ textAlign: 'center', width: '230px' }}>
+                  <div style={{ borderBottom: '1.5px solid #111827', marginBottom: '6px', height: '24px' }} />
+                  <strong>Stage Manager / Judge Witness</strong>
+                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>Name & Signature</div>
+                </div>
+              </div>
+
+              <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.7rem', color: '#9ca3af' }}>
+                FestAlchemy Event Management System • Calling Sheet Generated: {new Date().toLocaleString()}
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
     </div>

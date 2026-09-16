@@ -4,6 +4,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Views
 import HomePage from './views/HomePage';
+import EduFenstaHomePage from './views/EduFenstaHomePage';
+import EduFenstaResultsPage from './views/EduFenstaResultsPage';
+import EduFenstaTeamStatsPage from './views/EduFenstaTeamStatsPage';
 import TeamStatsPage from './views/TeamStatsPage';
 import ResultsPage from './views/ResultsPage';
 import ProductDemoPage from './views/ProductDemoPage';
@@ -158,7 +161,7 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (allowedRoles && (!user || !allowedRoles.includes(user.role))) return <Navigate to="/ilalhabeeb" replace />;
+  if (allowedRoles && (!user || !allowedRoles.includes(user.role))) return <Navigate to="/edufensta" replace />;
   return children;
 }
 
@@ -171,9 +174,9 @@ function Navbar() {
   const [showHomeNav, setShowHomeNav] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
+  const isHomePage = location.pathname === '/' || location.pathname === '/edufensta' || location.pathname === '/ilalhabeeb';
   const isDemoPage = location.pathname === '/demo';
-  const isPublicPage = ['/', '/ilalhabeeb', '/results', '/team-status', '/demo'].includes(location.pathname);
+  const isPublicPage = ['/', '/edufensta', '/ilalhabeeb', '/results', '/team-status', '/demo'].includes(location.pathname);
 
   const [activeDemoSection, setActiveDemoSection] = useState('demo-hero');
 
@@ -284,7 +287,7 @@ function Navbar() {
     return (
       <nav className={`navbar navbar--demo ${scrolled ? 'navbar--scrolled' : ''} ${mobileMenuOpen ? 'navbar--menu-open' : ''}`}>
         <div className="nav-brand-group" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <Link to="/ilalhabeeb" className="nav-brand">
+          <Link to="/edufensta" className="nav-brand">
             <img src="/logo.png" alt="FestAlchemy Logo" className="nav-brand-img" />
             <span className="gradient-text">FestAlchemy</span>
           </Link>
@@ -320,7 +323,7 @@ function Navbar() {
           </div>
 
           <div className="nav-links-group nav-links-group--auth">
-            <Link to="/ilalhabeeb" className="demo-nav-exit-btn" onClick={() => setMobileMenuOpen(false)}>
+            <Link to="/edufensta" className="demo-nav-exit-btn" onClick={() => setMobileMenuOpen(false)}>
               <span>Live Festival</span>
               <ArrowRight size={13} />
             </Link>
@@ -348,24 +351,24 @@ function Navbar() {
   // Public links in navigation bar
   const publicLinks = isPublicPage
     ? [
-        { to: '/ilalhabeeb', label: 'Home', exact: true },
+        { to: '/edufensta', label: 'Home', exact: true },
         { to: '/results', label: 'Results' },
         { to: '/team-status', label: 'Team Status' },
       ]
     : [
-        { to: '/ilalhabeeb', label: 'Home', exact: true },
+        { to: '/edufensta', label: 'Home', exact: true },
       ];
 
   const isActive = (link) => {
-    if (link.to === '/ilalhabeeb' || link.to === '/') {
-      return location.pathname === '/' || location.pathname === '/ilalhabeeb';
+    if (link.to === '/edufensta' || link.to === '/ilalhabeeb' || link.to === '/') {
+      return location.pathname === '/' || location.pathname === '/edufensta' || location.pathname === '/ilalhabeeb';
     }
     return location.pathname === link.to;
   };
 
   return (
     <nav className={navClass}>
-      <Link to="/ilalhabeeb" className="nav-brand">
+      <Link to="/edufensta" className="nav-brand">
         <img src="/logo.png" alt="FestAlchemy Logo" className="nav-brand-img" />
         <span className="gradient-text">FestAlchemy</span>
       </Link>
@@ -463,19 +466,28 @@ function Navbar() {
 function AppContent() {
   const location = useLocation();
 
-  const isHomePage = location.pathname === '/' || location.pathname === '/ilalhabeeb';
-  const isFullWidthPage = isHomePage || location.pathname === '/demo';
+  const isEduFenstaPage = ['/', '/edufensta', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
+  const isFullWidthPage = isEduFenstaPage || location.pathname === '/demo';
 
   return (
     <div className="app-container">
-      <Navbar />
+      {/* Hide app navbar on EduFensta pages — they have their own integrated EduFensta nav */}
+      {!isEduFenstaPage && <Navbar />}
       <main className={`main-content ${isFullWidthPage ? 'main-content--home' : ''}`}>
         <Routes>
-          <Route path="/" element={<Navigate to="/ilalhabeeb" replace />} />
-          <Route path="/ilalhabeeb" element={<HomePage />} />
+          <Route path="/" element={<Navigate to="/edufensta" replace />} />
+          <Route path="/edufensta" element={<EduFenstaHomePage />} />
+          <Route path="/ilalhabeeb" element={<Navigate to="/edufensta" replace />} />
           <Route path="/demo" element={<ProductDemoPage />} />
-          <Route path="/results" element={<ResultsPage />} />
-          <Route path="/team-status" element={<TeamStatsPage />} />
+
+          {/* New EduFensta styled pages */}
+          <Route path="/results" element={<EduFenstaResultsPage />} />
+          <Route path="/team-status" element={<EduFenstaTeamStatsPage />} />
+
+          {/* Preserved legacy pages — easily accessible or switchable back after EduFensta */}
+          <Route path="/old-results" element={<ResultsPage />} />
+          <Route path="/old-team-status" element={<TeamStatsPage />} />
+
           <Route path="/login" element={<Login />} />
 
           <Route path="/admin" element={
@@ -501,7 +513,7 @@ function AppContent() {
             </ProtectedRoute>
           } />
 
-          <Route path="*" element={<Navigate to="/ilalhabeeb" replace />} />
+          <Route path="*" element={<Navigate to="/edufensta" replace />} />
         </Routes>
       </main>
     </div>

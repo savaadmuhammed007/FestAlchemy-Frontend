@@ -1,0 +1,646 @@
+/* ═══════════════════════════════════════════════════════════════
+   EDUFENSTA TEAM STATS PAGE STYLING
+   Matching EduFensta Dark Brutalist Crimson Aesthetic
+   ═══════════════════════════════════════════════════════════════ */
+
+.eft-page {
+  background-color: var(--ef-bg, #050505);
+  color: var(--ef-white, #f5f5f0);
+  font-family: var(--ef-font-body, 'Space Grotesk', sans-serif);
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ── Hero Banner ── */
+.eft-hero {
+  position: relative;
+  padding: 8.5rem 2rem 4rem;
+  background: radial-gradient(circle at 50% 10%, rgba(255, 26, 26, 0.14) 0%, transparent 70%),
+              linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
+  border-bottom: 1px solid var(--ef-border, rgba(255, 255, 255, 0.08));
+  overflow: hidden;
+}
+
+.eft-hero__contours {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.eft-hero__container {
+  max-width: 1240px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.eft-hero__season-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ef-crimson, #ff1a1a);
+  background: rgba(255, 26, 26, 0.08);
+  border: 1px solid rgba(255, 26, 26, 0.25);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+.eft-hero__title {
+  font-family: var(--ef-font-display, 'Bebas Neue', sans-serif);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  color: var(--ef-white, #f5f5f0);
+}
+
+.eft-hero__title span {
+  color: var(--ef-crimson, #ff1a1a);
+  text-shadow: 0 0 35px var(--ef-crimson-glow, rgba(255, 26, 26, 0.45));
+}
+
+.eft-hero__subtitle {
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+  color: var(--ef-gray-light, #a3a3a3);
+  max-width: 680px;
+  line-height: 1.6;
+  margin: 0 0 2rem;
+}
+
+/* ── Content Container ── */
+.eft-content {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 3rem 2rem 6rem;
+}
+
+/* ── Grand Champions Podium ── */
+.eft-podium-section {
+  margin-bottom: 4rem;
+}
+
+.eft-podium-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.eft-podium-eyebrow {
+  font-family: var(--ef-font-accent, cursive);
+  font-size: 1.3rem;
+  color: var(--ef-crimson);
+  margin-bottom: 0.25rem;
+}
+
+.eft-podium-title {
+  font-family: var(--ef-font-display);
+  font-size: 2.5rem;
+  letter-spacing: 0.05em;
+  margin: 0;
+  text-transform: uppercase;
+  color: var(--ef-white);
+}
+
+.eft-podium-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  align-items: flex-end;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .eft-podium-grid {
+    grid-template-columns: 1fr 1.15fr 1fr;
+  }
+}
+
+/* Two Teams Head-to-Head Grid */
+.eft-podium-grid--two-teams {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .eft-podium-grid--two-teams {
+    grid-template-columns: repeat(2, 1fr) !important;
+    align-items: stretch !important;
+  }
+}
+
+.eft-podium-card--dual {
+  order: unset !important;
+  transform: none !important;
+  padding: 3rem 2rem 2.5rem !important;
+}
+
+.eft-podium-card--dual:hover {
+  transform: translateY(-6px) !important;
+}
+
+.eft-podium-card {
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eft-podium-card:hover {
+  transform: translateY(-6px);
+}
+
+/* 1st Place (Center / Grand) */
+.eft-podium-card--1st {
+  order: 1;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.15) 0%, #0d0d0d 80%);
+  border-color: rgba(255, 215, 0, 0.45);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 215, 0, 0.2);
+  padding-top: 3.25rem;
+  padding-bottom: 2.75rem;
+}
+
+@media (min-width: 768px) {
+  .eft-podium-card--1st {
+    order: 2;
+    transform: translateY(-16px);
+  }
+  .eft-podium-card--1st:hover {
+    transform: translateY(-22px);
+  }
+}
+
+.eft-podium-card--2nd {
+  order: 2;
+  background: radial-gradient(circle at 50% 0%, rgba(192, 192, 192, 0.1) 0%, #0d0d0d 80%);
+  border-color: rgba(192, 192, 192, 0.3);
+}
+
+@media (min-width: 768px) {
+  .eft-podium-card--2nd {
+    order: 1;
+  }
+}
+
+.eft-podium-card--3rd {
+  order: 3;
+  background: radial-gradient(circle at 50% 0%, rgba(205, 127, 50, 0.1) 0%, #0d0d0d 80%);
+  border-color: rgba(205, 127, 50, 0.3);
+}
+
+.eft-podium-crown {
+  position: absolute;
+  top: 1rem;
+  color: #ffd700;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+  animation: crownBob 3s ease-in-out infinite;
+}
+
+@keyframes crownBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.eft-podium-medal {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border: 2px solid;
+}
+
+.eft-podium-card--1st .eft-podium-medal {
+  width: 72px;
+  height: 72px;
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  border-color: #ffd700;
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.eft-podium-card--2nd .eft-podium-medal {
+  background: rgba(192, 192, 192, 0.15);
+  color: #c0c0c0;
+  border-color: #c0c0c0;
+}
+
+.eft-podium-card--3rd .eft-podium-medal {
+  background: rgba(205, 127, 50, 0.15);
+  color: #cd7f32;
+  border-color: #cd7f32;
+}
+
+.eft-podium-rank {
+  font-family: var(--ef-font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  color: var(--ef-gray);
+  margin-bottom: 0.25rem;
+}
+
+.eft-podium-name {
+  font-family: var(--ef-font-display);
+  font-size: 1.8rem;
+  letter-spacing: 0.04em;
+  color: var(--ef-white);
+  margin: 0 0 0.5rem;
+  line-height: 1.1;
+}
+
+.eft-podium-card--1st .eft-podium-name {
+  font-size: 2.2rem;
+  color: #fff;
+}
+
+.eft-podium-pts {
+  font-family: var(--ef-font-display);
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+}
+
+.eft-podium-card--1st .eft-podium-pts {
+  font-size: 3.4rem;
+  color: #ffd700;
+  text-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.eft-podium-card--2nd .eft-podium-pts {
+  color: #c0c0c0;
+}
+
+.eft-podium-card--3rd .eft-podium-pts {
+  color: #cd7f32;
+}
+
+.eft-podium-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(255, 26, 26, 0.15);
+  border: 1px solid var(--ef-crimson);
+  color: var(--ef-crimson);
+}
+
+/* ── Leaderboard Table Section ── */
+.eft-table-section {
+  margin-top: 2rem;
+}
+
+.eft-table-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+
+@media (min-width: 768px) {
+  .eft-table-bar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.eft-table-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--ef-font-display);
+  font-size: 1.8rem;
+  margin: 0;
+  text-transform: uppercase;
+  color: var(--ef-white);
+}
+
+.eft-table-search {
+  position: relative;
+  max-width: 360px;
+  width: 100%;
+}
+
+.eft-table-search input {
+  width: 100%;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--ef-white);
+  padding: 0.65rem 1rem 0.65rem 2.5rem;
+  border-radius: 8px;
+  font-family: var(--ef-font-body);
+  font-size: 0.88rem;
+}
+
+.eft-table-search input:focus {
+  outline: none;
+  border-color: var(--ef-crimson);
+  box-shadow: 0 0 15px rgba(255, 26, 26, 0.25);
+}
+
+.eft-table-search-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ef-gray);
+  pointer-events: none;
+}
+
+/* Leaderboard Grid / Table */
+.eft-table-wrap {
+  background: #0a0a0a;
+  border: 1px solid var(--ef-border);
+  border-radius: 12px;
+  overflow-x: auto;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+}
+
+.eft-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.eft-table th {
+  padding: 1.1rem 1.25rem;
+  font-family: var(--ef-font-body);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ef-gray);
+  background: #0f0f0f;
+  border-bottom: 1px solid var(--ef-border);
+  text-align: left;
+}
+
+.eft-table th.eft-th-center {
+  text-align: center;
+}
+
+.eft-table th.eft-th-right {
+  text-align: right;
+}
+
+.eft-row {
+  cursor: default;
+  transition: background 0.2s ease;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.eft-row:hover {
+  background: rgba(255, 26, 26, 0.04);
+}
+
+.eft-row--leader {
+  background: rgba(255, 215, 0, 0.04);
+}
+
+.eft-row--expanded {
+  background: #111111;
+}
+
+.eft-table td {
+  padding: 1.15rem 1.25rem;
+  font-size: 0.95rem;
+  color: var(--ef-white);
+  vertical-align: middle;
+}
+
+.eft-rank-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-family: var(--ef-font-display);
+  font-size: 1.2rem;
+  background: #161616;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--ef-gray-light);
+}
+
+.eft-rank-badge--1 {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.eft-rank-badge--2 {
+  background: rgba(192, 192, 192, 0.15);
+  border-color: #c0c0c0;
+  color: #c0c0c0;
+}
+
+.eft-rank-badge--3 {
+  background: rgba(205, 127, 50, 0.15);
+  border-color: #cd7f32;
+  color: #cd7f32;
+}
+
+.eft-team-name {
+  font-family: var(--ef-font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+  color: var(--ef-white);
+}
+
+.eft-cat-pts {
+  text-align: center;
+  font-family: var(--ef-font-body);
+  font-weight: 600;
+  color: var(--ef-gray-light);
+}
+
+.eft-total-pts {
+  text-align: right;
+  font-family: var(--ef-font-display);
+  font-size: 1.6rem;
+  color: var(--ef-white);
+}
+
+.eft-row--leader .eft-total-pts {
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Breakdown Row */
+.eft-breakdown-row td {
+  padding: 1.5rem;
+  background: #070707;
+  border-bottom: 1px solid var(--ef-border);
+}
+
+.eft-breakdown-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.eft-breakdown-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ef-crimson);
+}
+
+.eft-breakdown-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.eft-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+}
+
+.eft-chip-name {
+  color: var(--ef-gray-light);
+}
+
+.eft-chip-val {
+  font-weight: 700;
+  color: var(--ef-white);
+  background: rgba(255, 26, 26, 0.15);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ── Mobile Responsive Table Utilities & Breakpoints ── */
+.eft-team-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.eft-mobile-only {
+  display: none;
+}
+
+.eft-mobile-zones-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.eft-mobile-zone-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.eft-mobile-zone-label {
+  color: var(--ef-gray);
+  font-weight: 500;
+}
+
+.eft-mobile-zone-val {
+  color: var(--ef-white);
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .eft-content {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .eft-desktop-col {
+    display: none !important;
+  }
+
+  .eft-mobile-only {
+    display: flex !important;
+  }
+
+  .eft-table th,
+  .eft-table td {
+    padding: 0.85rem 0.75rem;
+  }
+
+  .eft-team-name {
+    font-size: 1.15rem;
+  }
+
+  .eft-total-pts {
+    font-size: 1.35rem;
+  }
+
+  .eft-rank-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 1.05rem;
+  }
+
+  .eft-table-search {
+    max-width: 100%;
+  }
+
+  .eft-table-heading {
+    font-size: 1.45rem;
+  }
+
+  .eft-breakdown-row td {
+    padding: 1rem 0.85rem;
+  }
+
+  .eft-chip {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .eft-table th,
+  .eft-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .eft-team-name {
+    font-size: 1.05rem;
+  }
+
+  .eft-total-pts {
+    font-size: 1.25rem;
+  }
+
+  .eft-mobile-zone-chip {
+    font-size: 0.66rem;
+    padding: 1px 4px;
+  }
+}

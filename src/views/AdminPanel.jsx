@@ -7,7 +7,7 @@ import {
   Play, CheckSquare, PlusCircle, Trash, Edit, 
   Save, FileText, CheckCircle, Award, UserCheck, 
   Sliders, ClipboardList, Clock, Search, Filter, Shield,
-  Printer, UserPlus, Image, Medal, ArrowUp, ArrowDown, Sparkles
+  Printer, UserPlus, Image, Medal, ArrowUp, ArrowDown, Sparkles, Shuffle
 } from 'lucide-react';
 import Modal from '../components/Modal';
 import DashboardOverview from '../components/DashboardOverview';
@@ -95,24 +95,61 @@ export default function AdminPanel() {
   const [memberFilterTeam, setMemberFilterTeam] = useState('');
   const [memberFilterCategory, setMemberFilterCategory] = useState('');
 
+  // Report auto-fetch helper
+  const fetchReportForType = async (typeToFetch, progId = null, catId = null) => {
+    if (!typeToFetch || typeToFetch === 'dashboard') return;
+    setReportLoading(true);
+    try {
+      let cleanType = (typeToFetch || 'lots').trim().toLowerCase().replace(/^\/+/, '').replace(/\/+$/, '');
+      if (['reports', 'report', 'report_centre', 'report_center', 'dashboard'].includes(cleanType)) {
+        cleanType = 'lots';
+      }
+      let url = `${API_BASE_URL}/api/reports/?type=${cleanType}`;
+      if (progId) url += `&program=${progId}`;
+      if (catId) url += `&category=${catId}`;
+
+      const headers = {};
+      const authToken = token || localStorage.getItem('token');
+      if (authToken) headers['Authorization'] = `Token ${authToken}`;
+
+      const res = await fetch(url, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        setReportData(json);
+      } else {
+        const fallbackRes = await fetch(`${API_BASE_URL}/api/reports/?type=lots`, { headers });
+        if (fallbackRes.ok) {
+          const fallbackJson = await fallbackRes.json();
+          setReportData(fallbackJson);
+        }
+      }
+    } catch (err) {
+      console.error("fetchReportForType error:", err);
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   // URL to tab synchronizer
   useEffect(() => {
     const path = location.pathname;
     if (path.startsWith('/admin/reports')) {
       setActiveTab('reports');
-      const sub = path.replace('/admin/reports', '').replace(/^\//, '');
-      if (sub) {
-        setReportType(sub);
-      } else {
-        setReportType('dashboard');
-      }
+      const rawSub = path.replace('/admin/reports', '').replace(/^\/+/, '').replace(/\/+$/, '');
+      const sub = (!rawSub || rawSub === 'dashboard' || rawSub === 'report' || rawSub === 'reports') ? 'dashboard' : rawSub;
+      setReportType(sub);
       setReportData(null);
       setReportFilterProgram('');
       setReportFilterTeam('');
       setReportFilterCategory('');
       setReportSelectedPrograms([]);
       setProgramSearchQuery('');
-      setReportSelectionMode('single');
+      setReportSelectionMode(sub === 'lots' ? 'multiple' : 'single');
+
+      // Immediately fetch data so the report is ready upon page opening!
+      if (sub && sub !== 'dashboard') {
+        fetchReportForType(sub);
+      }
     } else if (path.startsWith('/admin/settings')) {
       setActiveTab('settings');
       const sub = path.replace('/admin/settings', '').replace(/^\//, '');
@@ -975,14 +1012,27 @@ export default function AdminPanel() {
       alert("Please select at least one program.");
       return;
     }
+    if (reportType === 'results' && reportSelectionMode === 'single' && !reportFilterProgram) {
+      alert("Please select a program first, or switch to 'Multiple Events (or All)' to generate reports.", "warning");
+      return;
+    }
     setReportLoading(true);
     try {
-      let url = `${API_BASE_URL}/api/reports/?type=${reportType}`;
-      if (reportType === 'results') {
+      let cleanType = (reportType || 'lots').trim().toLowerCase().replace(/^\/+/, '').replace(/\/+$/, '');
+      if (['reports', 'report', 'report_centre', 'report_center', 'dashboard'].includes(cleanType)) {
+        cleanType = 'lots';
+      }
+      let url = `${API_BASE_URL}/api/reports/?type=${cleanType}`;
+      if (cleanType === 'results' || cleanType === 'lots') {
         if (reportSelectionMode === 'multiple') {
-          url += `&program=${reportSelectedPrograms.join(',')}`;
+          if (reportSelectedPrograms.length > 0) {
+            url += `&program=${reportSelectedPrograms.join(',')}`;
+          }
         } else if (reportFilterProgram) {
           url += `&program=${reportFilterProgram}`;
+        }
+        if (reportFilterCategory) {
+          url += `&category=${reportFilterCategory}`;
         }
       }
       if (reportType === 'members') {
@@ -992,19 +1042,39 @@ export default function AdminPanel() {
       if (reportType === 'performers') {
         if (reportFilterCategory) url += `&category=${reportFilterCategory}`;
       }
-      if (reportType === 'marksheets' && reportFilterProgram) {
-        url += `&program=${reportFilterProgram}`;
+      if (reportType === 'marksheets') {
+        if (reportFilterProgram) {
+          url += `&program=${reportFilterProgram}`;
+        } else {
+          alert("Please select a program for marksheets report.", "warning");
+          setReportLoading(false);
+          return;
+        }
       }
 
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
+      const headers = {};
+      const authToken = token || localStorage.getItem('token');
+      if (authToken) headers['Authorization'] = `Token ${authToken}`;
+
+      const res = await fetch(url, { headers });
       if (res.ok) {
         const json = await res.json();
         setReportData(json);
+      } else {
+        const errJson = await res.json().catch(() => ({}));
+        if (errJson.error && !errJson.error.toLowerCase().includes('invalid report type')) {
+          alert(errJson.error, "error");
+        } else {
+          const fallbackRes = await fetch(`${API_BASE_URL}/api/reports/?type=lots`, { headers });
+          if (fallbackRes.ok) {
+            const fallbackJson = await fallbackRes.json();
+            setReportData(fallbackJson);
+          }
+        }
       }
     } catch (err) {
       console.error(err);
+      alert("Error fetching report data: " + (err.message || "Network error"), "error");
     } finally {
       setReportLoading(false);
     }
@@ -1810,11 +1880,13 @@ export default function AdminPanel() {
                     {reportType === 'marksheets' && <ClipboardList size={18} style={{ color: 'var(--primary-neon)' }} />}
                     {reportType === 'teampoints' && <FileText size={18} style={{ color: 'var(--primary-neon)' }} />}
                     {reportType === 'performers' && <Medal size={18} style={{ color: 'var(--gold)' }} />}
+                    {reportType === 'lots' && <Shuffle size={18} style={{ color: 'var(--primary-neon)' }} />}
                     {reportType === 'results' ? 'Event Results Configurator' : 
                      reportType === 'members' ? 'Registered Members Directory Configurator' : 
                      reportType === 'marksheets' ? 'Marksheets Entry Log Configurator' : 
                      reportType === 'teampoints' ? 'Overall Team Standings Configurator' : 
-                     reportType === 'performers' ? 'Top Performers (Individual Leaderboard) Configurator' : 'Report Configurator'}
+                     reportType === 'performers' ? 'Top Performers (Individual Leaderboard) Configurator' : 
+                     reportType === 'lots' ? 'Program Spinned Lots (Calling Sheet) Configurator' : 'Report Configurator'}
                   </h3>
 
                   <div style={{ 
@@ -1834,8 +1906,27 @@ export default function AdminPanel() {
                         </select>
                       </div>
                     )}
-                    {reportType === 'results' && (
+                    {(reportType === 'results' || reportType === 'lots') && (
                       <div style={{ width: '100%' }}>
+                        {reportType === 'lots' && (
+                          <div className="form-group" style={{ minWidth: '220px', maxWidth: '350px', marginBottom: '1rem' }}>
+                            <label className="form-label">Filter Category (Optional)</label>
+                            <select 
+                              className="form-control" 
+                              value={reportFilterCategory} 
+                              onChange={e => {
+                                setReportFilterCategory(e.target.value);
+                                setReportFilterProgram('');
+                                setReportSelectedPrograms([]);
+                              }}
+                            >
+                              <option value="">All Categories</option>
+                              {categories.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                           <button
                             type="button"
@@ -1851,28 +1942,121 @@ export default function AdminPanel() {
                             className={`btn ${reportSelectionMode === 'multiple' ? 'btn-primary' : 'btn-secondary'}`}
                             style={{ fontSize: '0.8rem', padding: '0.35rem 0.95rem', borderRadius: 'var(--radius-full)' }}
                           >
-                            Multiple Events
+                            Multiple Events {reportType === 'lots' ? '(or All)' : ''}
                           </button>
                         </div>
 
                         {reportSelectionMode === 'single' ? (
-                          <div className="form-group" style={{ minWidth: '220px', maxWidth: '350px', marginBottom: 0 }}>
-                            <label className="form-label">Choose Program</label>
-                            <select className="form-control" value={reportFilterProgram} onChange={e => setReportFilterProgram(e.target.value)}>
-                              <option value="">Select Event (All)...</option>
-                              {programs.map(p => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                              ))}
+                          <div style={{ width: '100%', maxWidth: '450px', marginBottom: 0 }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                              <label className="form-label" style={{ margin: 0, fontWeight: 600 }}>Choose Program</label>
+                              {reportFilterProgram && (
+                                <button
+                                  type="button"
+                                  onClick={() => setReportFilterProgram('')}
+                                  className="btn btn-secondary"
+                                  style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem' }}
+                                >
+                                  Clear
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Search program input */}
+                            <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
+                              <Search size={15} style={{ position: 'absolute', left: '10px', top: '11px', color: 'var(--text-secondary)' }} />
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search program by name or category..."
+                                value={programSearchQuery}
+                                onChange={e => setProgramSearchQuery(e.target.value)}
+                                style={{ paddingLeft: '2.2rem', fontSize: '0.85rem', height: '36px' }}
+                              />
+                            </div>
+
+                            <select 
+                              className="form-control" 
+                              value={reportFilterProgram} 
+                              onChange={e => setReportFilterProgram(e.target.value)}
+                              style={{ height: '38px', fontSize: '0.88rem' }}
+                            >
+                              <option value="">
+                                {programSearchQuery ? `-- Filtered (${programs.filter(p => (!reportFilterCategory || String(p.category) === String(reportFilterCategory) || String(p.category?.id) === String(reportFilterCategory) || p.category_name === categories.find(c => String(c.id) === String(reportFilterCategory))?.name) && (!programSearchQuery || p.name.toLowerCase().includes(programSearchQuery.toLowerCase()) || (p.category_name && p.category_name.toLowerCase().includes(programSearchQuery.toLowerCase())))).length} matches) --` : 'Select Event...'}
+                              </option>
+                              {programs
+                                .filter(p => !reportFilterCategory || String(p.category) === String(reportFilterCategory) || String(p.category?.id) === String(reportFilterCategory) || p.category_name === categories.find(c => String(c.id) === String(reportFilterCategory))?.name)
+                                .filter(p => !programSearchQuery || p.name.toLowerCase().includes(programSearchQuery.toLowerCase()) || (p.category_name && p.category_name.toLowerCase().includes(programSearchQuery.toLowerCase())))
+                                .map(p => (
+                                  <option key={p.id} value={p.id}>{p.name} ({p.category_name})</option>
+                                ))}
                             </select>
+
+                            {/* Quick clickable match suggestions when searching */}
+                            {programSearchQuery && !reportFilterProgram && (() => {
+                              const matches = programs
+                                .filter(p => !reportFilterCategory || String(p.category) === String(reportFilterCategory) || String(p.category?.id) === String(reportFilterCategory) || p.category_name === categories.find(c => String(c.id) === String(reportFilterCategory))?.name)
+                                .filter(p => p.name.toLowerCase().includes(programSearchQuery.toLowerCase()) || (p.category_name && p.category_name.toLowerCase().includes(programSearchQuery.toLowerCase())));
+                              if (matches.length === 0) return (
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.4rem 0 0' }}>No programs matching "{programSearchQuery}"</p>
+                              );
+                              return (
+                                <div style={{
+                                  marginTop: '0.4rem',
+                                  maxHeight: '140px',
+                                  overflowY: 'auto',
+                                  border: '1px solid var(--border-glass)',
+                                  borderRadius: '6px',
+                                  background: 'var(--bg-glass)',
+                                  padding: '0.25rem'
+                                }}>
+                                  {matches.slice(0, 10).map(p => (
+                                    <div
+                                      key={p.id}
+                                      onClick={() => setReportFilterProgram(p.id)}
+                                      style={{
+                                        padding: '0.35rem 0.6rem',
+                                        cursor: 'pointer',
+                                        borderRadius: '4px',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        fontSize: '0.82rem',
+                                        color: 'var(--text-primary)',
+                                        transition: 'background 0.15s'
+                                      }}
+                                      className="menu-item-hover"
+                                    >
+                                      <span style={{ fontWeight: 600 }}>{p.name}</span>
+                                      <span className="tag tag-primary" style={{ fontSize: '0.65rem' }}>{p.category_name}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+
+                            {reportFilterProgram && (
+                              <div style={{ marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Selected:</span>
+                                <span className="tag tag-primary" style={{ fontSize: '0.8rem', fontWeight: 600 }}>
+                                  {programs.find(p => String(p.id) === String(reportFilterProgram))?.name || `Program #${reportFilterProgram}`}
+                                </span>
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <div style={{ width: '100%', maxWidth: '500px', marginTop: '0.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                              <label className="form-label" style={{ margin: 0 }}>Select Programs</label>
+                              <label className="form-label" style={{ margin: 0 }}>
+                                Select Programs {reportType === 'lots' && <span style={{ fontWeight: 'normal', color: 'var(--text-secondary)', fontSize: '0.8rem' }}>(leave empty for all)</span>}
+                              </label>
                               <div style={{ display: 'flex', gap: '0.5rem' }}>
                                 <button
                                   type="button"
-                                  onClick={() => setReportSelectedPrograms(programs.map(p => p.id))}
+                                  onClick={() => {
+                                    const filtered = programs.filter(p => !reportFilterCategory || String(p.category) === String(reportFilterCategory) || String(p.category?.id) === String(reportFilterCategory) || p.category_name === categories.find(c => String(c.id) === String(reportFilterCategory))?.name);
+                                    setReportSelectedPrograms(filtered.map(p => p.id));
+                                  }}
                                   className="btn btn-secondary"
                                   style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem' }}
                                 >
@@ -1909,42 +2093,45 @@ export default function AdminPanel() {
                               flexDirection: 'column',
                               gap: '0.25rem'
                             }}>
-                              {programs.filter(p => p.name.toLowerCase().includes(programSearchQuery.toLowerCase())).map(p => {
-                                const isChecked = reportSelectedPrograms.includes(p.id);
-                                return (
-                                  <label
-                                    key={p.id}
-                                    style={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '0.5rem',
-                                      padding: '0.35rem 0.5rem',
-                                      cursor: 'pointer',
-                                      borderRadius: '4px',
-                                      transition: 'background 0.2s',
-                                      background: isChecked ? 'rgba(255,255,255,0.04)' : 'transparent',
-                                      margin: 0
-                                    }}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={e => {
-                                        if (e.target.checked) {
-                                          setReportSelectedPrograms([...reportSelectedPrograms, p.id]);
-                                        } else {
-                                          setReportSelectedPrograms(reportSelectedPrograms.filter(id => id !== p.id));
-                                        }
+                              {programs
+                                .filter(p => !reportFilterCategory || String(p.category) === String(reportFilterCategory) || String(p.category?.id) === String(reportFilterCategory) || p.category_name === categories.find(c => String(c.id) === String(reportFilterCategory))?.name)
+                                .filter(p => p.name.toLowerCase().includes(programSearchQuery.toLowerCase()))
+                                .map(p => {
+                                  const isChecked = reportSelectedPrograms.includes(p.id);
+                                  return (
+                                    <label
+                                      key={p.id}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '0.5rem',
+                                        padding: '0.35rem 0.5rem',
+                                        cursor: 'pointer',
+                                        borderRadius: '4px',
+                                        transition: 'background 0.2s',
+                                        background: isChecked ? 'rgba(255,255,255,0.04)' : 'transparent',
+                                        margin: 0
                                       }}
-                                      style={{ cursor: 'pointer' }}
-                                    />
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{p.name}</span>
-                                    <span className="tag tag-primary" style={{ fontSize: '0.65rem', marginLeft: 'auto' }}>
-                                      {p.category_name}
-                                    </span>
-                                  </label>
-                                );
-                              })}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={e => {
+                                          if (e.target.checked) {
+                                            setReportSelectedPrograms([...reportSelectedPrograms, p.id]);
+                                          } else {
+                                            setReportSelectedPrograms(reportSelectedPrograms.filter(id => id !== p.id));
+                                          }
+                                        }}
+                                        style={{ cursor: 'pointer' }}
+                                      />
+                                      <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>{p.name}</span>
+                                      <span className="tag tag-primary" style={{ fontSize: '0.65rem', marginLeft: 'auto' }}>
+                                        {p.category_name}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
                             </div>
                           </div>
                         )}

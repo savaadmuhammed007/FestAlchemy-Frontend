@@ -3,8 +3,18 @@ import { Printer, Filter } from 'lucide-react';
 
 export default function ReportViewer({ reportType, reportData }) {
   const [selectedStageFilter, setSelectedStageFilter] = useState('ALL');
+  const [lotsFilter, setLotsFilter] = useState('all'); // 'all' | 'spinned_only'
 
   if (!reportData) return null;
+
+  const normType = (reportType || '').toLowerCase();
+  const isLots = normType === 'lots' || normType === 'lot' || normType.includes('spin') || normType.includes('lot') || (reportData && (reportData.lots || reportData.multiple_lots));
+  const isResults = normType === 'results' || normType === 'result' || (reportData && (reportData.results || reportData.multiple_results));
+  const isMembers = normType === 'members' || normType === 'member' || (reportData && reportData.members);
+  const isMarksheets = normType === 'marksheets' || normType === 'marksheet' || (reportData && reportData.sheets);
+  const isTeamPoints = normType === 'teampoints' || normType === 'teampoint' || (reportData && reportData.teampoints);
+  const isPerformers = normType === 'performers' || normType === 'performer' || (reportData && reportData.individual_leaderboard);
+  const isSchedule = normType === 'schedule' || (reportData && reportData.schedule);
 
   return (
     <div className="glass-panel" id="printable-area">
@@ -23,7 +33,30 @@ export default function ReportViewer({ reportType, reportData }) {
           <span style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
             Report generated successfully. Ready to print.
           </span>
-          {reportType === 'schedule' && reportData.schedule && (() => {
+          {isLots && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.2rem', fontWeight: 600 }}>
+                <Filter size={14} /> Scope:
+              </span>
+              <button
+                type="button"
+                onClick={() => setLotsFilter('all')}
+                className={`btn ${lotsFilter === 'all' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '0.2rem 0.65rem', fontSize: '0.75rem', borderRadius: '15px' }}
+              >
+                All Registered
+              </button>
+              <button
+                type="button"
+                onClick={() => setLotsFilter('spinned_only')}
+                className={`btn ${lotsFilter === 'spinned_only' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ padding: '0.2rem 0.65rem', fontSize: '0.75rem', borderRadius: '15px' }}
+              >
+                Spinned Lots Only
+              </button>
+            </div>
+          )}
+          {isSchedule && reportData.schedule && (() => {
             const rawSchedule = reportData.schedule || [];
             const uniqueStages = Array.from(new Set(rawSchedule.map(p => p.venue).filter(Boolean)));
             return (
@@ -73,19 +106,20 @@ export default function ReportViewer({ reportType, reportData }) {
       <div className="print-header" style={{ textAlign: 'center', borderBottom: '2px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
         <h2 style={{ fontFamily: 'var(--font-display)' }}>FESTALCHEMY OFFICIAL REPORT</h2>
         <h4 style={{ color: 'var(--secondary-neon)', textTransform: 'uppercase', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-          {reportType === 'results' ? 'Event Results & Scoreboard' : 
-           reportType === 'members' ? 'Registered Members Directory' : 
-           reportType === 'marksheets' ? 'Marksheets Entry Log' : 
-           reportType === 'teampoints' ? 'Overall Team Standings' : 
-           reportType === 'performers' ? 'Top Performers — Individual Leaderboard' : 
-           reportType === 'schedule' ? (selectedStageFilter === 'ALL' ? 'Fest Schedule — All Venues' : `Fest Schedule — ${selectedStageFilter}`) : ''}
+          {isResults ? 'Event Results & Scoreboard' : 
+           isMembers ? 'Registered Members Directory' : 
+           isMarksheets ? 'Marksheets Entry Log' : 
+           isTeamPoints ? 'Overall Team Standings' : 
+           isPerformers ? 'Top Performers — Individual Leaderboard' : 
+           isSchedule ? (selectedStageFilter === 'ALL' ? 'Fest Schedule — All Venues' : `Fest Schedule — ${selectedStageFilter}`) : 
+           isLots ? 'Candidate Lot Draw & Signature Verification Sheet' : 'Official Festival Report'}
         </h4>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
           Generated on: {new Date().toLocaleString()}
         </p>
       </div>
 
-      {reportType === 'results' && reportData.results && (
+      {isResults && reportData.results && (
         <div className="table-container">
           <table className="custom-table">
             <thead>
@@ -485,6 +519,295 @@ export default function ReportViewer({ reportType, reportData }) {
           </div>
         );
       })()}
+
+      {/* SINGLE PROGRAM SPINNED LOTS REPORT */}
+      {isLots && reportData.lots && (() => {
+        const rawLots = reportData.lots || [];
+        const displayedLots = rawLots.filter(lot => {
+          if (lotsFilter === 'spinned_only') {
+            return lot.status === 'called' || lot.status === 'present' || (lot.lot_code && !lot.lot_code.startsWith('#'));
+          }
+          return true;
+        });
+
+        return (
+          <div className="printable-sheet" style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            {reportData.program && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+                padding: '1.25rem',
+                marginBottom: '1rem',
+                borderRadius: '8px',
+                border: '1px solid var(--border-glass)',
+                background: 'var(--bg-glass)'
+              }}>
+                <div>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '1.25rem' }}>
+                    {reportData.program.name}
+                  </h3>
+                  <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.35rem', fontSize: '0.85rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                    {reportData.program.category_name && <span><strong>Category:</strong> {reportData.program.category_name}</span>}
+                    {reportData.program.venue && <span><strong>Venue:</strong> {reportData.program.venue}</span>}
+                    {reportData.program.stage_type && <span><strong>Stage:</strong> {reportData.program.stage_type.toUpperCase()}</span>}
+                    {reportData.program.schedule && (
+                      <span><strong>Schedule:</strong> {new Date(reportData.program.schedule).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="tag tag-primary" style={{ fontSize: '0.8rem', padding: '0.3rem 0.7rem' }}>
+                    {displayedLots.length} Candidates {lotsFilter === 'spinned_only' ? '(Spinned)' : ''}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Candidate & Official Instructions Notice */}
+            <div style={{ 
+              background: 'rgba(99, 102, 241, 0.08)', 
+              borderLeft: '4px solid var(--primary-neon)', 
+              padding: '0.65rem 0.95rem', 
+              marginBottom: '1.25rem', 
+              fontSize: '0.8rem', 
+              color: 'var(--text-primary)',
+              borderRadius: '4px'
+            }}>
+              <strong>Notice for Candidates & Stage Officials:</strong> Each participant must verify their Chest Number, Lot Calling Order, and provide their signature in the dedicated column prior to entering the performance stage.
+            </div>
+
+            {displayedLots.length > 0 ? (
+              <div className="table-container">
+                <table className="custom-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '80px', textAlign: 'center' }}>Lot Code</th>
+                      <th style={{ width: '100px', textAlign: 'center' }}>Chest No</th>
+                      <th>Candidate Name</th>
+                      <th>Team</th>
+                      <th style={{ width: '90px', textAlign: 'center' }}>Status</th>
+                      <th style={{ width: '190px', textAlign: 'center' }}>Candidate Signature</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayedLots.map((lot, idx) => (
+                      <tr key={lot.id || idx}>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className="badge-lot">
+                            {lot.lot_code ? (lot.lot_code.startsWith('#') ? lot.lot_code : `Code ${lot.lot_code}`) : `#${lot.lot_no || idx + 1}`}
+                          </span>
+                        </td>
+                        <td style={{ fontWeight: 'bold', textAlign: 'center', color: 'var(--primary-neon)' }}>
+                          {lot.chest_no || '—'}
+                        </td>
+                        <td style={{ fontWeight: 600 }}>{lot.member_name}</td>
+                        <td>{lot.team_name || '—'}</td>
+                        <td style={{ textAlign: 'center' }}>
+                          <span className={`tag ${lot.status === 'present' ? 'tag-primary' : lot.status === 'absent' ? 'tag-danger' : lot.status === 'called' ? 'tag-success' : 'tag-secondary'}`} style={{ textTransform: 'capitalize' }}>
+                            {lot.status || 'waiting'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'center', verticalAlign: 'bottom', paddingBottom: '12px' }}>
+                          <div className="sign-line" />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', fontStyle: 'italic', textAlign: 'center', padding: '2.5rem' }}>
+                {lotsFilter === 'spinned_only' 
+                  ? 'No participants have drawn lots yet for this event. Switch scope to "All Registered" or draw lots in Stage Calling.' 
+                  : 'No registered participants found for this event.'}
+              </p>
+            )}
+
+            {/* Verification Sign-Off Footer */}
+            <div className="print-sign-footer" style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              marginTop: '3rem', 
+              paddingTop: '1.5rem', 
+              borderTop: '1px dashed var(--border-glass)', 
+              fontSize: '0.85rem' 
+            }}>
+              <div style={{ textAlign: 'center', width: '240px' }}>
+                <div className="sign-line" style={{ height: '26px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '6px' }} />
+                <strong>Stage Calling Officer</strong>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>Name & Signature</div>
+              </div>
+              <div style={{ textAlign: 'center', width: '240px' }}>
+                <div className="sign-line" style={{ height: '26px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '6px' }} />
+                <strong>Stage Manager / Judge Witness</strong>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>Name & Signature</div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* MULTIPLE PROGRAMS SPINNED LOTS REPORT */}
+      {isLots && reportData.multiple_lots && reportData.multiple_lots.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
+          {reportData.multiple_lots.map((pGroup, pIdx) => {
+            const prog = pGroup.program || pGroup || {};
+            const rawLots = pGroup.lots || [];
+            const lots = rawLots.filter(lot => {
+              if (lotsFilter === 'spinned_only') {
+                return lot.status === 'called' || lot.status === 'present' || (lot.lot_code && !lot.lot_code.startsWith('#'));
+              }
+              return true;
+            });
+
+            const progName = prog.name || prog.program_name || `Program #${prog.id || prog.program_id || pIdx + 1}`;
+            const catName = prog.category_name || '';
+            const venue = prog.venue || '';
+            const stageType = prog.stage_type || '';
+            const schedule = prog.schedule || '';
+
+            return (
+              <div 
+                key={prog.id || prog.program_id || pIdx} 
+                className="printable-sheet"
+                style={{ 
+                  breakInside: 'avoid', 
+                  pageBreakInside: 'avoid',
+                  pageBreakAfter: pIdx < reportData.multiple_lots.length - 1 ? 'always' : 'auto',
+                  border: '1px solid var(--border-glass)',
+                  borderRadius: '10px',
+                  padding: '1.5rem',
+                  background: 'var(--bg-glass)'
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  borderBottom: '1px solid var(--border-glass)',
+                  paddingBottom: '0.85rem',
+                  marginBottom: '1rem'
+                }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '1.2rem' }}>
+                      {progName}
+                    </h4>
+                    <div style={{ display: 'flex', gap: '0.85rem', marginTop: '0.35rem', fontSize: '0.82rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+                      {catName && <span><strong>Category:</strong> {catName}</span>}
+                      {venue && <span><strong>Venue:</strong> {venue}</span>}
+                      {stageType && <span><strong>Stage:</strong> {stageType.toUpperCase()}</span>}
+                      {schedule && (
+                        <span><strong>Schedule:</strong> {new Date(schedule).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="tag tag-primary" style={{ fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}>
+                    {lots.length} Candidates {lotsFilter === 'spinned_only' ? '(Spinned)' : ''}
+                  </span>
+                </div>
+
+                {/* Candidate & Official Instructions Notice */}
+                <div style={{ 
+                  background: 'rgba(99, 102, 241, 0.08)', 
+                  borderLeft: '4px solid var(--primary-neon)', 
+                  padding: '0.55rem 0.85rem', 
+                  marginBottom: '1rem', 
+                  fontSize: '0.78rem', 
+                  color: 'var(--text-primary)',
+                  borderRadius: '4px'
+                }}>
+                  <strong>Notice for Candidates & Stage Officials:</strong> Each participant must verify their Chest Number, Lot Calling Order, and provide their signature in the dedicated column prior to entering the performance stage.
+                </div>
+
+                {lots.length > 0 ? (
+                  <div className="table-container">
+                    <table className="custom-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '80px', textAlign: 'center' }}>Lot Code</th>
+                          <th style={{ width: '100px', textAlign: 'center' }}>Chest No</th>
+                          <th>Candidate Name</th>
+                          <th>Team</th>
+                          <th style={{ width: '90px', textAlign: 'center' }}>Status</th>
+                          <th style={{ width: '190px', textAlign: 'center' }}>Candidate Signature</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lots.map((lot, idx) => (
+                          <tr key={lot.id || idx}>
+                            <td style={{ textAlign: 'center' }}>
+                              <span className="badge-lot">
+                                {lot.lot_code ? (lot.lot_code.startsWith('#') ? lot.lot_code : `Code ${lot.lot_code}`) : `#${lot.lot_no || idx + 1}`}
+                              </span>
+                            </td>
+                            <td style={{ fontWeight: 'bold', textAlign: 'center', color: 'var(--primary-neon)' }}>
+                              {lot.chest_no || '—'}
+                            </td>
+                            <td style={{ fontWeight: 600 }}>{lot.member_name}</td>
+                            <td>{lot.team_name || '—'}</td>
+                            <td style={{ textAlign: 'center' }}>
+                              <span className={`tag ${lot.status === 'present' ? 'tag-primary' : lot.status === 'absent' ? 'tag-danger' : lot.status === 'called' ? 'tag-success' : 'tag-secondary'}`} style={{ textTransform: 'capitalize' }}>
+                                {lot.status || 'waiting'}
+                              </span>
+                            </td>
+                            <td style={{ textAlign: 'center', verticalAlign: 'bottom', paddingBottom: '12px' }}>
+                              <div className="sign-line" />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic', margin: '0.5rem 0', textAlign: 'center', padding: '1rem' }}>
+                    {lotsFilter === 'spinned_only' 
+                      ? 'No participants have drawn lots yet for this event.' 
+                      : 'No registered participants for this event.'}
+                  </p>
+                )}
+
+                {/* Verification Sign-Off Footer */}
+                <div className="print-sign-footer" style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  marginTop: '2.5rem', 
+                  paddingTop: '1.25rem', 
+                  borderTop: '1px dashed var(--border-glass)', 
+                  fontSize: '0.82rem' 
+                }}>
+                  <div style={{ textAlign: 'center', width: '230px' }}>
+                    <div className="sign-line" style={{ height: '24px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '4px' }} />
+                    <strong>Stage Calling Officer</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>Name & Signature</div>
+                  </div>
+                  <div style={{ textAlign: 'center', width: '230px' }}>
+                    <div className="sign-line" style={{ height: '24px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '4px' }} />
+                    <strong>Stage Manager / Judge Witness</strong>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>Name & Signature</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* LOTS EMPTY STATE */}
+      {isLots && !reportData.lots && (!reportData.multiple_lots || reportData.multiple_lots.length === 0) && (
+        <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+            No spinned lots data found matching your selection.
+          </p>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.35rem' }}>
+            Try selecting a specific program with registered participants or choose another category.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

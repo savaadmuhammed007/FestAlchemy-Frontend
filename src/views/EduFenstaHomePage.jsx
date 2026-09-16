@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../context/AuthContext';
+import { useAuth, API_BASE_URL } from '../context/AuthContext';
+import { RindPeelCard } from '../components/peel-card';
 import './EduFenstaHomePage.css';
 
 /* ─── Animated Counter ─────────────────────────────────────── */
@@ -53,11 +54,27 @@ function useInView(options = {}) {
    ═══════════════════════════════════════════════════════════════ */
 export default function EduFenstaHomePage() {
   const navigate = useNavigate();
+  const { isAuthenticated, user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [festData, setFestData] = useState(null);
   const lastScrollY = useRef(0);
+
+  // Dynamic portal redirect for authenticated users
+  const portalInfo = React.useMemo(() => {
+    if (!isAuthenticated || !user) return { to: '/login', label: 'LOGIN' };
+    switch (user.role) {
+      case 'admin':
+        return { to: '/admin', label: 'ADMIN PANEL' };
+      case 'judge':
+        return { to: '/judge', label: 'JUDGE PANEL' };
+      case 'teamlead':
+        return { to: '/teamlead', label: 'TEAM PANEL' };
+      default:
+        return { to: '/admin', label: 'PORTAL' };
+    }
+  }, [isAuthenticated, user]);
 
   // Fetch live stats from backend API
   useEffect(() => {
@@ -252,7 +269,7 @@ export default function EduFenstaHomePage() {
               {link.label}
             </Link>
           ))}
-          <Link to="/login" className="ef-nav__cta">LOGIN</Link>
+          <Link to={portalInfo.to} className="ef-nav__cta">{portalInfo.label}</Link>
         </div>
 
         {/* Hamburger */}
@@ -277,8 +294,8 @@ export default function EduFenstaHomePage() {
             {link.label}
           </Link>
         ))}
-        <Link to="/login" className="ef-nav__cta" onClick={() => setMobileMenuOpen(false)}>
-          LOGIN
+        <Link to={portalInfo.to} className="ef-nav__cta" onClick={() => setMobileMenuOpen(false)}>
+          {portalInfo.label}
         </Link>
       </div>
 
@@ -488,61 +505,133 @@ export default function EduFenstaHomePage() {
           </p>
         </div>
 
-        {/* Results Cards Grid */}
+        {/* Results Cards Grid with MelonUI Peel Card */}
         <div ref={resultsGridRef} className="ef-results__grid">
           {groupedResults.length > 0 ? (
             groupedResults.map((prog, i) => (
               <div
                 key={prog.programId || prog.programName}
-                className={`ef-results__card ${resultsGridVisible ? 'ef-visible' : ''}`}
+                className={`ef-results__card-wrapper ${resultsGridVisible ? 'ef-visible' : ''}`}
                 style={resultsGridVisible ? { animationDelay: `${i * 0.08}s` } : {}}
-                onClick={() =>
-                  navigate('/results', {
-                    state: {
-                      openProgram: {
-                        id: prog.programId,
-                        name: prog.programName,
-                        category_name: prog.categoryName,
-                      },
-                    },
-                  })
-                }
               >
-                <div className="ef-results__card-top">
-                  {prog.categoryName && (
-                    <span className="ef-results__card-category-badge">{prog.categoryName}</span>
-                  )}
-                  <span className="ef-results__card-view-tag">VIEW MARKSHEET &rarr;</span>
-                </div>
-
-                <h3 className="ef-results__card-prog-title">{prog.programName}</h3>
-                <div className="ef-results__card-divider" />
-
-                {/* Ranks list */}
-                <div className="ef-results__ranks-list">
-                  {prog.ranks.map((r) => {
-                    const isWinner = r.rank === 1;
-                    return (
-                      <div
-                        key={r.id || `${r.member_name}-${r.rank}`}
-                        className={`ef-results__rank-row ${isWinner ? 'ef-results__rank-row--winner' : ''}`}
-                      >
-                        <span className={`ef-results__rank-badge ef-results__rank-badge--${r.rank}`}>
-                          #{r.rank}
-                        </span>
-                        <div className="ef-results__rank-member">
-                          <div className="ef-results__rank-name">{r.member_name}</div>
-                          <div className="ef-results__rank-team">
-                            {r.team_name} {r.member_chest_no && `(#${r.member_chest_no})`}
-                          </div>
+                <RindPeelCard
+                  width="100%"
+                  minHeight={250}
+                  borderRadius="14px"
+                  borderColor="rgba(255, 26, 26, 0.3)"
+                  peelBg="#0d0d0d"
+                  peelStripeColor="#ff1a1a"
+                  revealBg="radial-gradient(circle at 50% 10%, rgba(255, 26, 26, 0.16) 0%, #080808 85%)"
+                  peelChildren={
+                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
+                          {prog.categoryName ? (
+                            <span className="ef-results__card-category-badge">{prog.categoryName}</span>
+                          ) : (
+                            <span className="ef-results__card-category-badge">EVENT</span>
+                          )}
+                          <span style={{ fontSize: '0.72rem', color: 'var(--ef-gray)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                            PEEL CARD
+                          </span>
                         </div>
-                        {r.grade && (
-                          <span className="ef-results__grade-badge">{r.grade}</span>
-                        )}
+                        <h3 className="ef-results__card-prog-title" style={{ fontSize: '1.7rem', marginBottom: '0.5rem', lineHeight: 1.15 }}>
+                          {prog.programName}
+                        </h3>
                       </div>
-                    );
-                  })}
-                </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ef-gray-light)', letterSpacing: '0.05em' }}>
+                          HOVER / TAP TO REVEAL TOP 3
+                        </span>
+                        <span style={{ color: 'var(--ef-crimson)', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                          ↑
+                        </span>
+                      </div>
+                    </div>
+                  }
+                  revealChildren={
+                    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem', gap: '0.5rem' }}>
+                          <span style={{ fontSize: '1rem', fontWeight: 700, letterSpacing: '0.04em', color: 'var(--ef-white)', textTransform: 'uppercase', fontFamily: 'var(--ef-font-display, sans-serif)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {prog.programName}
+                          </span>
+                          {prog.categoryName && (
+                            <span className="ef-results__card-category-badge" style={{ fontSize: '0.65rem', padding: '0.15rem 0.5rem', flexShrink: 0 }}>
+                              {prog.categoryName}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Ranks list: 1st, 2nd, 3rd */}
+                        <div className="ef-results__ranks-list" style={{ gap: '0.4rem' }}>
+                          {prog.ranks.map((r) => {
+                            const isWinner = r.rank === 1;
+                            return (
+                              <div
+                                key={r.id || `${r.member_name}-${r.rank}`}
+                                className={`ef-results__rank-row ${isWinner ? 'ef-results__rank-row--winner' : ''}`}
+                                style={{ padding: '0.35rem 0.6rem' }}
+                              >
+                                <span className={`ef-results__rank-badge ef-results__rank-badge--${r.rank}`}>
+                                  #{r.rank}
+                                </span>
+                                <div className="ef-results__rank-member">
+                                  <div className="ef-results__rank-name" style={{ fontSize: '0.85rem' }}>{r.member_name}</div>
+                                  <div className="ef-results__rank-team" style={{ fontSize: '0.75rem' }}>
+                                    {r.team_name} {r.member_chest_no && `(#${r.member_chest_no})`}
+                                  </div>
+                                </div>
+                                {r.grade && (
+                                  <span className="ef-results__grade-badge" style={{ fontSize: '0.7rem', padding: '1px 6px' }}>{r.grade}</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Click to view full marksheet */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate('/results', {
+                            state: {
+                              openProgram: {
+                                id: prog.programId,
+                                name: prog.programName,
+                                category_name: prog.categoryName,
+                              },
+                            },
+                          });
+                        }}
+                        className="peel-action-btn"
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '0.4rem',
+                          width: '100%',
+                          padding: '0.55rem',
+                          marginTop: '0.75rem',
+                          background: 'rgba(255, 26, 26, 0.15)',
+                          border: '1px solid var(--ef-crimson)',
+                          borderRadius: '6px',
+                          color: '#fff',
+                          fontFamily: 'var(--ef-font-body)',
+                          fontSize: '0.78rem',
+                          fontWeight: 700,
+                          letterSpacing: '0.06em',
+                          cursor: 'pointer',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        <span>VIEW FULL MARKSHEET & POSTER</span>
+                        <span>&rarr;</span>
+                      </button>
+                    </div>
+                  }
+                />
               </div>
             ))
           ) : (
@@ -591,7 +680,7 @@ export default function EduFenstaHomePage() {
             <Link to="/edufensta">Home</Link>
             <Link to="/team-status">Team Standings</Link>
             <Link to="/results">Results</Link>
-            <Link to="/login">Portal Login</Link>
+            <Link to={portalInfo.to}>{isAuthenticated ? portalInfo.label : 'Portal Login'}</Link>
           </div>
           <div className="ef-footer__col">
             <div className="ef-footer__col-title">CONNECT</div>

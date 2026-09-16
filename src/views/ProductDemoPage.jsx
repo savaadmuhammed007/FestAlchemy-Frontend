@@ -364,7 +364,7 @@ export default function ProductDemoPage() {
                     <span className="demo-browser-dot demo-dot-green" />
                   </div>
                   <div className="demo-browser-address-bar">
-                    <span>festalchemy.io/ilalhabeeb</span>
+                    <span>festalchemy.io/edufensta</span>
                   </div>
                 </div>
 
@@ -2019,7 +2019,7 @@ export default function ProductDemoPage() {
             </p>
 
             <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <Link to="/ilalhabeeb" className="demo-btn-primary">
+              <Link to="/edufensta" className="demo-btn-primary">
                 <span>Explore FestAlchemy</span>
                 <ArrowRight size={16} />
               </Link>
@@ -2039,7 +2039,7 @@ export default function ProductDemoPage() {
             </div>
 
             <div className="demo-footer-links">
-              <Link to="/ilalhabeeb">Home</Link>
+              <Link to="/edufensta">Home</Link>
               <a href="#portals-showcase">Portals</a>
               <a href="#control-room">Features</a>
               <Link to="/results">Results</Link>

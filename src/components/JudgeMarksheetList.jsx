@@ -9,14 +9,34 @@ export default function JudgeMarksheetList({
   onBack,
   onOpenEvaluate
 }) {
+  const sortCodes = (a, b) => {
+    const codeA = (a.judge_code || '').trim();
+    const codeB = (b.judge_code || '').trim();
+    const isInvalidA = !codeA || codeA === 'N/A';
+    const isInvalidB = !codeB || codeB === 'N/A';
+    if (isInvalidA && isInvalidB) return (a.id || 0) - (b.id || 0);
+    if (isInvalidA) return 1;
+    if (isInvalidB) return -1;
+    
+    // If both are pure alphabetic lot codes (e.g. A..Z, AA..AZ)
+    const isAlphaA = /^[A-Za-z]+$/.test(codeA);
+    const isAlphaB = /^[A-Za-z]+$/.test(codeB);
+    if (isAlphaA && isAlphaB) {
+      if (codeA.length !== codeB.length) {
+        return codeA.length - codeB.length;
+      }
+      return codeA.localeCompare(codeB, undefined, { sensitivity: 'base' });
+    }
+
+    return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+  };
+
   const pendingSheets = marksheets
     .filter(s => !s.submitted)
-    .sort((a, b) => (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' }));
-  const submittedSheets = isViewingCompleted
-    ? marksheets
-        .filter(s => s.submitted)
-        .sort((a, b) => (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' }))
-    : [];
+    .sort(sortCodes);
+  const submittedSheets = marksheets
+    .filter(s => s.submitted)
+    .sort(sortCodes);
 
   const hasPending = pendingSheets.length > 0;
   const hasSubmitted = submittedSheets.length > 0;
