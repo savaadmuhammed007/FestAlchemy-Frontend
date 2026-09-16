@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
 import { UIContext } from '../App';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -44,13 +44,24 @@ export default function AdminPanel() {
   const [performersLoading, setPerformersLoading] = useState(false);
 
   
+  // Cache-first instant hydration helper
+  const getCachedBootstrap = () => {
+    try {
+      const cached = sessionStorage.getItem('fest_admin_bootstrap');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  };
+  const cachedBoot = getCachedBootstrap();
+
   // Core lists
-  const [categories, setCategories] = useState([]);
-  const [programs, setPrograms] = useState([]);
-  const [teams, setTeams] = useState([]);
-  const [judges, setJudges] = useState([]);
-  const [members, setMembers] = useState([]); // All members directory
-  const [stages, setStages] = useState([]);
+  const [categories, setCategories] = useState(() => cachedBoot?.categories || []);
+  const [programs, setPrograms] = useState(() => cachedBoot?.programs || []);
+  const [teams, setTeams] = useState(() => cachedBoot?.teams || []);
+  const [judges, setJudges] = useState(() => cachedBoot?.judges || []);
+  const [members, setMembers] = useState(() => cachedBoot?.members || []); // All members directory
+  const [stages, setStages] = useState(() => cachedBoot?.stages || []);
   const [stageName, setStageName] = useState('');
   
   // Modals & Active Edit Items
@@ -413,6 +424,12 @@ export default function AdminPanel() {
         if (Array.isArray(data.judges)) setJudges(data.judges);
         if (Array.isArray(data.members)) setMembers(data.members);
         if (Array.isArray(data.stages)) setStages(data.stages);
+
+        try {
+          sessionStorage.setItem('fest_admin_bootstrap', JSON.stringify(data));
+        } catch (e) {
+          console.warn('SessionStorage error:', e);
+        }
         return;
       }
 
@@ -443,12 +460,14 @@ export default function AdminPanel() {
     loadSetupData();
   }, []);
 
-  // Fetch stats or reload setup data when switching tabs
+  // Fetch stats or reload setup data when switching tabs (only if not already loaded)
   useEffect(() => {
     if (activeTab === 'dashboard') {
       fetchStats();
     } else if (['members', 'registry', 'setup', 'calling', 'schedule-planner', 'rankings', 'assignments'].includes(activeTab)) {
-      loadSetupData();
+      if (!programs || programs.length === 0) {
+        loadSetupData();
+      }
     }
   }, [activeTab]);
 
@@ -742,10 +761,16 @@ export default function AdminPanel() {
     }
   };
 
+  const callingCacheRef = useRef({});
+
   // Lot spinning
-  const fetchCallingList = async (progId) => {
+  const fetchCallingList = async (progId, forceRefresh = false) => {
     if (!progId) {
       setCallingData(null);
+      return;
+    }
+    if (!forceRefresh && callingCacheRef.current[progId]) {
+      setCallingData(callingCacheRef.current[progId]);
       return;
     }
     setCallingLoading(true);
@@ -755,6 +780,7 @@ export default function AdminPanel() {
       });
       if (res.ok) {
         const json = await res.json();
+        callingCacheRef.current[progId] = json;
         setCallingData(json);
       }
     } catch (err) {
@@ -781,6 +807,7 @@ export default function AdminPanel() {
       throw new Error(`Server error (${res.status}) while spinning code`);
     }
     if (!res.ok) throw new Error(json.error || "Failed to spin lot");
+    delete callingCacheRef.current[callingProgramId];
     return json;
   };
 
@@ -803,6 +830,7 @@ export default function AdminPanel() {
       throw new Error(`Server error (${res.status}) while auto-spinning lots`);
     }
     if (!res.ok) throw new Error(json.error || "Failed to spin all lots");
+    delete callingCacheRef.current[targetId];
     await loadSetupData();
     return json;
   };
@@ -817,7 +845,8 @@ export default function AdminPanel() {
       });
       if (res.ok) {
         alert("Lot codes and evaluations reset.", "success");
-        fetchCallingList(callingProgramId);
+        delete callingCacheRef.current[callingProgramId];
+        fetchCallingList(callingProgramId, true);
       }
     } catch (err) {
       console.error(err);
