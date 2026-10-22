@@ -12,7 +12,8 @@ export default function SpinLotMachine({
   callingLoading,
   onCallMember,
   onCallAllMembers,
-  onRespinLot
+  onRespinLot,
+  onOpenJudgeAssignment
 }) {
   const { showToast, confirm } = useContext(UIContext);
   const [spinAllLoading, setSpinAllLoading] = useState(false);
@@ -25,10 +26,10 @@ export default function SpinLotMachine({
   const [selectedStageType, setSelectedStageType] = useState('');
 
   const notDoneMembers = callingData?.members ? callingData.members.filter(m => !m.called) : [];
-  const doneMembers = callingData?.members 
-    ? [...callingData.members.filter(m => m.called)].sort((a, b) => 
-        (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' })
-      )
+  const doneMembers = callingData?.members
+    ? [...callingData.members.filter(m => m.called)].sort((a, b) =>
+      (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' })
+    )
     : [];
 
   // Extract unique stages / venues from programs
@@ -202,10 +203,10 @@ export default function SpinLotMachine({
         const elapsed = timestamp - spinDecelStartTimeRef.current;
         const duration = 900;
         const t = Math.min(elapsed / duration, 1);
-        
+
         const easeOutCubic = 1 - Math.pow(1 - t, 3);
         rotationAngleRef.current = spinDecelStartAngleRef.current + (spinTargetAngleRef.current - spinDecelStartAngleRef.current) * easeOutCubic;
-        
+
         ledPulseRef.current = (ledPulseRef.current + (1 - t) * 1.5) % 10;
 
         if (t >= 1) {
@@ -401,7 +402,7 @@ export default function SpinLotMachine({
           ctx.rotate(p.rotation);
           ctx.fillStyle = p.color;
           ctx.globalAlpha = p.alpha;
-          
+
           if (p.size % 2 === 0) {
             ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
           } else {
@@ -419,17 +420,17 @@ export default function SpinLotMachine({
       ctx.save();
       ctx.translate(centerX, centerY - radius - 8);
       ctx.rotate(pegBendRef.current);
-      
+
       ctx.beginPath();
       ctx.moveTo(-8, -10);
       ctx.lineTo(8, -10);
       ctx.lineTo(0, 12);
       ctx.closePath();
-      
+
       const ptrGrad = ctx.createLinearGradient(0, -10, 0, 12);
       ptrGrad.addColorStop(0, '#f43f5e');
       ptrGrad.addColorStop(1, '#9f1239');
-      
+
       ctx.fillStyle = ptrGrad;
       ctx.shadowColor = '#f43f5e';
       ctx.shadowBlur = 6;
@@ -473,7 +474,7 @@ export default function SpinLotMachine({
       const numSegments = segments.length;
       const phi = (2 * Math.PI) / numSegments;
       const currentAngleMod = rotationAngleRef.current % (2 * Math.PI);
-      
+
       // Calculate stopping angle where wedge targetIdx aligns with the top pointer (1.5 * PI)
       let targetAngleDiff = (3 * Math.PI / 2 - (targetIdx * phi + phi / 2)) - currentAngleMod;
       if (targetAngleDiff < 0) {
@@ -484,7 +485,7 @@ export default function SpinLotMachine({
       spinTargetAngleRef.current = rotationAngleRef.current + targetAngleDiff + minDecelRotations * 2 * Math.PI;
       spinDecelStartTimeRef.current = performance.now();
       spinDecelStartAngleRef.current = rotationAngleRef.current;
-      
+
       winningCodeRef.current = code;
       spinStateRef.current = 'DECELERATING';
 
@@ -535,7 +536,7 @@ export default function SpinLotMachine({
             <Play size={18} style={{ color: 'var(--secondary-neon)' }} /> Lot SPIN & Call Console
           </h3>
           <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Select an Event Program to open the spin console:</p>
-          
+
           {programs.length === 0 ? (
             <p style={{ color: 'var(--text-muted)' }}>No programs set up yet.</p>
           ) : (
@@ -544,21 +545,21 @@ export default function SpinLotMachine({
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
                 <div style={{ flex: 2, minWidth: '240px', position: 'relative' }}>
                   <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <input 
-                    type="text" 
-                    className="form-control" 
-                    placeholder="Search program name or category..." 
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search program name or category..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
                     style={{ paddingLeft: '2.5rem' }}
                   />
                 </div>
-                
+
                 <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
                   <Filter size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <select 
-                    className="form-control" 
-                    value={selectedVenue} 
+                  <select
+                    className="form-control"
+                    value={selectedVenue}
                     onChange={e => setSelectedVenue(e.target.value)}
                     style={{ paddingLeft: '2.5rem' }}
                   >
@@ -571,9 +572,9 @@ export default function SpinLotMachine({
 
                 <div style={{ flex: 1, minWidth: '180px', position: 'relative' }}>
                   <Filter size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                  <select 
-                    className="form-control" 
-                    value={selectedStageType} 
+                  <select
+                    className="form-control"
+                    value={selectedStageType}
                     onChange={e => setSelectedStageType(e.target.value)}
                     style={{ paddingLeft: '2.5rem' }}
                   >
@@ -588,7 +589,7 @@ export default function SpinLotMachine({
                 <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>No programs match the search or filter criteria.</p>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                  
+
                   {/* Pending Programs */}
                   <div>
                     <h4 style={{ marginBottom: '1rem', fontFamily: 'var(--font-display)', color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -599,14 +600,14 @@ export default function SpinLotMachine({
                     ) : (
                       <div className="grid-cols-3">
                         {notDonePrograms.map(p => (
-                          <button 
+                          <button
                             key={p.id}
                             onClick={() => { setCallingProgramId(p.id.toString()); onFetchCallingList(p.id.toString()); }}
                             className="btn btn-secondary glass-panel-hover"
-                            style={{ 
-                              flexDirection: 'column', 
-                              alignItems: 'flex-start', 
-                              padding: '1.5rem', 
+                            style={{
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                              padding: '1.5rem',
                               gap: '0.5rem',
                               height: 'auto',
                               textAlign: 'left',
@@ -634,14 +635,14 @@ export default function SpinLotMachine({
                     ) : (
                       <div className="grid-cols-3">
                         {donePrograms.map(p => (
-                          <button 
+                          <button
                             key={p.id}
                             onClick={() => { setCallingProgramId(p.id.toString()); onFetchCallingList(p.id.toString()); }}
                             className="btn btn-secondary glass-panel-hover"
-                            style={{ 
-                              flexDirection: 'column', 
-                              alignItems: 'flex-start', 
-                              padding: '1.5rem', 
+                            style={{
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                              padding: '1.5rem',
                               gap: '0.5rem',
                               height: 'auto',
                               textAlign: 'left',
@@ -675,26 +676,75 @@ export default function SpinLotMachine({
         <div className="glass-panel" style={{ marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
             <div style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-start' }}>
-              <button 
-                onClick={() => { handleResetWheel(); setCallingProgramId(''); }} 
+              <button
+                onClick={() => { handleResetWheel(); setCallingProgramId(''); }}
                 className="btn btn-secondary"
                 style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
               >
                 &larr; Back to Program List
               </button>
             </div>
-            
+
             <div style={{ textAlign: 'center', flex: 1, minWidth: '200px' }}>
               <h3 style={{ color: 'var(--secondary-neon)', fontFamily: 'var(--font-display)', margin: 0 }}>
                 {programs.find(p => p.id.toString() === callingProgramId)?.name || 'Selected Program'}
               </h3>
-              <span className="tag tag-primary" style={{ fontSize: '0.65rem', marginTop: '0.25rem', display: 'inline-block' }}>
-                {programs.find(p => p.id.toString() === callingProgramId)?.category_name || ''}
-              </span>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.4rem', marginTop: '0.35rem', flexWrap: 'wrap' }}>
+                <span className="tag tag-primary" style={{ fontSize: '0.65rem' }}>
+                  {programs.find(p => p.id.toString() === callingProgramId)?.category_name || ''}
+                </span>
+                {selectedProgram?.judges && selectedProgram.judges.length > 0 ? (
+                  <span className="tag tag-success" style={{ fontSize: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <span>{selectedProgram.judges.length} Judge{selectedProgram.judges.length > 1 ? 's' : ''} Assigned ({selectedProgram.judges_details?.map(j => j.full_name || j.username).join(', ')})</span>
+                    {onOpenJudgeAssignment && selectedProgram && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenJudgeAssignment(selectedProgram)}
+                        style={{
+                          background: 'rgba(34, 197, 94, 0.25)',
+                          border: '1px solid rgba(34, 197, 94, 0.5)',
+                          color: '#bbf7d0',
+                          borderRadius: '4px',
+                          padding: '1px 6px',
+                          fontSize: '0.65rem',
+                          cursor: 'pointer',
+                          fontWeight: 600
+                        }}
+                        title="Edit judge assignments for this event"
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </span>
+                ) : (
+                  <span className="tag tag-warning" style={{ fontSize: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <span>⚠️ No Judges Assigned Yet</span>
+                    {onOpenJudgeAssignment && selectedProgram && (
+                      <button
+                        type="button"
+                        onClick={() => onOpenJudgeAssignment(selectedProgram)}
+                        style={{
+                          background: 'rgba(234, 179, 8, 0.25)',
+                          border: '1px solid rgba(234, 179, 8, 0.5)',
+                          color: '#fef08a',
+                          borderRadius: '4px',
+                          padding: '1px 6px',
+                          fontSize: '0.65rem',
+                          cursor: 'pointer',
+                          fontWeight: 700
+                        }}
+                        title="Assign judges to this event now"
+                      >
+                        + Assign Judges
+                      </button>
+                    )}
+                  </span>
+                )}
+              </div>
             </div>
-            
+
             <div className="no-print" style={{ minWidth: '220px', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button 
+              <button
                 type="button"
                 onClick={() => {
                   setPrintFilter(doneMembers.length > 0 ? 'spinned_only' : 'all');
@@ -707,9 +757,9 @@ export default function SpinLotMachine({
                 <Printer size={14} /> Print Lot Sheet (Sign)
               </button>
               {!isFinalized && onCallAllMembers && notDoneMembers.length > 0 && (
-                <button 
-                  onClick={() => handleSpinAll()} 
-                  className="btn btn-primary" 
+                <button
+                  onClick={() => handleSpinAll()}
+                  className="btn btn-primary"
                   disabled={spinAllLoading}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.82rem', background: 'var(--accent)', borderColor: 'var(--accent)', color: '#ffffff' }}
                 >
@@ -717,9 +767,9 @@ export default function SpinLotMachine({
                 </button>
               )}
               {!isFinalized && onRespinLot && (
-                <button 
-                  onClick={onRespinLot} 
-                  className="btn btn-danger" 
+                <button
+                  onClick={onRespinLot}
+                  className="btn btn-danger"
                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 0.85rem', fontSize: '0.82rem' }}
                 >
                   <RefreshCw size={14} /> Respin & Reset
@@ -739,12 +789,12 @@ export default function SpinLotMachine({
           {/* QUEUE LIST */}
           <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <h3 style={{ marginBottom: '0.5rem', fontFamily: 'var(--font-display)' }}>Participant Stage Calling Queue</h3>
-            
+
             {callingData.members.length === 0 ? (
               <p style={{ color: 'var(--text-muted)' }}>No participants registered for this event.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                
+
                 {/* Waiting / Not Done */}
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -778,7 +828,7 @@ export default function SpinLotMachine({
                         </thead>
                         <tbody>
                           {notDoneMembers.map(m => (
-                            <tr key={m.id} style={{ 
+                            <tr key={m.id} style={{
                               background: selectedMember?.id === m.id ? 'rgba(99, 102, 241, 0.08)' : 'transparent',
                               transition: 'background 0.3s'
                             }}>
@@ -786,9 +836,9 @@ export default function SpinLotMachine({
                               <td style={{ fontWeight: 600 }}>{m.name}</td>
                               <td style={{ textAlign: 'right' }}>
                                 {!isFinalized ? (
-                                  <button 
+                                  <button
                                     onClick={() => handleStartSpin(m)}
-                                    className="btn btn-primary" 
+                                    className="btn btn-primary"
                                     style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
                                     disabled={localIsSpinning}
                                   >
@@ -878,7 +928,7 @@ export default function SpinLotMachine({
             </div>
           ) : (
             <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', border: '1px dashed var(--primary-neon)', minHeight: '450px', position: 'relative', overflow: 'hidden' }}>
-              
+
               {!selectedMember ? (
                 // 1. Empty Selector State
                 <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', opacity: 0.85 }}>
@@ -894,12 +944,12 @@ export default function SpinLotMachine({
                 // 2. Active Spin Panel
                 <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   {/* Selected Participant Card */}
-                  <div className="glass-panel" style={{ 
-                    width: '100%', 
-                    border: '1px solid var(--accent-border)', 
-                    padding: '1rem', 
-                    marginBottom: '1rem', 
-                    background: 'var(--accent-soft)', 
+                  <div className="glass-panel" style={{
+                    width: '100%',
+                    border: '1px solid var(--accent-border)',
+                    padding: '1rem',
+                    marginBottom: '1rem',
+                    background: 'var(--accent-soft)',
                     borderRadius: '12px',
                     textAlign: 'left',
                     boxShadow: 'inset 0 0 10px rgba(99, 102, 241, 0.05)'
@@ -918,12 +968,12 @@ export default function SpinLotMachine({
 
                   {/* Interactive Canvas Wheel */}
                   <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center', margin: '0.5rem 0' }}>
-                    <canvas 
-                      ref={canvasRef} 
-                      width={280} 
-                      height={280} 
-                      style={{ 
-                        cursor: (!localIsSpinning && !localRevealedCode) ? 'pointer' : 'default', 
+                    <canvas
+                      ref={canvasRef}
+                      width={280}
+                      height={280}
+                      style={{
+                        cursor: (!localIsSpinning && !localRevealedCode) ? 'pointer' : 'default',
                         maxWidth: '100%',
                         borderRadius: '50%'
                       }}
@@ -953,14 +1003,39 @@ export default function SpinLotMachine({
                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', margin: '0 0 0.25rem 0', textTransform: 'uppercase', letterSpacing: '1px' }}>
                           Revealed Code for {selectedMember.name}
                         </p>
-                        
+
                         <div className="scratch-card-reveal" style={{ margin: '0.5rem 0' }}>
                           {localRevealedCode}
                         </div>
 
-                        <p style={{ color: 'var(--success-neon)', fontSize: '0.8rem', fontWeight: 600, margin: '0 0 1rem 0' }}>
-                          ✓ Marksheets generated for Judges.
-                        </p>
+                        {selectedProgram?.judges && selectedProgram.judges.length > 0 ? (
+                          <p style={{ color: 'var(--success-neon)', fontSize: '0.8rem', fontWeight: 600, margin: '0 0 1rem 0' }}>
+                            ✓ Marksheets ready for {selectedProgram.judges.length} assigned Judge{selectedProgram.judges.length > 1 ? 's' : ''}.
+                          </p>
+                        ) : (
+                          <div style={{ margin: '0 0 1rem 0' }}>
+                            <p style={{ color: 'var(--warning-neon)', fontSize: '0.8rem', fontWeight: 600, margin: '0 0 0.35rem 0' }}>
+                              ⚠️ Lot code drawn. No judges assigned yet; marksheets will automatically generate once judges are assigned.
+                            </p>
+                            {onOpenJudgeAssignment && selectedProgram && (
+                              <button
+                                type="button"
+                                onClick={() => onOpenJudgeAssignment(selectedProgram)}
+                                className="btn btn-secondary"
+                                style={{
+                                  fontSize: '0.75rem',
+                                  padding: '0.3rem 0.75rem',
+                                  borderColor: 'rgba(234, 179, 8, 0.4)',
+                                  background: 'rgba(234, 179, 8, 0.1)',
+                                  color: '#fef08a',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                Assign Judges Now
+                              </button>
+                            )}
+                          </div>
+                        )}
 
                         <button
                           onClick={handleResetWheel}
@@ -976,13 +1051,13 @@ export default function SpinLotMachine({
                       <button
                         onClick={() => handleStartSpin(selectedMember)}
                         className="btn btn-primary"
-                        style={{ 
-                          width: '100%', 
-                          padding: '0.85rem', 
-                          fontSize: '1rem', 
-                          textTransform: 'uppercase', 
+                        style={{
+                          width: '100%',
+                          padding: '0.85rem',
+                          fontSize: '1rem',
+                          textTransform: 'uppercase',
                           fontFamily: 'var(--font-display)',
-                          boxShadow: '0 0 15px rgba(99, 102, 241, 0.35)', 
+                          boxShadow: '0 0 15px rgba(99, 102, 241, 0.35)',
                           borderRadius: '8px'
                         }}
                       >
@@ -1001,7 +1076,7 @@ export default function SpinLotMachine({
       {showPrintModal && (
         <div className="modal-backdrop" style={{ zIndex: 9999, overflowY: 'auto', padding: '1rem' }}>
           <div className="modal-content" style={{ maxWidth: '920px', width: '100%', margin: '1.5rem auto', background: 'var(--bg-surface, #18181b)', border: '1px solid var(--border-glass)', borderRadius: '12px', padding: '1.5rem', position: 'relative', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-            
+
             {/* Modal Controls Bar (hidden during physical print) */}
             <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
@@ -1056,7 +1131,7 @@ export default function SpinLotMachine({
 
             {/* Printable Paper Sheet View */}
             <div id="printable-lot-sheet" className="printable-sheet" style={{ background: '#ffffff', color: '#111827', padding: '2rem', borderRadius: '8px', border: '1px solid #e5e7eb', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-              
+
               {/* Sheet Header */}
               <div style={{ textAlign: 'center', borderBottom: '2px solid #111827', paddingBottom: '0.85rem', marginBottom: '1.25rem' }}>
                 <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', color: '#111827' }}>
@@ -1085,8 +1160,8 @@ export default function SpinLotMachine({
                 if (listToPrint.length === 0) {
                   return (
                     <p style={{ textAlign: 'center', padding: '2.5rem', color: '#6b7280', fontStyle: 'italic', margin: 0 }}>
-                      {printFilter === 'spinned_only' 
-                        ? 'No candidates have been spinned yet. Spin lots first or toggle to "All Registered".' 
+                      {printFilter === 'spinned_only'
+                        ? 'No candidates have been spinned yet. Spin lots first or toggle to "All Registered".'
                         : 'No registered participants found for this event.'}
                     </p>
                   );

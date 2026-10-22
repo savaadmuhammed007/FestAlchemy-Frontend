@@ -78,6 +78,7 @@ export default function AdminPanel() {
   const [selectedProgramMarksheets, setSelectedProgramMarksheets] = useState(null);
   const [marksheetData, setMarksheetData] = useState([]);
   const [marksheetsLoading, setMarksheetsLoading] = useState(false);
+  const [marksheetSearchQuery, setMarksheetSearchQuery] = useState('');
 
   // Lot spinning variables
   const [callingProgramId, setCallingProgramId] = useState('');
@@ -599,14 +600,56 @@ export default function AdminPanel() {
         body: JSON.stringify({ judges: judgePrograms })
       });
       if (res.ok) {
-        alert("Judges assigned successfully!");
+        const isSpun = Boolean(selectedProgramJudges?.lot_completed || selectedProgramJudges?.lot_spun_at);
+        alert(
+          isSpun
+            ? "Judges assigned successfully! Marksheets have been automatically generated for all called participants."
+            : "Judges assigned successfully!",
+          "success"
+        );
         loadSetupData();
         setModalType('');
       } else {
-        alert("Failed to assign judges.");
+        alert("Failed to assign judges.", "error");
       }
     } catch (err) {
       console.error(err);
+      alert("Error saving judge assignments.", "error");
+    }
+  };
+
+  const [syncingMarksheets, setSyncingMarksheets] = useState(false);
+  const handleSyncAllMarksheets = async () => {
+    setSyncingMarksheets(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/programs/sync_all_marksheets/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      let data = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+
+      if (res.ok) {
+        alert(
+          data.message || `Synchronized marksheets: ${data.created_marksheets_count || 0} created across ${data.synced_programs_count || 0} events.`,
+          "success"
+        );
+        await loadSetupData();
+      } else {
+        alert(data.detail || data.error || data.message || `Failed to synchronize marksheets (${res.status}).`, "error");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error synchronizing marksheets.", "error");
+    } finally {
+      setSyncingMarksheets(false);
     }
   };
 
@@ -745,6 +788,7 @@ export default function AdminPanel() {
   const handleOpenMarksheets = async (prog) => {
     setSelectedProgramMarksheets(prog);
     setMarksheetsLoading(true);
+    setMarksheetSearchQuery('');
     openModal('view-marksheets');
     try {
       const res = await fetch(`${API_BASE_URL}/api/v1/marksheets/?program=${prog.id}`, {
@@ -1786,6 +1830,8 @@ export default function AdminPanel() {
           <JudgeAssignments
             programs={programs}
             onOpenJudgeAssignment={handleOpenJudgeAssignment}
+            onSyncAllMarksheets={handleSyncAllMarksheets}
+            syncingMarksheets={syncingMarksheets}
           />
         )}
 
@@ -1805,6 +1851,7 @@ export default function AdminPanel() {
               onCallMember={handleCallMember}
               onCallAllMembers={handleCallAllMembers}
               onRespinLot={handleRespinLot}
+              onOpenJudgeAssignment={handleOpenJudgeAssignment}
             />
           </div>
         )}
@@ -2688,9 +2735,29 @@ export default function AdminPanel() {
         {/* Judge Assignment Form */}
         {modalType === 'judge-assignment' && selectedProgramJudges && (
           <form onSubmit={handleSaveJudgeAssignment}>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <p>Assign judges for event: <strong>{selectedProgramJudges.name}</strong></p>
+            <div style={{ marginBottom: '1rem' }}>
+              <p style={{ margin: 0 }}>Assign judges for event: <strong>{selectedProgramJudges.name}</strong></p>
             </div>
+
+            {(selectedProgramJudges.lot_completed || selectedProgramJudges.lot_spun_at) && (
+              <div style={{
+                background: 'rgba(99, 102, 241, 0.12)',
+                border: '1px solid rgba(99, 102, 241, 0.35)',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1.25rem',
+                fontSize: '0.85rem',
+                color: '#c7d2fe',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.6rem'
+              }}>
+                <Sparkles size={18} style={{ color: '#818cf8', flexShrink: 0 }} />
+                <span>
+                  <strong>Lots are already spun for this event!</strong> Saving will immediately generate evaluation marksheets for all called participants for newly assigned judges.
+                </span>
+              </div>
+            )}
             <div className="form-group">
               <label className="form-label">Select Judges</label>
               <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
@@ -2906,9 +2973,44 @@ export default function AdminPanel() {
         {/* View Marksheets Form */}
         {modalType === 'view-marksheets' && selectedProgramMarksheets && (
           <div>
-            <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-              <p>Event: <strong>{selectedProgramMarksheets.name}</strong></p>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Total assigned marksheets for judges.</p>
+            <div style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.25rem' }}>
+              <p style={{ margin: 0 }}>Event: <strong>{selectedProgramMarksheets.name}</strong></p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: '0.25rem 0 0 0' }}>Total assigned marksheets for judges.</p>
+            </div>
+
+            {/* Search filter for participant code or judge */}
+            <div style={{ position: 'relative', marginBottom: '1rem' }}>
+              <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search participant code (e.g. A, B) or judge..."
+                value={marksheetSearchQuery}
+                onChange={e => setMarksheetSearchQuery(e.target.value)}
+                style={{ paddingLeft: '2rem', paddingRight: marksheetSearchQuery ? '2rem' : '0.75rem', height: '34px', fontSize: '0.85rem' }}
+              />
+              {marksheetSearchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setMarksheetSearchQuery('')}
+                  style={{
+                    position: 'absolute',
+                    right: '8px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--text-muted)',
+                    cursor: 'pointer',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                  title="Clear search"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
             
             {marksheetsLoading ? (
@@ -2929,9 +3031,23 @@ export default function AdminPanel() {
                   }
                   groupedByCode[code].sheets.push(sheet);
                 });
-                const groupedList = Object.values(groupedByCode).sort((a, b) => 
+                let groupedList = Object.values(groupedByCode).sort((a, b) => 
                   (a.judge_code || '').localeCompare(b.judge_code || '', undefined, { numeric: true, sensitivity: 'base' })
                 );
+
+                if (marksheetSearchQuery.trim()) {
+                  const q = marksheetSearchQuery.trim().toLowerCase();
+                  groupedList = groupedList.filter(group => {
+                    const code = (group.judge_code || '').toLowerCase();
+                    const fullCode = `code ${code}`;
+                    const matchesCode = code.includes(q) || fullCode.includes(q);
+                    const matchesJudge = group.sheets.some(s => 
+                      (s.judge_username || '').toLowerCase().includes(q) ||
+                      String(s.score || '').includes(q)
+                    );
+                    return matchesCode || matchesJudge;
+                  });
+                }
 
                 return (
                   <div className="table-container" style={{ maxHeight: '350px', overflowY: 'auto' }}>
@@ -2977,7 +3093,7 @@ export default function AdminPanel() {
                         {groupedList.length === 0 && (
                           <tr>
                             <td colSpan="2" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
-                              No marksheets generated yet. Spin Lot to call participants.
+                              {marksheetSearchQuery ? `No participants match "${marksheetSearchQuery}"` : "No marksheets generated yet. Spin Lot to call participants."}
                             </td>
                           </tr>
                         )}

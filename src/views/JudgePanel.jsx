@@ -10,6 +10,7 @@ export default function JudgePanel() {
   const [programs, setPrograms] = useState([]);
   const [allMarksheets, setAllMarksheets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedProgram, setSelectedProgram] = useState(null);
   
   // Evaluation List variables
@@ -24,8 +25,49 @@ export default function JudgePanel() {
   const [submitSuccess, setSubmitSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchAssignedPrograms = async () => {
-    setLoading(true);
+  // Sync state
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('');
+
+  const handleSync = async (programId = null) => {
+    setIsSyncing(true);
+    setSyncMessage('');
+    try {
+      const payload = programId ? { program: programId } : {};
+      const res = await fetch(`${API_BASE_URL}/api/v1/marksheets/sync/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSyncMessage(data.message || 'Synchronized successfully!');
+      }
+      // Re-fetch programs and marksheets
+      await fetchAssignedPrograms(true);
+      if (selectedProgram) {
+        await fetchProgramEvaluations(selectedProgram, isViewingCompleted, true);
+      }
+    } catch (err) {
+      console.error("Sync error:", err);
+      await fetchAssignedPrograms(true);
+      if (selectedProgram) {
+        await fetchProgramEvaluations(selectedProgram, isViewingCompleted, true);
+      }
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setSyncMessage(''), 4000);
+    }
+  };
+
+  const fetchAssignedPrograms = async (silent = false) => {
+    if (!silent) {
+      if (programs.length === 0) setLoading(true);
+      else setIsRefreshing(true);
+    }
     try {
       const [res, mRes] = await Promise.all([
         fetch(`${API_BASE_URL}/api/v1/programs/?judge_only=true`, {
@@ -48,15 +90,23 @@ export default function JudgePanel() {
       console.error(err);
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
     fetchAssignedPrograms();
-  }, []);
+    // Auto-poll every 4s for rapid real-time updates when lot is spun on stage
+    const interval = setInterval(() => {
+      if (!selectedProgram && !activeMarksheet) {
+        fetchAssignedPrograms(true);
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [selectedProgram, activeMarksheet]);
 
-  const fetchProgramEvaluations = async (program, isCompleted = false) => {
-    setEvalLoading(true);
+  const fetchProgramEvaluations = async (program, isCompleted = false, silent = false) => {
+    if (!silent) setEvalLoading(true);
     setSelectedProgram(program);
     setIsViewingCompleted(isCompleted);
     try {
@@ -75,9 +125,38 @@ export default function JudgePanel() {
     } catch (err) {
       console.error(err);
     } finally {
-      setEvalLoading(false);
+      if (!silent) setEvalLoading(false);
     }
   };
+
+  // Auto-poll marksheets every 4s when inside a program's evaluation list
+  useEffect(() => {
+    if (!selectedProgram || activeMarksheet) return;
+    const interval = setInterval(() => {
+      fetchProgramEvaluations(selectedProgram, isViewingCompleted, true);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [selectedProgram, isViewingCompleted, activeMarksheet]);
+
+  // Instant refresh when judge refocuses tab or switches back to this browser window
+  useEffect(() => {
+    const onFocusOrVisible = () => {
+      if (document.visibilityState === 'visible') {
+        if (selectedProgram && !activeMarksheet) {
+          fetchProgramEvaluations(selectedProgram, isViewingCompleted, true);
+        } else if (!selectedProgram && !activeMarksheet) {
+          fetchAssignedPrograms(true);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', onFocusOrVisible);
+    window.addEventListener('focus', onFocusOrVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onFocusOrVisible);
+      window.removeEventListener('focus', onFocusOrVisible);
+    };
+  }, [selectedProgram, isViewingCompleted, activeMarksheet]);
 
   const handleOpenEvaluate = (sheet) => {
     setActiveMarksheet(sheet);
@@ -173,9 +252,14 @@ export default function JudgePanel() {
         marksheets={marksheets}
         evalLoading={evalLoading}
         isViewingCompleted={isViewingCompleted}
+        onRefresh={() => fetchProgramEvaluations(selectedProgram, isViewingCompleted, false)}
+        onSync={handleSync}
+        isSyncing={isSyncing}
+        syncMessage={syncMessage}
         onBack={() => {
           setSelectedProgram(null);
           setIsViewingCompleted(false);
+          fetchAssignedPrograms(true);
         }}
         onOpenEvaluate={handleOpenEvaluate}
       />
@@ -187,6 +271,11 @@ export default function JudgePanel() {
     <JudgeProgramList
       programs={programs}
       allMarksheets={allMarksheets}
+      isRefreshing={isRefreshing}
+      onRefresh={() => fetchAssignedPrograms(false)}
+      onSync={handleSync}
+      isSyncing={isSyncing}
+      syncMessage={syncMessage}
       onSelectProgram={fetchProgramEvaluations}
     />
   );
