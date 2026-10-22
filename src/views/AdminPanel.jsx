@@ -1459,8 +1459,8 @@ export default function AdminPanel() {
           loadSetupData();
           setTimeout(() => setModalType(''), 1000);
         } else {
-          const err = await res.json();
-          setFormError(err.error || JSON.stringify(err));
+          const err = await res.json().catch(() => null);
+          setFormError(err?.error || err?.detail || (err ? JSON.stringify(err) : `Server Error (${res.status})`));
         }
       } catch (err) {
         setFormError(err.message);
@@ -1491,8 +1491,8 @@ export default function AdminPanel() {
           loadSetupData();
           setTimeout(() => setModalType(''), 1000);
         } else {
-          const err = await res.json();
-          setFormError(err.error || JSON.stringify(err));
+          const err = await res.json().catch(() => null);
+          setFormError(err?.error || err?.detail || (err ? JSON.stringify(err) : `Server Error (${res.status})`));
         }
       } catch (err) {
         setFormError(err.message);
