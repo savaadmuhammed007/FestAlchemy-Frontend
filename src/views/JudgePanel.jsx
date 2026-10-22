@@ -69,22 +69,13 @@ export default function JudgePanel() {
       else setIsRefreshing(true);
     }
     try {
-      const [res, mRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/v1/programs/?judge_only=true`, {
-          headers: { 'Authorization': `Token ${token}` }
-        }),
-        fetch(`${API_BASE_URL}/api/v1/marksheets/`, {
-          headers: { 'Authorization': `Token ${token}` }
-        })
-      ]);
+      const res = await fetch(`${API_BASE_URL}/api/v1/programs/?judge_only=true`, {
+        headers: { 'Authorization': `Token ${token}` }
+      });
 
       if (res.ok) {
         const json = await res.json();
         setPrograms(json);
-      }
-      if (mRes.ok) {
-        const mJson = await mRes.json();
-        setAllMarksheets(mJson);
       }
     } catch (err) {
       console.error(err);
@@ -96,12 +87,12 @@ export default function JudgePanel() {
 
   useEffect(() => {
     fetchAssignedPrograms();
-    // Auto-poll every 4s for rapid real-time updates when lot is spun on stage
+    // Auto-poll every 8s for real-time updates when lot is spun on stage
     const interval = setInterval(() => {
       if (!selectedProgram && !activeMarksheet) {
         fetchAssignedPrograms(true);
       }
-    }, 4000);
+    }, 8000);
     return () => clearInterval(interval);
   }, [selectedProgram, activeMarksheet]);
 
@@ -129,12 +120,12 @@ export default function JudgePanel() {
     }
   };
 
-  // Auto-poll marksheets every 4s when inside a program's evaluation list
+  // Auto-poll marksheets every 6s when inside a program's evaluation list
   useEffect(() => {
     if (!selectedProgram || activeMarksheet) return;
     const interval = setInterval(() => {
       fetchProgramEvaluations(selectedProgram, isViewingCompleted, true);
-    }, 4000);
+    }, 6000);
     return () => clearInterval(interval);
   }, [selectedProgram, isViewingCompleted, activeMarksheet]);
 

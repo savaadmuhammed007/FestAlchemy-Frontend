@@ -42,9 +42,9 @@ export default function JudgeProgramList({
   const completedPrograms = [];
 
   filteredPrograms.forEach(prog => {
-    const progSheets = allMarksheets.filter(m => m.program === prog.id);
-    const totalSheets = progSheets.length;
-    const submittedSheets = progSheets.filter(m => m.submitted).length;
+    const progSheets = Array.isArray(allMarksheets) ? allMarksheets.filter(m => m.program === prog.id) : [];
+    const totalSheets = typeof prog.total_sheets === 'number' ? prog.total_sheets : progSheets.length;
+    const submittedSheets = typeof prog.submitted_sheets === 'number' ? prog.submitted_sheets : progSheets.filter(m => m.submitted).length;
 
     const progWithCounts = {
       ...prog,
