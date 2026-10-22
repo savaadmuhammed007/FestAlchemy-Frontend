@@ -205,9 +205,9 @@ export default function MarksheetsStatus({ programs, onOpenMarksheets }) {
                     )}
                   </td>
                   <td style={{ textAlign: 'right' }}>
-                    <button 
-                      onClick={() => onOpenMarksheets(p)} 
-                      className="btn btn-secondary" 
+                    <button
+                      onClick={() => onOpenMarksheets(p)}
+                      className="btn btn-secondary"
                       style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
                     >
                       View Sheets

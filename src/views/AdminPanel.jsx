@@ -2862,7 +2862,7 @@ export default function AdminPanel() {
                   </button>
                 </div>
               ))}
-              {gradeRules.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No grading rules yet. Results will fallback to standard rank-based points.</p>}
+              {gradeRules.length === 0 && <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No custom grading rules configured. Results will automatically use the standard grade scale (A+ &ge; 90%, A &ge; 70%, B &ge; 60%, C &ge; 50%) and standard points.</p>}
             </div>
 
             <h4 style={{ marginBottom: '0.75rem', fontFamily: 'var(--font-display)' }}>Add Grading Rule</h4>
