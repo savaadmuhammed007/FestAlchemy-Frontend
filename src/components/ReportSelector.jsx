@@ -10,10 +10,10 @@ export default function ReportSelector({ onNavigate }) {
             <FileText size={20} style={{ color: 'var(--primary-neon)' }} /> Reports Center
           </h3>
           <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Official festival reports, calling sheets, and participant signature verification documents
+            Official fest reports, calling sheets, and participant signature verification documents
           </p>
         </div>
-        <button 
+        <button
           onClick={() => onNavigate('/admin/reports/lots')}
           className="btn btn-primary"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
@@ -21,16 +21,16 @@ export default function ReportSelector({ onNavigate }) {
           <Shuffle size={16} /> Print Spinned Lots (Sign Sheet)
         </button>
       </div>
-      
+
       <label className="form-label" style={{ marginBottom: '0.75rem', fontWeight: 600 }}>Select a Report to Open</label>
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-        gap: '1rem', 
-        marginBottom: '1.5rem' 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '1rem',
+        marginBottom: '1.5rem'
       }}>
         {/* Event Results Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/results')}
           style={{
             cursor: 'pointer',
@@ -67,7 +67,7 @@ export default function ReportSelector({ onNavigate }) {
         </div>
 
         {/* Members List Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/members')}
           style={{
             cursor: 'pointer',
@@ -104,7 +104,7 @@ export default function ReportSelector({ onNavigate }) {
         </div>
 
         {/* Marksheets Status Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/marksheets')}
           style={{
             cursor: 'pointer',
@@ -141,7 +141,7 @@ export default function ReportSelector({ onNavigate }) {
         </div>
 
         {/* Team Standings Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/teampoints')}
           style={{
             cursor: 'pointer',
@@ -178,7 +178,7 @@ export default function ReportSelector({ onNavigate }) {
         </div>
 
         {/* Top Performers Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/performers')}
           style={{
             cursor: 'pointer',
@@ -215,7 +215,7 @@ export default function ReportSelector({ onNavigate }) {
         </div>
 
         {/* Fest Schedule Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/schedule')}
           style={{
             cursor: 'pointer',
@@ -252,7 +252,7 @@ export default function ReportSelector({ onNavigate }) {
         </div>
 
         {/* Spinned Lots Card */}
-        <div 
+        <div
           onClick={() => onNavigate('/admin/reports/lots')}
           style={{
             cursor: 'pointer',
