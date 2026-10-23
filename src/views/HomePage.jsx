@@ -143,12 +143,12 @@ export default function EduFenstaHomePage() {
     return map;
   }, [festData]);
 
-  // ── Live Team Leaderboard with Category-Based Points ──
+  // ── Live Team Leaderboard with Category-Based Points & Dense Tie-Ranking ──
   const dbTeams = React.useMemo(() => {
     const rawLeaderboard = festData?.leaderboard || [];
     if (!rawLeaderboard.length) return [];
 
-    return rawLeaderboard.map((t, idx) => {
+    const computed = rawLeaderboard.map((t, idx) => {
       const categoryPoints = {};
       categoriesList.forEach(cName => {
         categoryPoints[cName] = 0;
@@ -170,12 +170,23 @@ export default function EduFenstaHomePage() {
       }
 
       return {
-        rank: idx + 1,
         id: t.id || t.team || idx,
         name: t.team_name || `Team ${idx + 1}`,
         categoryPoints,
         totalPoints: Number(t.total_points) || 0,
       };
+    });
+
+    computed.sort((a, b) => b.totalPoints - a.totalPoints);
+    let currRank = 0;
+    let prevPts = null;
+    return computed.map(item => {
+      const pts = Number(item.totalPoints) || 0;
+      if (prevPts === null || pts !== prevPts) {
+        currRank += 1;
+        prevPts = pts;
+      }
+      return { ...item, rank: currRank };
     });
   }, [festData, categoriesList, progCategoryMap]);
 
@@ -205,7 +216,7 @@ export default function EduFenstaHomePage() {
     return Array.from(map.values())
       .map((p) => ({
         ...p,
-        ranks: p.ranks.sort((a, b) => a.rank - b.rank).slice(0, 3),
+        ranks: p.ranks.sort((a, b) => a.rank - b.rank).filter(r => r.rank <= 3),
       }))
       .slice(0, 6);
   }, [festData]);
@@ -222,13 +233,28 @@ export default function EduFenstaHomePage() {
     { label: 'Home', to: '/edufensta', active: true },
     { label: 'Standings', to: '/team-status' },
     { label: 'Results', to: '/results' },
-    { label: 'Demo', to: '/demo' },
+    {
+      label: 'Toppers',
+      to: '#ef-performers',
+      onClick: (e) => {
+        e.preventDefault();
+        handleSmoothScroll('ef-performers');
+      },
+    },
   ];
 
   const handleSmoothScroll = (id) => {
     setMobileMenuOpen(false);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById(id) || (id === 'ef-performers' ? (document.getElementById('ef-top-performers') || document.querySelector('.ef-performers-section')) : null);
+    if (el) {
+      const navOffset = 70;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
@@ -247,6 +273,7 @@ export default function EduFenstaHomePage() {
             <Link
               key={link.label}
               to={link.to}
+              onClick={link.onClick}
               className={`ef-nav__link ${link.active ? 'ef-nav__link--active' : ''}`}
             >
               {link.label}
@@ -272,7 +299,10 @@ export default function EduFenstaHomePage() {
             key={link.label}
             to={link.to}
             className="ef-nav__link"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={(e) => {
+              if (link.onClick) link.onClick(e);
+              setMobileMenuOpen(false);
+            }}
           >
             {link.label}
           </Link>
@@ -348,7 +378,7 @@ export default function EduFenstaHomePage() {
           </div>
 
           <div className="ef-hero__event-info">
-            <span>03–04 NOVEMBER 2026</span>
+            <span>03|04 NOVEMBER 2026</span>
             <span className="ef-hero__info-dot" />
             <span>AL ASAS ACADEMY, KOZHIKODE</span>
           </div>
@@ -420,7 +450,7 @@ export default function EduFenstaHomePage() {
         {/* Leaderboard Table */}
         <div className="ef-stats__leaderboard-wrap">
           <div ref={leaderboardRef} className="ef-stats__leaderboard">
-            <div className="ef-stats__header" style={leaderboardGridStyle}>
+            <div className="ef-stats__header ef-desktop-only" style={leaderboardGridStyle}>
               <span>#</span>
               <span>TEAM</span>
               {categoriesList.map((cat) => (
@@ -434,23 +464,48 @@ export default function EduFenstaHomePage() {
                 <div
                   key={team.id || team.name}
                   className={`ef-stats__team ${team.rank === 1 ? 'ef-stats__team--leader' : ''} ${leaderboardVisible ? 'ef-visible' : ''}`}
-                  style={{
-                    ...leaderboardGridStyle,
-                    ...(leaderboardVisible ? { animationDelay: `${i * 0.06}s` } : {}),
-                  }}
+                  style={leaderboardVisible ? { animationDelay: `${i * 0.06}s` } : {}}
                 >
-                  <span className="ef-stats__team-rank">
-                    {String(team.rank).padStart(2, '0')}
-                  </span>
-                  <span className="ef-stats__team-name">{team.name}</span>
-                  {categoriesList.map((cat) => (
-                    <span key={cat} className="ef-stats__team-cat-pts">
-                      {team.categoryPoints[cat] ?? 0}
+                  {/* Desktop Grid Layout */}
+                  <div className="ef-stats__team-desktop ef-desktop-only" style={{ ...leaderboardGridStyle, alignItems: 'center', width: '100%' }}>
+                    <span className="ef-stats__team-rank">
+                      {String(team.rank).padStart(2, '0')}
                     </span>
-                  ))}
-                  <span className="ef-stats__team-points">
-                    <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
-                  </span>
+                    <span className="ef-stats__team-name">{team.name}</span>
+                    {categoriesList.map((cat) => (
+                      <span key={cat} className="ef-stats__team-cat-pts">
+                        {team.categoryPoints[cat] ?? 0}
+                      </span>
+                    ))}
+                    <span className="ef-stats__team-points">
+                      <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
+                    </span>
+                  </div>
+
+                  {/* Mobile Device View: Team Total Point FIRST, then Category Breakdown */}
+                  <div className="ef-stats__team-mobile ef-mobile-only">
+                    <div className="ef-stats__mobile-top">
+                      <div className="ef-stats__mobile-identity">
+                        <span className={`ef-stats__mobile-rank ${team.rank === 1 ? 'ef-stats__mobile-rank--leader' : ''}`}>
+                          #{String(team.rank).padStart(2, '0')}
+                        </span>
+                        <span className="ef-stats__mobile-name">{team.name}</span>
+                      </div>
+                      <div className={`ef-stats__mobile-total ${team.rank === 1 ? 'ef-stats__mobile-total--leader' : ''}`}>
+                        <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
+                        <span className="ef-stats__mobile-total-label">PTS</span>
+                      </div>
+                    </div>
+
+                    <div className="ef-stats__mobile-breakdown">
+                      {categoriesList.map((cat) => (
+                        <div key={cat} className="ef-stats__mobile-cat-item">
+                          <span className="ef-stats__mobile-cat-name">{cat}</span>
+                          <span className="ef-stats__mobile-cat-val">{team.categoryPoints[cat] ?? 0}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))
             ) : (
@@ -607,8 +662,8 @@ export default function EduFenstaHomePage() {
           </div>
           <div className="ef-footer__col">
             <div className="ef-footer__col-title">SCHEDULE</div>
-            <a href="#">Day 1 — Oct 06</a>
-            <a href="#">Day 2 — Oct 07</a>
+            <a href="#">Day 1 — Nov 03</a>
+            <a href="#">Day 2 — Nov 04</a>
             <Link to="/results">Full Event Schedule</Link>
           </div>
         </div>

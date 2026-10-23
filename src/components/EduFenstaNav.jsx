@@ -48,7 +48,7 @@ export default function EduFenstaNav({ activePage = 'home' }) {
     { label: 'Home', to: '/edufensta', id: 'home' },
     { label: 'Standings', to: '/team-status', id: 'standings' },
     { label: 'Results', to: '/results', id: 'results' },
-    { label: 'Demo', to: '/demo', id: 'demo' },
+    { label: 'Toppers', to: '/edufensta#ef-performers', id: 'toppers' },
   ];
 
   return (

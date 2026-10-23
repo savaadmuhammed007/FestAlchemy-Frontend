@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowRight, Eye, EyeOff, Shield } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ArrowRight, Eye, EyeOff, Shield, Trophy, Crown, Medal, Award } from 'lucide-react';
 import { useAuth, API_BASE_URL } from '../context/AuthContext';
 import { RindPeelCard } from '../components/peel-card';
 import './EduFenstaHomePage.css';
@@ -55,6 +55,7 @@ function useInView(options = {}) {
    ═══════════════════════════════════════════════════════════════ */
 export default function EduFenstaHomePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, user } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
@@ -62,6 +63,25 @@ export default function EduFenstaHomePage() {
   const [festData, setFestData] = useState(null);
   const [previewMode, setPreviewMode] = useState(false);
   const lastScrollY = useRef(0);
+
+  // Smooth scroll to hash anchor on mount or hash change
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.replace('#', '');
+      const el = document.getElementById(id) || (id === 'ef-performers' ? (document.getElementById('ef-top-performers') || document.querySelector('.ef-performers-section')) : null);
+      if (el) {
+        setTimeout(() => {
+          const navOffset = 70;
+          const elementPosition = el.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }, 200);
+      }
+    }
+  }, [location.hash]);
 
   // Dynamic portal redirect for authenticated users
   const portalInfo = React.useMemo(() => {
@@ -125,6 +145,9 @@ export default function EduFenstaHomePage() {
   const [leaderboardRef, leaderboardVisible] = useInView();
   const [resultsHeaderRef, resultsHeaderVisible] = useInView();
   const [resultsGridRef, resultsGridVisible] = useInView();
+  const [performersHeaderRef, performersHeaderVisible] = useInView();
+  const [performersGridRef, performersGridVisible] = useInView();
+  const [activePerformerTab, setActivePerformerTab] = useState('overall');
 
   // ── Metrics from Database API ──
   const participantsCount = festData?.stats?.participants ?? 0;
@@ -132,14 +155,34 @@ export default function EduFenstaHomePage() {
   const teamsCount = festData?.stats?.teams ?? 0;
   const daysCount = festData?.stats?.days ?? 0;
 
-  // ── Categories List ──
+  // ── Categories List (A'ala, Sufla, General) ──
+  const PREFERRED_CATEGORIES = React.useMemo(() => ["A'ala", "Sufla", "General"], []);
   const categoriesList = React.useMemo(() => {
-    const cats = festData?.categories || [];
+    const cats = (festData?.categories || []).map(c => c.name);
     if (cats.length > 0) {
-      return cats.map(c => c.name);
+      return [...cats].sort((a, b) => {
+        const idxA = PREFERRED_CATEGORIES.indexOf(a);
+        const idxB = PREFERRED_CATEGORIES.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+      });
     }
-    return ['Low Zone', 'Mid Zone', 'High Zone', 'General'];
-  }, [festData]);
+    return PREFERRED_CATEGORIES;
+  }, [festData, PREFERRED_CATEGORIES]);
+
+  // ── Categories for Top Performers (Strictly excludes 'General' — only actual student categories: A'ala, Sufla) ──
+  const performerCategories = React.useMemo(() => {
+    return categoriesList.filter(cat => cat.trim().toLowerCase() !== 'general');
+  }, [categoriesList]);
+
+  // Ensure active performer tab is never 'General'
+  useEffect(() => {
+    if (activePerformerTab && activePerformerTab.trim().toLowerCase() === 'general') {
+      setActivePerformerTab('overall');
+    }
+  }, [activePerformerTab]);
 
   // ── Program Name to Category Map ──
   const progCategoryMap = React.useMemo(() => {
@@ -162,12 +205,29 @@ export default function EduFenstaHomePage() {
     return map;
   }, [festData]);
 
-  // ── Live Team Leaderboard with Category-Based Points ──
+  // Helper for dense tie-ranking (e.g. two 50s both get rank 1)
+  const assignDenseRanks = useCallback((items, pointsKey = 'total_points') => {
+    let currRank = 0;
+    let prevPts = null;
+    return items.map((item) => {
+      const pts = Number(item[pointsKey]) || 0;
+      if (prevPts === null || pts !== prevPts) {
+        currRank += 1;
+        prevPts = pts;
+      }
+      return {
+        ...item,
+        rank: currRank,
+      };
+    });
+  }, []);
+
+  // ── Live Team Leaderboard with Category-Based Points & Dense Tie-Ranking ──
   const dbTeams = React.useMemo(() => {
     const rawLeaderboard = festData?.leaderboard || [];
     if (!rawLeaderboard.length) return [];
 
-    return rawLeaderboard.map((t, idx) => {
+    const computed = rawLeaderboard.map((t, idx) => {
       const categoryPoints = {};
       categoriesList.forEach(cName => {
         categoryPoints[cName] = 0;
@@ -189,14 +249,16 @@ export default function EduFenstaHomePage() {
       }
 
       return {
-        rank: idx + 1,
         id: t.id || t.team || idx,
         name: t.team_name || `Team ${idx + 1}`,
         categoryPoints,
         totalPoints: Number(t.total_points) || 0,
       };
     });
-  }, [festData, categoriesList, progCategoryMap]);
+
+    computed.sort((a, b) => b.totalPoints - a.totalPoints);
+    return assignDenseRanks(computed, 'totalPoints');
+  }, [festData, categoriesList, progCategoryMap, assignDenseRanks]);
 
   const leaderboardGridStyle = {
     display: 'grid',
@@ -224,10 +286,90 @@ export default function EduFenstaHomePage() {
     return Array.from(map.values())
       .map((p) => ({
         ...p,
-        ranks: p.ranks.sort((a, b) => a.rank - b.rank).slice(0, 3),
+        ranks: p.ranks.sort((a, b) => a.rank - b.rank).filter(r => r.rank <= 3),
       }))
       .slice(0, 6);
   }, [festData]);
+
+  // ── Top Performers (Individual Championship with Dense Tie-Ranking) ──
+  const allPerformersList = React.useMemo(() => {
+    let raw = [];
+    if (festData?.top_performers && festData.top_performers.length > 0) {
+      raw = festData.top_performers.map(p => ({
+        member_id: p.member_id || p.member__id,
+        member_name: p.member_name || p.member__name || p.name || '',
+        chest_no: p.chest_no || p.member__chest_no || p.chest_number || '',
+        team_name: p.team_name || p.member__team__name || '',
+        category_name: p.category_name || p.member__category__name || '',
+        total_points: Number(p.total_points || p.points || p.total) || 0,
+        events_count: p.events_count || p.events || 1,
+        rank: p.rank,
+      }));
+    } else {
+      (festData?.individual_leaderboard || []).forEach(cat => {
+        if (cat.category_name?.trim().toLowerCase() === 'general') return;
+        (cat.performers || []).forEach(p => {
+          raw.push({
+            member_id: p.member_id || p.member__id,
+            member_name: p.member_name || p.member__name || p.name || '',
+            chest_no: p.chest_no || p.member__chest_no || p.chest_number || '',
+            team_name: p.team_name || p.member__team__name || '',
+            category_name: cat.category_name,
+            total_points: Number(p.total_points || p.points || p.total) || 0,
+            events_count: p.events_count || p.events || 1,
+          });
+        });
+      });
+    }
+    const sorted = [...raw].sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+    return assignDenseRanks(sorted, 'total_points');
+  }, [festData, assignDenseRanks]);
+
+  const currentPerformers = React.useMemo(() => {
+    let list = [];
+    if (activePerformerTab === 'overall') {
+      list = allPerformersList;
+    } else {
+      const catGroup = (festData?.individual_leaderboard || []).find(
+        c => c.category_name?.trim().toLowerCase() === activePerformerTab.trim().toLowerCase()
+      );
+      if (catGroup && catGroup.performers) {
+        list = catGroup.performers.map(p => ({
+          member_id: p.member_id || p.member__id,
+          member_name: p.member_name || p.member__name || p.name || '',
+          chest_no: p.chest_no || p.member__chest_no || p.chest_number || '',
+          team_name: p.team_name || p.member__team__name || '',
+          category_name: catGroup.category_name,
+          total_points: Number(p.total_points || p.points || p.total) || 0,
+          events_count: p.events_count || p.events || 1,
+        }));
+      } else {
+        list = allPerformersList.filter(
+          p => p.category_name?.trim().toLowerCase() === activePerformerTab.trim().toLowerCase()
+        );
+      }
+    }
+    const sorted = [...list].sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
+    return assignDenseRanks(sorted, 'total_points');
+  }, [activePerformerTab, allPerformersList, festData, assignDenseRanks]);
+
+  const top3Performers = currentPerformers.slice(0, 3);
+  const runnerUpPerformers = currentPerformers.slice(3, 6);
+
+  // If classic 1, 2, 3: arrange as [Rank 2, Rank 1, Rank 3] for traditional Olympic podium
+  // If tied for 2nd [Rank 1, Rank 2, Rank 2]: arrange [Rank 2, Rank 1, Rank 2] so #1 is centered
+  // If tied for 1st (e.g. two 50s): arrange [Rank 1, Rank 1, Rank 2/3] so both champions appear side-by-side!
+  const podiumDisplayCards = React.useMemo(() => {
+    if (top3Performers.length < 3) return top3Performers;
+    if (top3Performers[0]?.rank === 1 && top3Performers[1]?.rank === 2 && top3Performers[2]?.rank === 3) {
+      return [top3Performers[1], top3Performers[0], top3Performers[2]];
+    }
+    if (top3Performers[0]?.rank === 1 && top3Performers[1]?.rank === 2 && top3Performers[2]?.rank === 2) {
+      return [top3Performers[1], top3Performers[0], top3Performers[2]];
+    }
+    return top3Performers;
+  }, [top3Performers]);
+
 
   const marqueeItems = [
     'UNBROKEN — ONE PATH, MANY GENERATIONS',
@@ -241,13 +383,28 @@ export default function EduFenstaHomePage() {
     { label: 'Home', to: '/edufensta', active: true },
     { label: 'Standings', to: '/team-status' },
     { label: 'Results', to: '/results' },
-    { label: 'Demo', to: '/demo' },
+    {
+      label: 'Toppers',
+      to: '#ef-performers',
+      onClick: (e) => {
+        e.preventDefault();
+        handleSmoothScroll('ef-performers');
+      },
+    },
   ];
 
   const handleSmoothScroll = (id) => {
     setMobileMenuOpen(false);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const el = document.getElementById(id) || (id === 'ef-performers' ? (document.getElementById('ef-top-performers') || document.querySelector('.ef-performers-section')) : null);
+    if (el) {
+      const navOffset = 70;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
@@ -340,6 +497,7 @@ export default function EduFenstaHomePage() {
             <Link
               key={link.label}
               to={link.to}
+              onClick={link.onClick}
               className={`ef-nav__link ${link.active ? 'ef-nav__link--active' : ''}`}
             >
               {link.label}
@@ -365,7 +523,10 @@ export default function EduFenstaHomePage() {
             key={link.label}
             to={link.to}
             className="ef-nav__link"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={(e) => {
+              if (link.onClick) link.onClick(e);
+              setMobileMenuOpen(false);
+            }}
           >
             {link.label}
           </Link>
@@ -441,7 +602,7 @@ export default function EduFenstaHomePage() {
           </div>
 
           <div className="ef-hero__event-info">
-            <span>06–07 OCTOBER 2026</span>
+            <span>03–04 NOVEMBER 2026</span>
             <span className="ef-hero__info-dot" />
             <span>AL ASAS ACADEMY, KOZHIKODE</span>
           </div>
@@ -513,7 +674,7 @@ export default function EduFenstaHomePage() {
         {/* Leaderboard Table */}
         <div className="ef-stats__leaderboard-wrap">
           <div ref={leaderboardRef} className="ef-stats__leaderboard">
-            <div className="ef-stats__header" style={leaderboardGridStyle}>
+            <div className="ef-stats__header ef-desktop-only" style={leaderboardGridStyle}>
               <span>#</span>
               <span>TEAM</span>
               {categoriesList.map((cat) => (
@@ -527,23 +688,48 @@ export default function EduFenstaHomePage() {
                 <div
                   key={team.id || team.name}
                   className={`ef-stats__team ${team.rank === 1 ? 'ef-stats__team--leader' : ''} ${leaderboardVisible ? 'ef-visible' : ''}`}
-                  style={{
-                    ...leaderboardGridStyle,
-                    ...(leaderboardVisible ? { animationDelay: `${i * 0.06}s` } : {}),
-                  }}
+                  style={leaderboardVisible ? { animationDelay: `${i * 0.06}s` } : {}}
                 >
-                  <span className="ef-stats__team-rank">
-                    {String(team.rank).padStart(2, '0')}
-                  </span>
-                  <span className="ef-stats__team-name">{team.name}</span>
-                  {categoriesList.map((cat) => (
-                    <span key={cat} className="ef-stats__team-cat-pts">
-                      {team.categoryPoints[cat] ?? 0}
+                  {/* Desktop Grid Layout */}
+                  <div className="ef-stats__team-desktop ef-desktop-only" style={{ ...leaderboardGridStyle, alignItems: 'center', width: '100%' }}>
+                    <span className="ef-stats__team-rank">
+                      {String(team.rank).padStart(2, '0')}
                     </span>
-                  ))}
-                  <span className="ef-stats__team-points">
-                    <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
-                  </span>
+                    <span className="ef-stats__team-name">{team.name}</span>
+                    {categoriesList.map((cat) => (
+                      <span key={cat} className="ef-stats__team-cat-pts">
+                        {team.categoryPoints[cat] ?? 0}
+                      </span>
+                    ))}
+                    <span className="ef-stats__team-points">
+                      <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
+                    </span>
+                  </div>
+
+                  {/* Mobile Device View: Team Total Point FIRST, then Category Breakdown */}
+                  <div className="ef-stats__team-mobile ef-mobile-only">
+                    <div className="ef-stats__mobile-top">
+                      <div className="ef-stats__mobile-identity">
+                        <span className={`ef-stats__mobile-rank ${team.rank === 1 ? 'ef-stats__mobile-rank--leader' : ''}`}>
+                          #{String(team.rank).padStart(2, '0')}
+                        </span>
+                        <span className="ef-stats__mobile-name">{team.name}</span>
+                      </div>
+                      <div className={`ef-stats__mobile-total ${team.rank === 1 ? 'ef-stats__mobile-total--leader' : ''}`}>
+                        <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
+                        <span className="ef-stats__mobile-total-label">PTS</span>
+                      </div>
+                    </div>
+
+                    <div className="ef-stats__mobile-breakdown">
+                      {categoriesList.map((cat) => (
+                        <div key={cat} className="ef-stats__mobile-cat-item">
+                          <span className="ef-stats__mobile-cat-name">{cat}</span>
+                          <span className="ef-stats__mobile-cat-val">{team.categoryPoints[cat] ?? 0}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               ))
             ) : (
@@ -726,19 +912,160 @@ export default function EduFenstaHomePage() {
             </svg>
           </Link>
         </div>
+      </section>
 
-        {/* Marquee */}
-        <div className="ef-marquee">
-          <div className="ef-marquee__track">
-            {marqueeTrack.map((item, i) => (
-              <span key={i} className="ef-marquee__item">
-                <span className="ef-marquee__dot" />
-                {item}
-              </span>
+      {/* ════════════════════════════════════════════════════════════
+          5. TOP PERFORMERS SECTION (INDIVIDUAL CHAMPIONSHIP)
+      ════════════════════════════════════════════════════════════ */}
+      <section className="ef-performers-section" id="ef-performers">
+        <div ref={performersHeaderRef} className="ef-section-header">
+          <p className={`ef-section-eyebrow ${performersHeaderVisible ? 'ef-visible' : ''}`}>
+            Hall of Fame
+          </p>
+          <h2 className={`ef-section-title ${performersHeaderVisible ? 'ef-visible' : ''}`}>
+            TOP PERFORMERS
+          </h2>
+          <p className={`ef-section-subtitle ${performersHeaderVisible ? 'ef-visible' : ''}`}>
+            Individual excellence calculated live from officially declared single event results.
+          </p>
+        </div>
+
+        {/* View Switcher Tabs (Overall + A'ala, Sufla — Strictly excludes General) */}
+        <div className="ef-performers-tabs-wrap">
+          <div className="ef-performers-tabs">
+            <button
+              className={`ef-performers-tab ${activePerformerTab === 'overall' ? 'ef-performers-tab--active' : ''}`}
+              onClick={() => setActivePerformerTab('overall')}
+            >
+              <Crown size={14} />
+              <span>Overall</span>
+            </button>
+            {performerCategories.map((cat) => (
+              <button
+                key={cat}
+                className={`ef-performers-tab ${activePerformerTab === cat ? 'ef-performers-tab--active' : ''}`}
+                onClick={() => setActivePerformerTab(cat)}
+              >
+                <span>{cat}</span>
+              </button>
             ))}
           </div>
         </div>
+
+        {/* Performers Showcase */}
+        <div ref={performersGridRef} className="ef-performers-container">
+          {currentPerformers.length > 0 ? (
+            <>
+              {/* Grand Olympic-Style Podium (Top 3) */}
+              <div className="ef-podium-grid">
+                {podiumDisplayCards.map((p, idx) => {
+                  const isFirst = p.rank === 1;
+                  const isSecond = p.rank === 2;
+                  const rankClass = isFirst ? 'ef-podium-card--1st' : isSecond ? 'ef-podium-card--2nd' : 'ef-podium-card--3rd';
+                  const badgeModifier = isFirst ? 'gold' : isSecond ? 'silver' : 'bronze';
+                  const badgeLabel = isFirst ? 'CHAMPION #01' : `RANK #${String(p.rank).padStart(2, '0')}`;
+                  const ptsModifier = isFirst ? 'ef-podium-card__pts--gold' : '';
+                  const displayName = p.member_name || p.name || p.member__name || 'Champion';
+
+                  return (
+                    <div
+                      key={p.member_id || `${displayName}-${p.rank}-${idx}`}
+                      className={`ef-podium-card ${rankClass} ${performersGridVisible ? 'ef-visible' : ''}`}
+                    >
+                      <div className={`ef-podium-card__rank-badge ef-podium-card__rank-badge--${badgeModifier}`}>
+                        {isFirst ? <Crown size={14} /> : <Medal size={14} />}
+                        <span>{badgeLabel}</span>
+                      </div>
+
+                      <h3 className={`ef-podium-card__name ${isFirst ? 'ef-podium-card__name--large' : ''}`}>
+                        {displayName}
+                      </h3>
+
+                      <div className="ef-podium-card__meta">
+                        {p.chest_no && (
+                          <span className="ef-podium-card__chest">#{p.chest_no}</span>
+                        )}
+                        {p.team_name && (
+                          <span className="ef-podium-card__team">{p.team_name}</span>
+                        )}
+                        {p.category_name && (
+                          <>
+                            <span className="ef-podium-card__dot">•</span>
+                            <span className="ef-podium-card__cat-text">{p.category_name}</span>
+                          </>
+                        )}
+                      </div>
+
+                      <div className={`ef-podium-card__pts ${ptsModifier}`}>
+                        <AnimatedCounter end={p.total_points} isVisible={performersGridVisible} />
+                        <span className="ef-podium-card__pts-label">PTS</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Extended Standings List (Ranks 4-8) */}
+              {runnerUpPerformers.length > 0 && (
+                <div className="ef-performers__roster">
+                  <div className="ef-performers__roster-title">
+                    <span>EXTENDED STANDINGS</span>
+                    <span className="ef-performers__roster-line" />
+                  </div>
+                  <div className="ef-performers__roster-grid">
+                    {runnerUpPerformers.map((p, idx) => (
+                      <div
+                        key={p.member_id || `${p.member_name}-${idx}`}
+                        className={`ef-performers__row ${performersGridVisible ? 'ef-visible' : ''}`}
+                        style={performersGridVisible ? { animationDelay: `${(idx + 3) * 0.05}s` } : {}}
+                      >
+                        <span className="ef-performers__row-rank">
+                          #{String(p.rank).padStart(2, '0')}
+                        </span>
+                        <div className="ef-performers__row-info">
+                          <span className="ef-performers__row-name">{p.member_name || p.name || p.member__name}</span>
+                          <div className="ef-performers__row-sub">
+                            {p.chest_no && <span className="ef-performers__row-chest">#{p.chest_no}</span>}
+                            <span>{p.team_name}</span>
+                            {p.category_name && <span className="ef-performers__row-dot">•</span>}
+                            {p.category_name && <span>{p.category_name}</span>}
+                          </div>
+                        </div>
+                        <div className="ef-performers__row-pts">
+                          <span className="ef-performers__row-pts-val">{p.total_points}</span>
+                          <span className="ef-performers__row-pts-lbl">PTS</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="ef-empty-performers">
+              <Trophy size={42} style={{ color: 'var(--ef-crimson)', opacity: 0.8, marginBottom: '0.75rem' }} />
+              <h3 style={{ color: 'var(--ef-white)', fontFamily: 'var(--ef-font-display)', fontSize: '1.25rem', marginBottom: '0.35rem' }}>
+                Star Rankings Awaiting Declarations
+              </h3>
+              <p style={{ color: 'var(--ef-gray)', fontSize: '0.85rem', maxWidth: '440px', margin: '0 auto' }}>
+                Individual champion points will illuminate live as official single event marksheets are verified and published.
+              </p>
+            </div>
+          )}
+        </div>
       </section>
+
+      {/* Marquee */}
+      <div className="ef-marquee">
+        <div className="ef-marquee__track">
+          {marqueeTrack.map((item, i) => (
+            <span key={i} className="ef-marquee__item">
+              <span className="ef-marquee__dot" />
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
 
       {/* ════════════════════════════════════════════════════════════
           5. FOOTER
@@ -772,8 +1099,8 @@ export default function EduFenstaHomePage() {
           </div>
           <div className="ef-footer__col">
             <div className="ef-footer__col-title">SCHEDULE</div>
-            <a href="#">Day 1 — Oct 06</a>
-            <a href="#">Day 2 — Oct 07</a>
+            <a href="#">Day 1 — Nov 03</a>
+            <a href="#">Day 2 — Nov 04</a>
             <Link to="/results">Full Event Schedule</Link>
           </div>
         </div>

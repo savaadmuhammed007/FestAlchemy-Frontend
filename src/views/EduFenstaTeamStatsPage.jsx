@@ -75,14 +75,22 @@ export default function EduFenstaTeamStatsPage() {
   const fest = data?.fest_settings;
   const publishedCount = data?.programs_with_results?.length || 0;
 
-  // ── Categories List ──
+  // ── Categories List (A'ala, Sufla, General) ──
+  const PREFERRED_CATEGORIES = useMemo(() => ["A'ala", "Sufla", "General"], []);
   const categoriesList = useMemo(() => {
-    const cats = data?.categories || [];
+    const cats = (data?.categories || []).map(c => c.name);
     if (cats.length > 0) {
-      return cats.map(c => c.name);
+      return [...cats].sort((a, b) => {
+        const idxA = PREFERRED_CATEGORIES.indexOf(a);
+        const idxB = PREFERRED_CATEGORIES.indexOf(b);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return a.localeCompare(b);
+      });
     }
-    return ['Low Zone', 'Mid Zone', 'High Zone', 'General'];
-  }, [data]);
+    return PREFERRED_CATEGORIES;
+  }, [data, PREFERRED_CATEGORIES]);
 
   // ── Program Name to Category Map ──
   const progCategoryMap = useMemo(() => {
@@ -105,12 +113,12 @@ export default function EduFenstaTeamStatsPage() {
     return map;
   }, [data]);
 
-  // ── Process Teams & Category Points ──
+  // ── Process Teams & Category Points (with Dense Tie-Ranking) ──
   const processedTeams = useMemo(() => {
     const rawLeaderboard = data?.leaderboard || [];
     if (!rawLeaderboard.length) return [];
 
-    return rawLeaderboard.map((t, idx) => {
+    const teams = rawLeaderboard.map((t, idx) => {
       const categoryPoints = {};
       categoriesList.forEach(cName => {
         categoryPoints[cName] = 0;
@@ -132,12 +140,27 @@ export default function EduFenstaTeamStatsPage() {
       }
 
       return {
-        rank: idx + 1,
         id: t.id || t.team || idx,
         name: t.team_name || `Team ${idx + 1}`,
         categoryPoints,
         totalPoints: Number(t.total_points) || 0,
         breakdown: t.breakdown || {},
+      };
+    });
+
+    teams.sort((a, b) => b.totalPoints - a.totalPoints);
+
+    // Dense tie-ranking: equal points get the exact same rank
+    let currentRank = 0;
+    let lastPoints = null;
+    return teams.map(t => {
+      if (lastPoints === null || t.totalPoints !== lastPoints) {
+        currentRank += 1;
+        lastPoints = t.totalPoints;
+      }
+      return {
+        ...t,
+        rank: currentRank,
       };
     });
   }, [data, categoriesList, progCategoryMap]);
@@ -252,30 +275,57 @@ export default function EduFenstaTeamStatsPage() {
                     <div className="eft-podium-medal">
                       <Trophy size={32} />
                     </div>
-                    <span className="eft-podium-rank" style={{ color: '#ffd700' }}>RANK #01</span>
+                    <span className="eft-podium-rank" style={{ color: '#ffd700' }}>
+                      RANK #{String(processedTeams[0].rank).padStart(2, '0')}
+                    </span>
                     <h3 className="eft-podium-name">{processedTeams[0].name}</h3>
                     <div className="eft-podium-pts">
                       <AnimatedCounter end={processedTeams[0].totalPoints} />
                       <span style={{ fontSize: '1.2rem', marginLeft: '6px', color: '#ffd700' }}>PTS</span>
                     </div>
                     <span className="eft-podium-badge" style={{ borderColor: '#ffd700', color: '#ffd700', background: 'rgba(255, 215, 0, 0.15)' }}>
-                      CURRENT LEADER
+                      {processedTeams[0].rank === processedTeams[1]?.rank ? 'JOINT LEADER' : 'CURRENT LEADER'}
                     </span>
                   </div>
 
-                  {/* #2 Challenger */}
-                  <div className="eft-podium-card eft-podium-card--2nd eft-podium-card--dual">
-                    <div className="eft-podium-medal">
-                      <Medal size={28} />
-                    </div>
-                    <span className="eft-podium-rank" style={{ color: '#c0c0c0' }}>RANK #02</span>
+                  {/* #2 Challenger or Co-Leader */}
+                  <div className={`eft-podium-card ${processedTeams[1].rank === 1 ? 'eft-podium-card--1st' : 'eft-podium-card--2nd'} eft-podium-card--dual`}>
+                    {processedTeams[1].rank === 1 ? (
+                      <>
+                        <Crown size={32} className="eft-podium-crown" />
+                        <div className="eft-podium-medal">
+                          <Trophy size={32} />
+                        </div>
+                        <span className="eft-podium-rank" style={{ color: '#ffd700' }}>RANK #01</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="eft-podium-medal">
+                          <Medal size={28} />
+                        </div>
+                        <span className="eft-podium-rank" style={{ color: '#c0c0c0' }}>
+                          RANK #{String(processedTeams[1].rank).padStart(2, '0')}
+                        </span>
+                      </>
+                    )}
                     <h3 className="eft-podium-name">{processedTeams[1].name}</h3>
                     <div className="eft-podium-pts">
                       <AnimatedCounter end={processedTeams[1].totalPoints} />
-                      <span style={{ fontSize: '1.2rem', marginLeft: '6px', color: '#c0c0c0' }}>PTS</span>
+                      <span style={{ fontSize: '1.2rem', marginLeft: '6px', color: processedTeams[1].rank === 1 ? '#ffd700' : '#c0c0c0' }}>PTS</span>
                     </div>
-                    <span className="eft-podium-badge" style={{ borderColor: 'var(--ef-crimson)', color: 'var(--ef-crimson)', background: 'rgba(255, 26, 26, 0.12)' }}>
-                      CHALLENGER
+                    <span
+                      className="eft-podium-badge"
+                      style={processedTeams[1].rank === 1 ? {
+                        borderColor: '#ffd700',
+                        color: '#ffd700',
+                        background: 'rgba(255, 215, 0, 0.15)'
+                      } : {
+                        borderColor: 'var(--ef-crimson)',
+                        color: 'var(--ef-crimson)',
+                        background: 'rgba(255, 26, 26, 0.12)'
+                      }}
+                    >
+                      {processedTeams[1].rank === 1 ? 'JOINT LEADER' : 'CHALLENGER'}
                     </span>
                   </div>
                 </div>
@@ -288,57 +338,91 @@ export default function EduFenstaTeamStatsPage() {
                 </div>
 
                 <div className="eft-podium-grid">
-                  {/* #2 Runner Up */}
+                  {/* Left Contender */}
                   {top3[1] && (
-                    <div className="eft-podium-card eft-podium-card--2nd">
+                    <div className={`eft-podium-card ${top3[1].rank === 1 ? 'eft-podium-card--1st' : 'eft-podium-card--2nd'}`}>
+                      {top3[1].rank === 1 && <Crown size={30} className="eft-podium-crown" />}
                       <div className="eft-podium-medal">
-                        <Medal size={26} />
+                        {top3[1].rank === 1 ? <Trophy size={32} /> : <Medal size={26} />}
                       </div>
-                      <span className="eft-podium-rank">RANK #02</span>
+                      <span className="eft-podium-rank" style={top3[1].rank === 1 ? { color: '#ffd700' } : { color: '#c0c0c0' }}>
+                        RANK #{String(top3[1].rank).padStart(2, '0')}
+                      </span>
                       <h3 className="eft-podium-name">{top3[1].name}</h3>
                       <div className="eft-podium-pts">
                         <AnimatedCounter end={top3[1].totalPoints} />
-                        <span style={{ fontSize: '1.1rem', marginLeft: '4px', color: 'var(--ef-gray)' }}>PTS</span>
+                        <span style={{ fontSize: '1.1rem', marginLeft: '4px', color: top3[1].rank === 1 ? '#ffd700' : 'var(--ef-gray)' }}>PTS</span>
                       </div>
-                      <span className="eft-podium-badge" style={{ borderColor: '#c0c0c0', color: '#c0c0c0', background: 'rgba(192, 192, 192, 0.1)' }}>
-                        RUNNER UP
+                      <span
+                        className="eft-podium-badge"
+                        style={top3[1].rank === 1 ? {
+                          borderColor: '#ffd700',
+                          color: '#ffd700',
+                          background: 'rgba(255, 215, 0, 0.15)'
+                        } : {
+                          borderColor: '#c0c0c0',
+                          color: '#c0c0c0',
+                          background: 'rgba(192, 192, 192, 0.1)'
+                        }}
+                      >
+                        {top3[1].rank === 1 ? 'JOINT LEADER' : 'RUNNER UP'}
                       </span>
                     </div>
                   )}
 
-                  {/* #1 Leader / Champion */}
+                  {/* Center Leader / Champion */}
                   {top3[0] && (
                     <div className="eft-podium-card eft-podium-card--1st">
                       <Crown size={30} className="eft-podium-crown" />
                       <div className="eft-podium-medal">
                         <Trophy size={32} />
                       </div>
-                      <span className="eft-podium-rank" style={{ color: '#ffd700' }}>RANK #01</span>
+                      <span className="eft-podium-rank" style={{ color: '#ffd700' }}>
+                        RANK #{String(top3[0].rank).padStart(2, '0')}
+                      </span>
                       <h3 className="eft-podium-name">{top3[0].name}</h3>
                       <div className="eft-podium-pts">
                         <AnimatedCounter end={top3[0].totalPoints} />
                         <span style={{ fontSize: '1.2rem', marginLeft: '6px', color: '#ffd700' }}>PTS</span>
                       </div>
                       <span className="eft-podium-badge" style={{ borderColor: '#ffd700', color: '#ffd700', background: 'rgba(255, 215, 0, 0.15)' }}>
-                        CURRENT LEADER
+                        {top3[0].rank === top3[1]?.rank ? 'JOINT LEADER' : 'CURRENT LEADER'}
                       </span>
                     </div>
                   )}
 
-                  {/* #3 Third Place */}
+                  {/* Right Contender */}
                   {top3[2] && (
-                    <div className="eft-podium-card eft-podium-card--3rd">
+                    <div className={`eft-podium-card ${top3[2].rank === 1 ? 'eft-podium-card--1st' : top3[2].rank === 2 ? 'eft-podium-card--2nd' : 'eft-podium-card--3rd'}`}>
+                      {top3[2].rank === 1 && <Crown size={30} className="eft-podium-crown" />}
                       <div className="eft-podium-medal">
-                        <Medal size={26} />
+                        {top3[2].rank === 1 ? <Trophy size={32} /> : <Medal size={26} />}
                       </div>
-                      <span className="eft-podium-rank">RANK #03</span>
+                      <span className="eft-podium-rank" style={top3[2].rank === 1 ? { color: '#ffd700' } : top3[2].rank === 2 ? { color: '#c0c0c0' } : {}}>
+                        RANK #{String(top3[2].rank).padStart(2, '0')}
+                      </span>
                       <h3 className="eft-podium-name">{top3[2].name}</h3>
                       <div className="eft-podium-pts">
                         <AnimatedCounter end={top3[2].totalPoints} />
-                        <span style={{ fontSize: '1.1rem', marginLeft: '4px', color: 'var(--ef-gray)' }}>PTS</span>
+                        <span style={{ fontSize: '1.1rem', marginLeft: '4px', color: top3[2].rank === 1 ? '#ffd700' : 'var(--ef-gray)' }}>PTS</span>
                       </div>
-                      <span className="eft-podium-badge" style={{ borderColor: '#cd7f32', color: '#cd7f32', background: 'rgba(205, 127, 50, 0.1)' }}>
-                        SECOND RUNNER UP
+                      <span
+                        className="eft-podium-badge"
+                        style={top3[2].rank === 1 ? {
+                          borderColor: '#ffd700',
+                          color: '#ffd700',
+                          background: 'rgba(255, 215, 0, 0.15)'
+                        } : top3[2].rank === 2 ? {
+                          borderColor: '#c0c0c0',
+                          color: '#c0c0c0',
+                          background: 'rgba(192, 192, 192, 0.1)'
+                        } : {
+                          borderColor: '#cd7f32',
+                          color: '#cd7f32',
+                          background: 'rgba(205, 127, 50, 0.1)'
+                        }}
+                      >
+                        {top3[2].rank === 1 ? 'JOINT LEADER' : top3[2].rank === 2 ? 'RUNNER UP' : 'SECOND RUNNER UP'}
                       </span>
                     </div>
                   )}

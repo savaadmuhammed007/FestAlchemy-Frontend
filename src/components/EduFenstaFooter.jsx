@@ -49,8 +49,8 @@ export default function EduFenstaFooter() {
         </div>
         <div className="ef-footer__col">
           <div className="ef-footer__col-title">SCHEDULE</div>
-          <a href="#">Day 1 — Oct 06</a>
-          <a href="#">Day 2 — Oct 07</a>
+          <a href="#">Day 1 — Nov 03</a>
+          <a href="#">Day 2 — Nov 04</a>
           <Link to="/results">Full Event Schedule</Link>
         </div>
       </div>
