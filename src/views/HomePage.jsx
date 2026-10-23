@@ -295,10 +295,10 @@ export default function EduFenstaHomePage() {
         {/* Contour lines */}
         <div className="ef-hero__contours">
           <svg viewBox="0 0 1440 900" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-            <path d="M-50 200C200 180 400 320 700 280S1100 200 1500 350" stroke="#FF1A1A" strokeWidth="1" fill="none" opacity="0.5"/>
-            <path d="M-50 350C300 330 500 450 800 400S1200 330 1500 480" stroke="#FF1A1A" strokeWidth="0.8" fill="none" opacity="0.3"/>
-            <path d="M-50 500C250 480 450 600 750 550S1150 480 1500 620" stroke="#FF1A1A" strokeWidth="0.6" fill="none" opacity="0.2"/>
-            <path d="M-50 650C350 630 550 750 850 700S1250 630 1500 770" stroke="#FF1A1A" strokeWidth="0.5" fill="none" opacity="0.15"/>
+            <path d="M-50 200C200 180 400 320 700 280S1100 200 1500 350" stroke="#FF1A1A" strokeWidth="1" fill="none" opacity="0.5" />
+            <path d="M-50 350C300 330 500 450 800 400S1200 330 1500 480" stroke="#FF1A1A" strokeWidth="0.8" fill="none" opacity="0.3" />
+            <path d="M-50 500C250 480 450 600 750 550S1150 480 1500 620" stroke="#FF1A1A" strokeWidth="0.6" fill="none" opacity="0.2" />
+            <path d="M-50 650C350 630 550 750 850 700S1250 630 1500 770" stroke="#FF1A1A" strokeWidth="0.5" fill="none" opacity="0.15" />
           </svg>
         </div>
 
@@ -348,7 +348,7 @@ export default function EduFenstaHomePage() {
           </div>
 
           <div className="ef-hero__event-info">
-            <span>06–07 OCTOBER 2026</span>
+            <span>03–04 NOVEMBER 2026</span>
             <span className="ef-hero__info-dot" />
             <span>AL ASAS ACADEMY, KOZHIKODE</span>
           </div>
@@ -410,7 +410,7 @@ export default function EduFenstaHomePage() {
             Championship Leaderboard
           </p>
           <h2 className={`ef-section-title ${statsHeaderVisible ? 'ef-visible' : ''}`}>
-            WHO STANDS<br/>TOGETHER
+            WHO STANDS<br />TOGETHER
           </h2>
           <p className={`ef-section-subtitle ${statsHeaderVisible ? 'ef-visible' : ''}`}>
             The competitive team standings from the database. Every point earned through dedication, creativity, and brilliance.
