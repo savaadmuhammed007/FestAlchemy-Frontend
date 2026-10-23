@@ -1,14 +1,28 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, API_BASE_URL } from '../context/AuthContext';
 
 export default function EduFenstaNav({ activePage = 'home' }) {
   const [scrolled, setScrolled] = useState(false);
   const [navHidden, setNavHidden] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showToppers, setShowToppers] = useState(true);
   const lastScrollY = useRef(0);
   const location = useLocation();
   const { isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch(`${API_BASE_URL}/api/public/stats/`)
+      .then(res => res.json())
+      .then(data => {
+        if (isMounted && data?.fest_settings?.publish_top_performers === false) {
+          setShowToppers(false);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   const portalInfo = useMemo(() => {
     if (!isAuthenticated || !user) return { to: '/login', label: 'LOGIN' };
@@ -48,7 +62,7 @@ export default function EduFenstaNav({ activePage = 'home' }) {
     { label: 'Home', to: '/edufensta', id: 'home' },
     { label: 'Standings', to: '/team-status', id: 'standings' },
     { label: 'Results', to: '/results', id: 'results' },
-    { label: 'Toppers', to: '/edufensta#ef-performers', id: 'toppers' },
+    ...(showToppers ? [{ label: 'Toppers', to: '/edufensta#ef-performers', id: 'toppers' }] : []),
   ];
 
   return (

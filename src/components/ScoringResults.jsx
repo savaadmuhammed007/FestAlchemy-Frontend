@@ -22,6 +22,7 @@ export default function ScoringResults({
   token,
   festSettings,
   onTogglePublishTeamStandings,
+  onTogglePublishTopPerformers,
   onUpdateFestSettings
 }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -618,6 +619,50 @@ export default function ScoringResults({
                     ({festSettings?.published_standings_limit > 0 ? `Set to show after ${festSettings.published_standings_limit} results` : 'Showing all results'})
                   </span>
                 </div>
+              </div>
+
+              {/* Top Performers Public Visibility Banner */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.85rem 1rem',
+                marginBottom: '1.25rem',
+                borderRadius: 'var(--radius-md)',
+                background: festSettings?.publish_top_performers !== false ? 'rgba(34, 197, 94, 0.08)' : 'rgba(245, 158, 11, 0.08)',
+                border: `1px solid ${festSettings?.publish_top_performers !== false ? 'rgba(34, 197, 94, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
+                flexWrap: 'wrap'
+              }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{
+                      width: '8px', height: '8px', borderRadius: '50%',
+                      background: festSettings?.publish_top_performers !== false ? '#22c55e' : '#f59e0b'
+                    }} />
+                    Top Performers: {festSettings?.publish_top_performers !== false ? 'Visible on Home Page' : 'Hidden from Home Page'}
+                  </div>
+                  <div style={{ fontSize: '0.73rem', color: 'var(--text-secondary)', marginTop: '0.15rem' }}>
+                    {festSettings?.publish_top_performers !== false ? 'Top performers & individual standings are shown on home page' : 'Top performers section & navigation hidden on home page'}
+                  </div>
+                </div>
+                {onTogglePublishTopPerformers && (
+                  <button
+                    onClick={onTogglePublishTopPerformers}
+                    className="btn"
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.35rem 0.75rem',
+                      height: '30px',
+                      background: festSettings?.publish_top_performers !== false ? 'var(--bg-raised)' : '#22c55e',
+                      border: `1px solid ${festSettings?.publish_top_performers !== false ? 'var(--border)' : '#22c55e'}`,
+                      color: festSettings?.publish_top_performers !== false ? 'var(--text-primary)' : '#ffffff',
+                      borderRadius: 'var(--radius-sm)'
+                    }}
+                  >
+                    {festSettings?.publish_top_performers !== false ? 'Hide from Home' : 'Show on Home'}
+                  </button>
+                )}
               </div>
 
               {/* Standings Header Bar */}

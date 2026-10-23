@@ -1075,6 +1075,43 @@ export default function AdminPanel() {
     }
   };
 
+  const handleTogglePublishTopPerformers = async () => {
+    if (!festSettings || !festSettings.id) {
+      alert("Fest settings not loaded yet.", "warning");
+      return;
+    }
+    const currentStatus = festSettings.publish_top_performers !== false;
+    const nextStatus = !currentStatus;
+    const actionText = nextStatus ? "Show / Publish" : "Hide";
+    const confirmed = await confirm(
+      `${actionText} Top Performers`,
+      `Are you sure you want to ${nextStatus ? 'publish' : 'hide'} top performers on the public home page?`
+    );
+    if (!confirmed) return;
+
+    // Instant optimistic update
+    setFestSettings(prev => prev ? ({ ...prev, publish_top_performers: nextStatus }) : prev);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/fest-settings/${festSettings.id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ publish_top_performers: nextStatus })
+      });
+      if (!res.ok) throw new Error("Failed to update top performers publication status");
+      const updated = await res.json();
+      setFestSettings(updated);
+      alert(`Top performers ${nextStatus ? 'published to home page!' : 'hidden from home page.'}`, nextStatus ? 'success' : 'info');
+    } catch (err) {
+      console.error("Error toggling top performers publication:", err);
+      setFestSettings(prev => prev ? ({ ...prev, publish_top_performers: currentStatus }) : prev);
+      alert("Failed to update top performers publication status.", "error");
+    }
+  };
+
   // Reports
   const handleFetchReport = async () => {
     if (reportType === 'dashboard') {
@@ -1882,6 +1919,7 @@ export default function AdminPanel() {
             token={token}
             festSettings={festSettings}
             onTogglePublishTeamStandings={handleTogglePublishTeamStandings}
+            onTogglePublishTopPerformers={handleTogglePublishTopPerformers}
             onUpdateFestSettings={(updated) => setFestSettings(updated)}
           />
         )}

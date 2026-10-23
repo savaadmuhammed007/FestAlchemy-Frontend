@@ -379,18 +379,20 @@ export default function EduFenstaHomePage() {
   ];
   const marqueeTrack = [...marqueeItems, ...marqueeItems];
 
+  const publishTopPerformers = festData?.fest_settings?.publish_top_performers !== false;
+
   const navLinks = [
     { label: 'Home', to: '/edufensta', active: true },
     { label: 'Standings', to: '/team-status' },
     { label: 'Results', to: '/results' },
-    {
+    ...(publishTopPerformers ? [{
       label: 'Toppers',
       to: '#ef-performers',
       onClick: (e) => {
         e.preventDefault();
         handleSmoothScroll('ef-performers');
       },
-    },
+    }] : []),
   ];
 
   const handleSmoothScroll = (id) => {
@@ -917,6 +919,7 @@ export default function EduFenstaHomePage() {
       {/* ════════════════════════════════════════════════════════════
           5. TOP PERFORMERS SECTION (INDIVIDUAL CHAMPIONSHIP)
       ════════════════════════════════════════════════════════════ */}
+      {publishTopPerformers && (
       <section className="ef-performers-section" id="ef-performers">
         <div ref={performersHeaderRef} className="ef-section-header">
           <p className={`ef-section-eyebrow ${performersHeaderVisible ? 'ef-visible' : ''}`}>
@@ -1054,6 +1057,7 @@ export default function EduFenstaHomePage() {
           )}
         </div>
       </section>
+      )}
 
       {/* Marquee */}
       <div className="ef-marquee">
