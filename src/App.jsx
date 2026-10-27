@@ -15,6 +15,7 @@ import Login from './views/Login';
 import AdminPanel from './views/AdminPanel';
 import JudgePanel from './views/JudgePanel';
 import TeamLeadPanel from './views/TeamLeadPanel';
+import LaunchPage from './views/LaunchPage';
 
 // Icons
 import { Trophy, LogIn, LogOut, Shield, Award, Users, RefreshCw, Moon, Sun, CheckCircle2, AlertTriangle, Info, XCircle, X, Menu, Sparkles, ArrowRight } from 'lucide-react';
@@ -467,12 +468,13 @@ function AppContent() {
   const location = useLocation();
 
   const isEduFenstaPage = ['/', '/edufensta', '/edufenta', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
-  const isFullWidthPage = isEduFenstaPage || location.pathname === '/demo';
+  const isLaunchPage = location.pathname === '/launch';
+  const isFullWidthPage = isEduFenstaPage || location.pathname === '/demo' || isLaunchPage;
 
   return (
     <div className="app-container">
-      {/* Hide app navbar on EduFensta pages — they have their own integrated EduFensta nav */}
-      {!isEduFenstaPage && <Navbar />}
+      {/* Hide app navbar on EduFensta pages and Launch page (has its own dedicated mission control header) */}
+      {!isEduFenstaPage && !isLaunchPage && <Navbar />}
       <main className={`main-content ${isFullWidthPage ? 'main-content--home' : ''}`}>
         <Routes>
           <Route path="/" element={<Navigate to="/edufensta" replace />} />
@@ -480,6 +482,7 @@ function AppContent() {
           <Route path="/edufenta" element={<EduFenstaHomePage />} />
           <Route path="/ilalhabeeb" element={<Navigate to="/edufensta" replace />} />
           <Route path="/demo" element={<ProductDemoPage />} />
+          <Route path="/launch" element={<LaunchPage />} />
 
           {/* New EduFensta styled pages */}
           <Route path="/results" element={<EduFenstaResultsPage />} />

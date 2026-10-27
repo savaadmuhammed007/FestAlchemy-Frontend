@@ -33,6 +33,7 @@ export default function EduFenstaFooter() {
           <Link to="/edufensta">Home</Link>
           <Link to="/team-status">Team Standings</Link>
           <Link to="/results">Results</Link>
+          <Link to="/launch" style={{ color: '#00f0ff', fontWeight: 600 }}>🚀 Public Launch</Link>
           <Link to={portalInfo.to}>{portalInfo.label}</Link>
         </div>
         <div className="ef-footer__col">
