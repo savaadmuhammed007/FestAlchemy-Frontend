@@ -201,16 +201,18 @@ export default function EduFenstaHomePage() {
     if (!rawResults || rawResults.length === 0) return [];
     const map = new Map();
     rawResults.forEach((r) => {
+      // Key by program ID so separate events with the same name across categories (e.g. Quiz in Sufla & A'ala) produce distinct cards
+      const groupKey = r.program != null ? String(r.program) : `${r.program_name || 'Event'}_${r.category_name || ''}`;
       const pName = r.program_name || `Program #${r.program}`;
-      if (!map.has(pName)) {
-        map.set(pName, {
+      if (!map.has(groupKey)) {
+        map.set(groupKey, {
           programId: r.program,
           programName: pName,
           categoryName: r.category_name || '',
           ranks: [],
         });
       }
-      map.get(pName).ranks.push(r);
+      map.get(groupKey).ranks.push(r);
     });
 
     return Array.from(map.values())
@@ -548,7 +550,7 @@ export default function EduFenstaHomePage() {
           {groupedResults.length > 0 ? (
             groupedResults.map((prog, i) => (
               <div
-                key={prog.programId || prog.programName}
+                key={prog.programId || `${prog.programName}-${prog.categoryName}`}
                 className={`ef-results__card ${resultsGridVisible ? 'ef-visible' : ''}`}
                 style={resultsGridVisible ? { animationDelay: `${i * 0.08}s` } : {}}
                 onClick={() =>
