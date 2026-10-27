@@ -49,6 +49,9 @@ export default function EduFenstaResultsPage() {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     fetchData();
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
@@ -85,6 +88,9 @@ export default function EduFenstaResultsPage() {
   const goBack = () => {
     setSelectedProgram(null);
     setProgramResults(null);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   const publishedPrograms = data?.programs_with_results || [];

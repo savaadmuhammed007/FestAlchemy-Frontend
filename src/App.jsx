@@ -524,12 +524,36 @@ function AppContent() {
   );
 }
 
+// ── Global Scroll To Top On Route Change ─────────────────────
+function ScrollToTop() {
+  const { pathname, search, hash } = useLocation();
+
+  useEffect(() => {
+    // If a hash exists (e.g. #ef-performers), scroll to that element
+    if (hash) {
+      const id = hash.replace('#', '');
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+    }
+    // Otherwise immediately scroll to the top of the viewport
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [pathname, search, hash]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <UIProvider>
           <Router>
+            <ScrollToTop />
             <AppContent />
           </Router>
         </UIProvider>
