@@ -1,4 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Inter:wght@400;600;700;800&family=Montserrat:wght@400;600;800&family=Playfair+Display:ital,wght@0,400;0,600;0,800;1,400&family=Poppins:wght@400;600;800&family=Sora:wght@400;600;700;800&display=swap');
+@import url('https://use.typekit.net/iww4xmf.css');
+
+@font-face {
+  font-family: 'Naatak Malayalam';
+  src: local('naatak-malayalam');
+}
 
 /* ─────────────────────────────────────────────────────────────
    DESIGN TOKENS — Dark Mode (default)

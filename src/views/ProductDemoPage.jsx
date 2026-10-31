@@ -1443,6 +1443,7 @@ export default function ProductDemoPage() {
                     >
                       <option value="Sora">Sora (Display Bold)</option>
                       <option value="Cinzel">Cinzel (Royal Classical)</option>
+                      <option value="Naatak Malayalam">Naatak Malayalam</option>
                       <option value="Montserrat">Montserrat (Modern Sans)</option>
                       <option value="Poppins">Poppins (Geometric)</option>
                       <option value="Inter">Inter (Clean UI)</option>

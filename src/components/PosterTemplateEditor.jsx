@@ -54,7 +54,7 @@ const DEFAULT_CONFIG = {
   result_value: { x: 540, y: 1175, size: 30, color: '#ffffff' },
 };
 
-const SUPPORTED_FONTS = ['Inter', 'Montserrat', 'Poppins', 'Playfair Display', 'Cinzel',];
+const SUPPORTED_FONTS = ['Inter', 'Montserrat', 'Poppins', 'Playfair Display', 'Cinzel', 'Naatak Malayalam'];
 
 const getDefaultWeight = (key) => {
   if (key === 'program' || key.endsWith('_name')) return 'ExtraBold';
@@ -695,7 +695,7 @@ export default function PosterTemplateEditor({ token }) {
                       top: `${field.y}px`,
                       transform: transformStyle,
                       fontSize: `${field.size}px`,
-                      fontFamily: `'${field.font || 'Inter'}', sans-serif`,
+                      fontFamily: (field.font === 'Naatak Malayalam' || field.font === 'naatak-malayalam') ? "'naatak-malayalam', 'Naatak Malayalam', sans-serif" : `'${field.font || 'Inter'}', sans-serif`,
                       fontWeight: field.weight === 'Regular' ? 400 : field.weight === 'SemiBold' ? 600 : field.weight === 'ExtraBold' ? 800 : (key === 'program' || key.endsWith('_name') ? 800 : 600),
                       color: field.color,
                       textShadow: '0 2px 8px rgba(0,0,0,0.7)',
