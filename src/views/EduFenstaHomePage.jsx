@@ -1018,8 +1018,8 @@ export default function EduFenstaHomePage() {
           </div>
           <div className="ef-footer__col">
             <div className="ef-footer__col-title">CONNECT</div>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">YouTube</a>
+            <a href="https://www.instagram.com/al_asas_calicut/" target="_blank" rel="noopener noreferrer">Instagram</a>
+            <a href="https://www.youtube.com/@AlAsasMedia" target="_blank" rel="noopener noreferrer">YouTube</a>
             <a href="mailto:contact@festalchemy.com">Contact</a>
           </div>
           <div className="ef-footer__col">
