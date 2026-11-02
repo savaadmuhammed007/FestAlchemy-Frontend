@@ -435,7 +435,7 @@ export default function ScoringResults({
                           </td>
                           <td style={{ textAlign: 'right', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'relative' }}>
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                              {p.is_published ? (
+                              {(p.has_results || p.is_published) ? (
                                 <button
                                   onClick={() => {
                                     setResultsProgramId(p.id.toString());
@@ -480,6 +480,7 @@ export default function ScoringResults({
                                     }}
                                     className="btn btn-secondary"
                                     style={{ padding: '0.25rem 0.4rem', background: 'transparent', border: 'none', color: 'var(--text-secondary)', height: '30px', display: 'flex', alignItems: 'center' }}
+                                    title="More Options"
                                   >
                                     <MoreVertical size={16} />
                                   </button>
@@ -494,20 +495,64 @@ export default function ScoringResults({
                                       border: '1px solid var(--border-glass)',
                                       borderRadius: '8px',
                                       boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                                      minWidth: '110px',
+                                      minWidth: '130px',
                                       display: 'flex',
                                       flexDirection: 'column',
                                       padding: '0.25rem'
                                     }}>
                                       <button
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const pIdStr = p.id.toString();
+                                          setResultsProgramId(pIdStr);
+                                          if (onComputeResults) {
+                                            onComputeResults(pIdStr);
+                                          } else {
+                                            onFetchResults(pIdStr);
+                                          }
+                                          setActiveMenuId(null);
+                                        }}
+                                        className="btn-menu-item"
+                                        style={{ 
+                                          textAlign: 'left', 
+                                          padding: '0.5rem 0.75rem', 
+                                          fontSize: '0.78rem', 
+                                          background: 'transparent', 
+                                          border: 'none', 
+                                          color: 'var(--text-primary)', 
+                                          width: '100%', 
+                                          cursor: 'pointer',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '0.45rem',
+                                          whiteSpace: 'nowrap'
+                                        }}
+                                      >
+                                        <RefreshCw size={12} /> Compute
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
                                           onTogglePublish(p.id.toString());
                                           setActiveMenuId(null);
                                         }}
                                         className="btn-menu-item"
-                                        style={{ textAlign: 'left', padding: '0.5rem 0.75rem', fontSize: '0.78rem', background: 'transparent', border: 'none', color: p.is_published ? 'var(--danger-neon)' : 'var(--success-neon)', width: '100%', cursor: 'pointer' }}
+                                        style={{ 
+                                          textAlign: 'left', 
+                                          padding: '0.5rem 0.75rem', 
+                                          fontSize: '0.78rem', 
+                                          background: 'transparent', 
+                                          border: 'none', 
+                                          color: p.is_published ? 'var(--danger-neon)' : 'var(--success-neon)', 
+                                          width: '100%', 
+                                          cursor: 'pointer',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '0.45rem',
+                                          whiteSpace: 'nowrap'
+                                        }}
                                       >
-                                        {p.is_published ? 'Unpublish' : 'Publish'}
+                                        <CheckCircle size={12} /> {p.is_published ? 'Unpublish' : 'Publish'}
                                       </button>
                                     </div>
                                   )}
@@ -840,11 +885,14 @@ export default function ScoringResults({
               </div>
               
               <button 
-                onClick={onComputeResults} 
+                onClick={() => {
+                  if (onComputeResults) onComputeResults(resultsProgramId);
+                }} 
                 className="btn btn-primary" 
                 disabled={resultsLoading}
+                title="Recompute Rankings and recalculate scores"
               >
-                {resultsLoading ? <RefreshCw className="spinning" size={16} /> : <Award size={16} />} Compute Rankings
+                {resultsLoading ? <RefreshCw className="spinning" size={16} /> : <RefreshCw size={16} />} Recompute Rankings
               </button>
             </div>
           </div>
@@ -858,12 +906,12 @@ export default function ScoringResults({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)', paddingBottom: '1rem' }}>
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    Computed Event Rankings
+                    Competition Results
                     <span className={`tag ${publishStatus ? 'tag-success' : 'tag-warning'}`} style={{ fontSize: '0.7rem' }}>
-                      Team Points: {publishStatus ? 'Added' : 'Draft'}
+                      Status: {publishStatus ? 'Published' : 'Submitted (Draft)'}
                     </span>
                   </h3>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Calculated points and weights successfully.</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Participant results, scores, grades, and awarded points.</p>
                 </div>
                 
                 <button 
@@ -879,45 +927,45 @@ export default function ScoringResults({
                 <table className="custom-table">
                   <thead>
                     <tr>
-                      <th>Sl No</th>
-                      <th>Rank</th>
-                      <th>Lot Code</th>
+                      <th>Spinned Code</th>
+                      <th>Name</th>
                       <th>Chest No</th>
-                      <th>Participant</th>
-                      <th>Team</th>
-                      <th>Avg Score</th>
+                      <th>Team Name</th>
+                      <th>Avg. Score</th>
                       <th>Grade</th>
-                      <th>Points Awarded</th>
-                      <th style={{ width: '100px', textAlign: 'right' }}>Actions</th>
+                      <th style={{ textAlign: 'right' }}>Awarded Points</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {computedResults.map((r, idx) => (
+                    {computedResults.map((r) => (
                       <tr key={r.id}>
-                        <td>{idx + 1}</td>
-                        <td style={{ fontWeight: 'bold' }}>#{r.rank}</td>
                         <td>
                           <span style={{ fontWeight: 800, color: 'var(--secondary-neon)' }}>
-                            {r.judge_code ? `Code ${r.judge_code}` : '—'}
+                            {r.judge_code ? (r.judge_code.startsWith('Code') ? r.judge_code : `Code ${r.judge_code}`) : '—'}
                           </span>
                         </td>
+                        <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.member_name}</td>
                         <td style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{r.member_chest_no || 'N/A'}</td>
-                        <td style={{ fontWeight: 600 }}>{r.member_name}</td>
                         <td>{r.team_name}</td>
-                        <td>{r.total_marks}</td>
-                        <td>{r.grade || 'N/A'}</td>
-                        <td style={{ fontWeight: 'bold', color: 'var(--success-neon)' }}>{r.points} pts</td>
-                        <td style={{ textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
-                            <button onClick={() => onOpenModal('edit-result', r)} className="btn btn-secondary" style={{ padding: '0.3rem' }} title="Edit Result"><Edit size={14} /></button>
-                            <button onClick={() => onDeleteResult('results', r.id)} className="btn btn-danger" style={{ padding: '0.3rem' }} title="Delete Result"><Trash size={14} /></button>
-                          </div>
+                        <td style={{ fontWeight: 600 }}>{r.total_marks}</td>
+                        <td>
+                          <span className="tag tag-primary" style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}>
+                            {r.grade || '—'}
+                          </span>
+                        </td>
+                        <td style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success-neon)' }}>
+                          {r.points} pts
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
+            </div>
+          )}
+          {!resultsLoading && computedResults.length === 0 && (
+            <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+              No results recorded for this competition yet.
             </div>
           )}
         </div>
