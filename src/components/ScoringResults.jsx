@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { UIContext } from '../App';
 import { API_BASE_URL } from '../context/AuthContext';
+import Modal from './Modal';
 
 export default function ScoringResults({
   programs,
@@ -34,6 +35,37 @@ export default function ScoringResults({
   const [onlyPublished, setOnlyPublished] = useState(true);
   const [afterCount, setAfterCount] = useState('');
   const [standingsLimitInput, setStandingsLimitInput] = useState(festSettings?.published_standings_limit ?? 0);
+
+  // Quick View Modal state
+  const [viewModalProgram, setViewModalProgram] = useState(null);
+  const [viewModalResults, setViewModalResults] = useState([]);
+  const [viewModalLoading, setViewModalLoading] = useState(false);
+
+  const handleOpenViewModal = async (p) => {
+    setViewModalProgram(p);
+    setViewModalLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/results/?program=${p.id}`, {
+        headers: { 'Authorization': `Token ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setViewModalResults(data);
+      } else {
+        setViewModalResults([]);
+      }
+    } catch (err) {
+      console.error("Error fetching program results for popup:", err);
+      setViewModalResults([]);
+    } finally {
+      setViewModalLoading(false);
+    }
+  };
+
+  const handleCloseViewModal = () => {
+    setViewModalProgram(null);
+    setViewModalResults([]);
+  };
 
   useEffect(() => {
     if (festSettings && festSettings.published_standings_limit !== undefined) {
@@ -437,10 +469,7 @@ export default function ScoringResults({
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'flex-end' }}>
                               {(p.has_results || p.is_published) ? (
                                 <button
-                                  onClick={() => {
-                                    setResultsProgramId(p.id.toString());
-                                    onFetchResults(p.id.toString());
-                                  }}
+                                  onClick={() => handleOpenViewModal(p)}
                                   className="btn btn-secondary"
                                   style={{ fontSize: '0.78rem', padding: '0.35rem 0.7rem', height: '30px' }}
                                 >
@@ -495,7 +524,7 @@ export default function ScoringResults({
                                       border: '1px solid var(--border-glass)',
                                       borderRadius: '8px',
                                       boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                                      minWidth: '130px',
+                                      minWidth: '140px',
                                       display: 'flex',
                                       flexDirection: 'column',
                                       padding: '0.25rem'
@@ -529,6 +558,32 @@ export default function ScoringResults({
                                         }}
                                       >
                                         <RefreshCw size={12} /> Compute
+                                      </button>
+                                      <button
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const pIdStr = p.id.toString();
+                                          setResultsProgramId(pIdStr);
+                                          onFetchResults(pIdStr);
+                                          setActiveMenuId(null);
+                                        }}
+                                        className="btn-menu-item"
+                                        style={{ 
+                                          textAlign: 'left', 
+                                          padding: '0.5rem 0.75rem', 
+                                          fontSize: '0.78rem', 
+                                          background: 'transparent', 
+                                          border: 'none', 
+                                          color: 'var(--text-primary)', 
+                                          width: '100%', 
+                                          cursor: 'pointer',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '0.45rem',
+                                          whiteSpace: 'nowrap'
+                                        }}
+                                      >
+                                        <Edit size={12} /> Edit Results
                                       </button>
                                       <button
                                         onClick={(e) => {
@@ -890,9 +945,9 @@ export default function ScoringResults({
                 }} 
                 className="btn btn-primary" 
                 disabled={resultsLoading}
-                title="Recompute Rankings and recalculate scores"
+                title="Compute or recompute rankings"
               >
-                {resultsLoading ? <RefreshCw className="spinning" size={16} /> : <RefreshCw size={16} />} Recompute Rankings
+                {resultsLoading ? <RefreshCw className="spinning" size={16} /> : <Award size={16} />} Compute Rankings
               </button>
             </div>
           </div>
@@ -906,12 +961,12 @@ export default function ScoringResults({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-glass)', paddingBottom: '1rem' }}>
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    Competition Results
+                    Computed Event Rankings
                     <span className={`tag ${publishStatus ? 'tag-success' : 'tag-warning'}`} style={{ fontSize: '0.7rem' }}>
-                      Status: {publishStatus ? 'Published' : 'Submitted (Draft)'}
+                      Team Points: {publishStatus ? 'Added' : 'Draft'}
                     </span>
                   </h3>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Participant results, scores, grades, and awarded points.</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Calculated points and weights successfully.</p>
                 </div>
                 
                 <button 
@@ -927,34 +982,39 @@ export default function ScoringResults({
                 <table className="custom-table">
                   <thead>
                     <tr>
-                      <th>Spinned Code</th>
-                      <th>Name</th>
+                      <th>Sl No</th>
+                      <th>Rank</th>
+                      <th>Lot Code</th>
                       <th>Chest No</th>
-                      <th>Team Name</th>
-                      <th>Avg. Score</th>
+                      <th>Participant</th>
+                      <th>Team</th>
+                      <th>Avg Score</th>
                       <th>Grade</th>
-                      <th style={{ textAlign: 'right' }}>Awarded Points</th>
+                      <th>Points Awarded</th>
+                      <th style={{ width: '100px', textAlign: 'right' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {computedResults.map((r) => (
+                    {computedResults.map((r, idx) => (
                       <tr key={r.id}>
+                        <td>{idx + 1}</td>
+                        <td style={{ fontWeight: 'bold' }}>#{r.rank}</td>
                         <td>
                           <span style={{ fontWeight: 800, color: 'var(--secondary-neon)' }}>
                             {r.judge_code ? (r.judge_code.startsWith('Code') ? r.judge_code : `Code ${r.judge_code}`) : '—'}
                           </span>
                         </td>
-                        <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.member_name}</td>
                         <td style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{r.member_chest_no || 'N/A'}</td>
+                        <td style={{ fontWeight: 600 }}>{r.member_name}</td>
                         <td>{r.team_name}</td>
-                        <td style={{ fontWeight: 600 }}>{r.total_marks}</td>
-                        <td>
-                          <span className="tag tag-primary" style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}>
-                            {r.grade || '—'}
-                          </span>
-                        </td>
-                        <td style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success-neon)' }}>
-                          {r.points} pts
+                        <td>{r.total_marks}</td>
+                        <td>{r.grade || 'N/A'}</td>
+                        <td style={{ fontWeight: 'bold', color: 'var(--success-neon)' }}>{r.points} pts</td>
+                        <td style={{ textAlign: 'right' }}>
+                          <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
+                            <button onClick={() => onOpenModal('edit-result', r)} className="btn btn-secondary" style={{ padding: '0.3rem' }} title="Edit Result"><Edit size={14} /></button>
+                            <button onClick={() => onDeleteResult('results', r.id)} className="btn btn-danger" style={{ padding: '0.3rem' }} title="Delete Result"><Trash size={14} /></button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -970,6 +1030,79 @@ export default function ScoringResults({
           )}
         </div>
       )}
+
+      {/* View Results Popup Modal */}
+      <Modal
+        isOpen={Boolean(viewModalProgram)}
+        onClose={handleCloseViewModal}
+        title={viewModalProgram ? `Results: ${viewModalProgram.name}` : 'Results'}
+        maxWidth="850px"
+      >
+        {viewModalProgram && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid var(--border-glass)', paddingBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span className="tag tag-primary" style={{ fontSize: '0.75rem' }}>
+                {viewModalProgram.category_name}
+              </span>
+              <span className={`tag ${viewModalProgram.is_published ? 'tag-success' : 'tag-warning'}`} style={{ fontSize: '0.75rem' }}>
+                {viewModalProgram.is_published ? 'Published' : 'Submitted (Draft)'}
+              </span>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {viewModalResults.length} {viewModalResults.length === 1 ? 'participant' : 'participants'}
+            </div>
+          </div>
+        )}
+
+        {viewModalLoading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '3rem' }}>
+            <RefreshCw className="spinning" size={28} style={{ color: 'var(--primary-neon)' }} />
+          </div>
+        ) : viewModalResults.length > 0 ? (
+          <div className="table-container">
+            <table className="custom-table" style={{ fontSize: '0.9rem' }}>
+              <thead>
+                <tr>
+                  <th>Spinned Code</th>
+                  <th>Name</th>
+                  <th>Chest No</th>
+                  <th>Team Name</th>
+                  <th>Avg. Score</th>
+                  <th>Grade</th>
+                  <th style={{ textAlign: 'right' }}>Awarded Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {viewModalResults.map((r) => (
+                  <tr key={r.id}>
+                    <td>
+                      <span style={{ fontWeight: 800, color: 'var(--secondary-neon)' }}>
+                        {r.judge_code ? (r.judge_code.startsWith('Code') ? r.judge_code : `Code ${r.judge_code}`) : '—'}
+                      </span>
+                    </td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{r.member_name}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{r.member_chest_no || 'N/A'}</td>
+                    <td>{r.team_name}</td>
+                    <td style={{ fontWeight: 600 }}>{r.total_marks}</td>
+                    <td>
+                      <span className="tag tag-primary" style={{ fontSize: '0.72rem', padding: '0.2rem 0.5rem' }}>
+                        {r.grade || '—'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right', fontWeight: 'bold', color: 'var(--success-neon)' }}>
+                      {r.points} pts
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
+            No results recorded for this competition yet.
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
