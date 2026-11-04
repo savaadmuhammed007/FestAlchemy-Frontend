@@ -77,6 +77,16 @@ export default function EduFenstaTeamStatsPage() {
 
   const fest = data?.fest_settings;
   const publishedCount = data?.programs_with_results?.length || 0;
+  const totalPrograms = Number(data?.stats?.programs) || (data?.schedule ? data.schedule.length : 0);
+  const standingsLimit = Number(fest?.published_standings_limit) || 0;
+  const publishTeamStandings = fest?.publish_team_standings !== false;
+
+  const isAllResultsPublished = totalPrograms > 0 && publishedCount >= totalPrograms;
+  const isTotalPointsPublished = publishTeamStandings && (
+    (standingsLimit > 0 && standingsLimit >= totalPrograms) ||
+    (standingsLimit === 0 && isAllResultsPublished)
+  );
+  const isFestCompleted = Boolean(isAllResultsPublished && isTotalPointsPublished);
 
   // ── Categories List (A'ala, Sufla, General) ──
   const PREFERRED_CATEGORIES = useMemo(() => ["A'ala", "Sufla", "General"], []);
@@ -197,17 +207,23 @@ export default function EduFenstaTeamStatsPage() {
         <div className="eft-hero__container">
           <div className="eft-hero__season-tag">
             <Flame size={14} />
-            <span>EDUFENSTA — CHAMPIONSHIP STANDINGS</span>
+            <span>{isFestCompleted ? 'FEST COMPLETED — OFFICIAL FINAL STANDINGS' : 'EDUFENSTA — CHAMPIONSHIP STANDINGS'}</span>
           </div>
 
           <h1 className="eft-hero__title">
-            WHO STANDS <span>TOGETHER</span>
+            {isFestCompleted ? (
+              <>FINAL <span>STANDINGS</span></>
+            ) : (
+              <>WHO STANDS <span>TOGETHER</span></>
+            )}
           </h1>
 
           <p className="eft-hero__subtitle">
-            {fest?.published_standings_limit > 0
-              ? `Real-time points compilation after first ${fest.published_standings_limit} published events. Every mark forged with honor and brilliance.`
-              : 'Live verified scoreboard, zone totals, and official team standings compiled directly from the judging floor.'}
+            {isFestCompleted
+              ? `Fest completed — all ${totalPrograms} competitive events concluded. Official final standings and point breakdown locked.`
+              : fest?.published_standings_limit > 0
+                ? `Real-time points compilation after first ${fest.published_standings_limit} published events. Every mark forged with honor and brilliance.`
+                : 'Live verified scoreboard, zone totals, and official team standings compiled directly from the judging floor.'}
           </p>
 
           <div className="efr-metrics">
@@ -439,7 +455,11 @@ export default function EduFenstaTeamStatsPage() {
                 <h3 className="eft-table-heading">
                   <BarChart2 size={22} style={{ color: 'var(--ef-crimson)' }} />
                   Full Team Standings
-                  {fest?.published_standings_limit > 0 && (
+                  {isFestCompleted ? (
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#ffd700', background: 'rgba(255, 215, 0, 0.15)', border: '1px solid rgba(255, 215, 0, 0.4)', padding: '0.2rem 0.6rem', borderRadius: '4px', marginLeft: '0.75rem' }}>
+                      ★ Fest Completed
+                    </span>
+                  ) : fest?.published_standings_limit > 0 && (
                     <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--ef-crimson)', background: 'rgba(255, 26, 26, 0.1)', padding: '0.2rem 0.6rem', borderRadius: '4px', marginLeft: '0.75rem' }}>
                       After {fest.published_standings_limit} Events
                     </span>

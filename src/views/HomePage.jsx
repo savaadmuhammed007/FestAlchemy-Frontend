@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Trophy, Crown, CheckCircle2, Sparkles } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { API_BASE_URL } from '../context/AuthContext';
 import './EduFenstaHomePage.css';
 
@@ -112,6 +114,119 @@ export default function EduFenstaHomePage() {
   const eventsCount = festData?.stats?.programs ?? 0;
   const teamsCount = festData?.stats?.teams ?? 0;
   const daysCount = festData?.stats?.days ?? 0;
+
+  // ── Fest Completion & Total Points Determination ──
+  const totalPrograms = Number(festData?.stats?.programs) || (festData?.schedule ? festData.schedule.length : 0);
+  const publishedCount = festData?.programs_with_results ? festData.programs_with_results.length : 0;
+  const standingsLimit = Number(festData?.fest_settings?.published_standings_limit) || 0;
+  const publishTeamStandings = festData?.fest_settings?.publish_team_standings !== false;
+
+  const isAllResultsPublished = totalPrograms > 0 && publishedCount >= totalPrograms;
+  const isTotalPointsPublished = publishTeamStandings && (
+    (standingsLimit > 0 && standingsLimit >= totalPrograms) ||
+    (standingsLimit === 0 && isAllResultsPublished)
+  );
+  const isFestCompleted = Boolean(isAllResultsPublished && isTotalPointsPublished);
+
+  // ── Colorful Celebration Pop on Scroll ──
+  const [activeCelebration, setActiveCelebration] = useState(null);
+  const lastPopTimes = useRef({ standings: 0, performers: 0 });
+
+  const triggerColorfulPop = useCallback((sectionKey) => {
+    try {
+      const festivalColors = [
+        '#ff1a1a', '#ffd700', '#00f0ff', '#ff007f', '#10b981', '#a855f7', '#ff9900', '#ffffff',
+      ];
+      confetti({
+        particleCount: 55,
+        angle: 60,
+        spread: 65,
+        origin: { x: 0.05, y: 0.7 },
+        colors: festivalColors,
+        zIndex: 99999,
+        scalar: 1.15,
+      });
+      confetti({
+        particleCount: 55,
+        angle: 120,
+        spread: 65,
+        origin: { x: 0.95, y: 0.7 },
+        colors: festivalColors,
+        zIndex: 99999,
+        scalar: 1.15,
+      });
+      setTimeout(() => {
+        confetti({
+          particleCount: 75,
+          spread: 95,
+          origin: { x: 0.5, y: 0.5 },
+          colors: festivalColors,
+          zIndex: 99999,
+          scalar: 1.25,
+        });
+      }, 160);
+      setTimeout(() => {
+        confetti({
+          particleCount: 35,
+          spread: 120,
+          shapes: ['star', 'circle'],
+          origin: { x: 0.5, y: 0.38 },
+          colors: ['#ffd700', '#ff1a1a', '#00f0ff', '#ffffff'],
+          zIndex: 99999,
+          scalar: 1.35,
+        });
+      }, 360);
+    } catch (e) {
+      console.error('Confetti trigger error:', e);
+    }
+  }, []);
+
+  const triggerSectionCelebration = useCallback((sectionKey, details) => {
+    const now = Date.now();
+    if (now - lastPopTimes.current[sectionKey] < 8000) return;
+    lastPopTimes.current[sectionKey] = now;
+    triggerColorfulPop(sectionKey);
+    setActiveCelebration({ id: now, ...details });
+  }, [triggerColorfulPop]);
+
+  useEffect(() => {
+    if (!isFestCompleted) return;
+    const standingsEl = document.getElementById('ef-standings');
+    const performersEl = document.getElementById('ef-performers');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (entry.target.id === 'ef-standings') {
+              triggerSectionCelebration('standings', {
+                title: 'FEST COMPLETED!',
+                subtitle: 'Official Final Team Standings & Total Points Declared',
+                badge: '🏆 CHAMPIONSHIP DECIDED',
+              });
+            } else if (entry.target.id === 'ef-performers') {
+              triggerSectionCelebration('performers', {
+                title: 'FEST COMPLETED!',
+                subtitle: 'Individual Championship & Star Toppers Hall of Fame',
+                badge: '👑 INDIVIDUAL HONORS',
+              });
+            }
+          }
+        });
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -40px 0px' }
+    );
+    if (standingsEl) observer.observe(standingsEl);
+    if (performersEl) observer.observe(performersEl);
+    return () => observer.disconnect();
+  }, [isFestCompleted, triggerSectionCelebration]);
+
+  useEffect(() => {
+    if (!activeCelebration) return;
+    const timer = setTimeout(() => {
+      setActiveCelebration(null);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [activeCelebration]);
 
   // ── Categories List ──
   const categoriesList = React.useMemo(() => {
@@ -438,19 +553,68 @@ export default function EduFenstaHomePage() {
       ════════════════════════════════════════════════════════════ */}
       <section className="ef-standings-section" id="ef-standings">
         <div ref={statsHeaderRef} className="ef-section-header">
-          <p className={`ef-section-eyebrow ${statsHeaderVisible ? 'ef-visible' : ''}`}>
-            Championship Leaderboard
-          </p>
+          {isFestCompleted ? (
+            <div className="ef-fest-completed-pill">
+              <span className="ef-fc-sparkle">✦</span>
+              <Trophy size={14} className="ef-fc-trophy" />
+              <span className="ef-fc-text">FEST COMPLETED</span>
+              <span className="ef-fc-dot">•</span>
+              <span className="ef-fc-desc">ALL RESULTS & TOTAL POINTS PUBLISHED</span>
+              <span className="ef-fc-sparkle">✦</span>
+            </div>
+          ) : (
+            <p className={`ef-section-eyebrow ${statsHeaderVisible ? 'ef-visible' : ''}`}>
+              Championship Leaderboard
+            </p>
+          )}
           <h2 className={`ef-section-title ${statsHeaderVisible ? 'ef-visible' : ''}`}>
-            WHO STANDS<br />TOGETHER
+            {isFestCompleted ? (
+              <>
+                FINAL CHAMPIONSHIP<br />STANDINGS
+              </>
+            ) : (
+              <>
+                WHO STANDS<br />TOGETHER
+              </>
+            )}
           </h2>
           <p className={`ef-section-subtitle ${statsHeaderVisible ? 'ef-visible' : ''}`}>
-            The competitive team standings from the database. Every point earned through dedication, creativity, and brilliance.
+            {isFestCompleted
+              ? `Fest completed — all ${totalPrograms} competitive events concluded. Final team scores and point breakdown officially declared.`
+              : 'The competitive team standings from the database. Every point earned through dedication, creativity, and brilliance.'}
           </p>
         </div>
 
         {/* Leaderboard Table */}
         <div className="ef-stats__leaderboard-wrap">
+          {isFestCompleted && (
+            <div className="ef-completed-leaderboard-banner">
+              <div className="ef-clb-left">
+                <div className="ef-clb-trophy-box">
+                  <Trophy size={24} />
+                </div>
+                <div className="ef-clb-text">
+                  <div className="ef-clb-title-row">
+                    <span className="ef-clb-status-tag">FEST COMPLETED</span>
+                    <span className="ef-clb-verified">
+                      <CheckCircle2 size={13} /> ALL RESULTS PUBLISHED
+                    </span>
+                  </div>
+                  <p className="ef-clb-description">
+                    Total championship points for all {totalPrograms} events have been locked and compiled.
+                  </p>
+                </div>
+              </div>
+              {dbTeams.length > 0 && (
+                <div className="ef-clb-champion-card">
+                  <span className="ef-clb-champ-eyebrow">OVERALL CHAMPIONS</span>
+                  <span className="ef-clb-champ-name">👑 {dbTeams[0]?.name}</span>
+                  <span className="ef-clb-champ-pts">{dbTeams[0]?.totalPoints} PTS</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div ref={leaderboardRef} className="ef-stats__leaderboard">
             <div className="ef-stats__header ef-desktop-only" style={leaderboardGridStyle}>
               <span>#</span>
@@ -471,9 +635,14 @@ export default function EduFenstaHomePage() {
                   {/* Desktop Grid Layout */}
                   <div className="ef-stats__team-desktop ef-desktop-only" style={{ ...leaderboardGridStyle, alignItems: 'center', width: '100%' }}>
                     <span className="ef-stats__team-rank">
-                      {String(team.rank).padStart(2, '0')}
+                      {isFestCompleted && team.rank === 1 ? '👑 01' : String(team.rank).padStart(2, '0')}
                     </span>
-                    <span className="ef-stats__team-name">{team.name}</span>
+                    <span className="ef-stats__team-name">
+                      {team.name}
+                      {isFestCompleted && team.rank === 1 && (
+                        <span className="ef-team-champion-tag">CHAMPION</span>
+                      )}
+                    </span>
                     {categoriesList.map((cat) => (
                       <span key={cat} className="ef-stats__team-cat-pts">
                         {team.categoryPoints[cat] ?? 0}
@@ -489,9 +658,14 @@ export default function EduFenstaHomePage() {
                     <div className="ef-stats__mobile-top">
                       <div className="ef-stats__mobile-identity">
                         <span className={`ef-stats__mobile-rank ${team.rank === 1 ? 'ef-stats__mobile-rank--leader' : ''}`}>
-                          #{String(team.rank).padStart(2, '0')}
+                          {isFestCompleted && team.rank === 1 ? '👑 #01' : `#${String(team.rank).padStart(2, '0')}`}
                         </span>
-                        <span className="ef-stats__mobile-name">{team.name}</span>
+                        <span className="ef-stats__mobile-name">
+                          {team.name}
+                          {isFestCompleted && team.rank === 1 && (
+                            <span className="ef-team-champion-tag ef-team-champion-tag--mobile">CHAMPION</span>
+                          )}
+                        </span>
                       </div>
                       <div className={`ef-stats__mobile-total ${team.rank === 1 ? 'ef-stats__mobile-total--leader' : ''}`}>
                         <AnimatedCounter end={team.totalPoints} isVisible={leaderboardVisible} duration={1000 + i * 150} />
@@ -677,6 +851,42 @@ export default function EduFenstaHomePage() {
           </span>
         </div>
       </footer>
+
+      {/* Colorful Celebration Pop Alert on Screen */}
+      {activeCelebration && (
+        <div className="ef-celebration-popup-overlay">
+          <div className="ef-celebration-popup-card">
+            <div className="ef-cpp-rainbow-bar" />
+            <button
+              className="ef-cpp-close-btn"
+              onClick={() => setActiveCelebration(null)}
+              aria-label="Close celebration alert"
+            >
+              ✕
+            </button>
+            <div className="ef-cpp-body">
+              <div className="ef-cpp-badge">
+                <Sparkles size={13} />
+                <span>{activeCelebration.badge}</span>
+                <Sparkles size={13} />
+              </div>
+              <h3 className="ef-cpp-title">
+                <span className="ef-cpp-trophy">🎉</span>
+                <span>{activeCelebration.title}</span>
+              </h3>
+              <p className="ef-cpp-subtitle">{activeCelebration.subtitle}</p>
+              <div className="ef-cpp-meta">
+                <span className="ef-cpp-pill">
+                  <CheckCircle2 size={13} /> All {totalPrograms} Events Concluded
+                </span>
+                <span className="ef-cpp-pill ef-cpp-pill--gold">
+                  <Trophy size={13} /> 100% Points Published
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
