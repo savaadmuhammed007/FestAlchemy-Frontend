@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Award, Users, ClipboardList, Clock, Medal, Shuffle } from 'lucide-react';
+import { FileText, Award, Users, ClipboardList, Clock, Medal, Shuffle, Trophy, CheckCircle2 } from 'lucide-react';
 
 export default function ReportSelector({ onNavigate }) {
   return (
@@ -10,25 +10,91 @@ export default function ReportSelector({ onNavigate }) {
             <FileText size={20} style={{ color: 'var(--primary-neon)' }} /> Reports Center
           </h3>
           <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            Official fest reports, calling sheets, and participant signature verification documents
+            Official festival prize lists, program-wise rankings, calling sheets, and participant verification documents
           </p>
         </div>
-        <button
-          onClick={() => onNavigate('/admin/reports/lots')}
-          className="btn btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
-        >
-          <Shuffle size={16} /> Print Spinned Lots (Sign Sheet)
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => onNavigate('/admin/reports/winners')}
+            className="btn btn-primary"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
+          >
+            <Trophy size={16} style={{ color: '#ffd700' }} /> Winners List
+          </button>
+          <button
+            onClick={() => onNavigate('/admin/reports/lots')}
+            className="btn btn-secondary"
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.55rem 1.1rem', fontSize: '0.85rem' }}
+          >
+            <Shuffle size={16} /> Print Spinned Lots
+          </button>
+        </div>
       </div>
 
       <label className="form-label" style={{ marginBottom: '0.75rem', fontWeight: 600 }}>Select a Report to Open</label>
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
         gap: '1rem',
         marginBottom: '1.5rem'
       }}>
+        {/* Winners List Card */}
+        <div
+          onClick={() => onNavigate('/admin/reports/winners')}
+          style={{
+            cursor: 'pointer',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            border: '1.5px solid rgba(255, 215, 0, 0.45)',
+            background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.08) 0%, rgba(99, 102, 241, 0.08) 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.75rem',
+            textAlign: 'center',
+            position: 'relative',
+            boxShadow: '0 4px 16px rgba(255, 215, 0, 0.12)',
+            transition: 'all 0.2s ease-in-out'
+          }}
+          className="report-card-hover"
+        >
+          <span style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            fontSize: '0.65rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            padding: '2px 8px',
+            borderRadius: '10px',
+            background: '#ffd700',
+            color: '#000'
+          }}>
+            1st • 2nd • 3rd • Programs
+          </span>
+          <div style={{
+            width: '46px',
+            height: '46px',
+            borderRadius: '50%',
+            background: 'rgba(255, 215, 0, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffd700',
+            boxShadow: '0 0 14px rgba(255, 215, 0, 0.3)'
+          }}>
+            <Trophy size={22} />
+          </div>
+          <div>
+            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.2rem', fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+              Winners List
+            </h4>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+              Print 1st, 2nd, 3rd winners (Name, Group, Item, Category) or program-wise report
+            </p>
+          </div>
+        </div>
         {/* Event Results Card */}
         <div
           onClick={() => onNavigate('/admin/reports/results')}
