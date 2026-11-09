@@ -217,18 +217,19 @@ export default function ReportViewer({ reportType, reportData }) {
     <div className="print-sign-footer" style={{ 
       display: 'flex', 
       justifyContent: 'space-between', 
-      marginTop: '2.5rem', 
-      paddingTop: '1rem', 
+      marginTop: '1.25rem', 
+      paddingTop: '0.75rem', 
+      marginBottom: 0,
       fontSize: '0.82rem',
       breakInside: 'avoid',
       pageBreakInside: 'avoid'
     }}>
       <div style={{ textAlign: 'center', width: '180px' }}>
-        <div className="sign-line" style={{ height: '22px', borderBottom: '1px solid #000', marginBottom: '4px' }} />
+        <div className="sign-line" style={{ height: '20px', borderBottom: '1px solid #000', marginBottom: '4px' }} />
         <span>Tabulation Officer</span>
       </div>
       <div style={{ textAlign: 'center', width: '180px' }}>
-        <div className="sign-line" style={{ height: '22px', borderBottom: '1px solid #000', marginBottom: '4px' }} />
+        <div className="sign-line" style={{ height: '20px', borderBottom: '1px solid #000', marginBottom: '4px' }} />
         <span>Convener</span>
       </div>
     </div>
@@ -464,9 +465,9 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 1: 1ST PRIZE WINNER REPORT
               ======================================================== */}
           {(selectedSection === '1' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="report-section" style={{ marginBottom: selectedSection === 'all' ? '1.5rem' : '0' }}>
               {selectedSection === 'all' && (
-                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                <h3 className="print-section-title" style={{ margin: '1rem 0 0.4rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
                   1. First Prize Winners
                 </h3>
               )}
@@ -519,9 +520,9 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 2: 2ND PRIZE WINNER REPORT
               ======================================================== */}
           {(selectedSection === '2' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="report-section" style={{ marginBottom: selectedSection === 'all' ? '1.5rem' : '0' }}>
               {selectedSection === 'all' && (
-                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                <h3 className="print-section-title" style={{ margin: '1rem 0 0.4rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
                   2. Second Prize Winners
                 </h3>
               )}
@@ -574,9 +575,9 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 3: THIRD WINNER REPORT
               ======================================================== */}
           {(selectedSection === '3' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="report-section" style={{ marginBottom: selectedSection === 'all' ? '1.5rem' : '0' }}>
               {selectedSection === 'all' && (
-                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                <h3 className="print-section-title" style={{ margin: '1rem 0 0.4rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
                   3. Third Prize Winners
                 </h3>
               )}
@@ -629,9 +630,9 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 4: FIRST & SECOND PRIZE WINNERS REPORT
               ======================================================== */}
           {(selectedSection === '4' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="report-section" style={{ marginBottom: selectedSection === 'all' ? '1.5rem' : '0' }}>
               {selectedSection === 'all' && (
-                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                <h3 className="print-section-title" style={{ margin: '1rem 0 0.4rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
                   4. First & Second Prize Winners
                 </h3>
               )}
@@ -684,9 +685,9 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 5: PROGRAMS-VISE REPORT (First 3 Ranks of Programs)
               ======================================================== */}
           {(selectedSection === '5' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+            <div className="report-section" style={{ marginBottom: selectedSection === 'all' ? '1.5rem' : '0' }}>
               {selectedSection === 'all' && (
-                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                <h3 className="print-section-title" style={{ margin: '1rem 0 0.4rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
                   5. Programs-Wise Winners (First 3 Ranks)
                 </h3>
               )}

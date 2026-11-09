@@ -985,21 +985,28 @@ select.form-control option {
     size: auto;
   }
 
-  body {
+  /* Reset all outer containers that impose heights or flex layouts, which cause blank pages */
+  html, body, #root, .app-container, .main-content, .admin-layout, .admin-main-content {
     background: #fff !important;
     color: #000 !important;
     font-family: var(--font-sans) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    float: none !important;
+    position: static !important;
   }
 
   .navbar, aside, .btn, .no-print, button, form, .form-group, select {
     display: none !important;
-  }
-
-  .main-content {
-    padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
   }
 
   .glass-panel {
@@ -1007,7 +1014,29 @@ select.form-control option {
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
+    margin: 0 !important;
     color: #000 !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  #printable-area {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    display: block !important;
+    width: 100% !important;
+  }
+
+  /* Remove any trailing margins on the last element to prevent blank pages */
+  #printable-area > *:last-child,
+  .print-sign-footer,
+  .report-section:last-child {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   .modal-backdrop {
@@ -1044,8 +1073,8 @@ select.form-control option {
 
   .print-header {
     border-bottom: 1.5px solid #000 !important;
-    padding-bottom: 0.5rem !important;
-    margin-bottom: 1rem !important;
+    padding-bottom: 0.4rem !important;
+    margin-bottom: 0.8rem !important;
     color: #000 !important;
   }
 
@@ -1054,6 +1083,17 @@ select.form-control option {
     color: #000 !important;
     width: 100% !important;
     border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .custom-table thead {
+    display: table-header-group !important;
+  }
+
+  .custom-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .custom-table th {
@@ -1061,7 +1101,7 @@ select.form-control option {
     color: #000 !important;
     border: 1px solid #000 !important;
     border-bottom: 2px solid #000 !important;
-    padding: 6px 10px !important;
+    padding: 5px 8px !important;
     font-size: 0.82rem !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -1072,6 +1112,12 @@ select.form-control option {
     color: #000 !important;
     padding: 5px 8px !important;
     font-size: 0.8rem !important;
+  }
+
+  .table-container {
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .tag {
@@ -1099,7 +1145,7 @@ select.form-control option {
 
   .sign-line {
     border-bottom: 1.5px solid #000 !important;
-    height: 30px !important;
+    height: 22px !important;
     min-width: 130px !important;
     width: 90% !important;
     margin: 4px auto 0 !important;
