@@ -980,6 +980,11 @@ select.form-control option {
    PRINT
 ───────────────────────────────────────────────────────────── */
 @media print {
+  @page {
+    margin: 10mm 12mm;
+    size: auto;
+  }
+
   body {
     background: #fff !important;
     color: #000 !important;
@@ -1038,9 +1043,9 @@ select.form-control option {
   }
 
   .print-header {
-    border-bottom: 2px solid #000 !important;
-    padding-bottom: 1rem !important;
-    margin-bottom: 1.5rem !important;
+    border-bottom: 1.5px solid #000 !important;
+    padding-bottom: 0.5rem !important;
+    margin-bottom: 1rem !important;
     color: #000 !important;
   }
 
@@ -1054,17 +1059,18 @@ select.form-control option {
   .custom-table th {
     background: #f0f0f0 !important;
     color: #000 !important;
+    border: 1px solid #000 !important;
     border-bottom: 2px solid #000 !important;
-    padding: 8px 12px !important;
-    font-size: 0.85rem !important;
+    padding: 6px 10px !important;
+    font-size: 0.82rem !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
 
   .custom-table td {
-    border-bottom: 1px solid #ccc !important;
+    border: 1px solid #ccc !important;
     color: #000 !important;
-    padding: 8px 12px !important;
+    padding: 5px 8px !important;
     font-size: 0.8rem !important;
   }
 
@@ -1072,7 +1078,7 @@ select.form-control option {
     border: 1px solid #000 !important;
     background: transparent !important;
     color: #000 !important;
-    padding: 2px 6px !important;
+    padding: 1px 5px !important;
     font-size: 0.7rem !important;
   }
 

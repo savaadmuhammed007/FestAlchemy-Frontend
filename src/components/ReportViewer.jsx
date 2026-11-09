@@ -93,7 +93,7 @@ export default function ReportViewer({ reportType, reportData }) {
   const renderWinnersTable = (list, sectionTitle) => {
     if (!list || list.length === 0) {
       return (
-        <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+        <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.88rem' }}>
           No winners found matching current filters for {sectionTitle}.
         </div>
       );
@@ -103,92 +103,32 @@ export default function ReportViewer({ reportType, reportData }) {
         <table className="custom-table">
           <thead>
             <tr>
-              <th style={{ width: '50px', textAlign: 'center' }}>Sl No</th>
-              <th style={{ width: '105px', textAlign: 'center' }}>Rank</th>
-              <th>Name (Candidate)</th>
-              <th>Group (Team)</th>
-              <th>Item (Program)</th>
+              <th style={{ width: '45px', textAlign: 'center' }}>#</th>
+              <th style={{ width: '80px', textAlign: 'center' }}>Rank</th>
+              <th>Name</th>
+              <th>Group</th>
+              <th>Item</th>
               <th>Category</th>
-              <th style={{ width: '85px', textAlign: 'center' }}>Avg Marks</th>
-              <th style={{ width: '75px', textAlign: 'center' }}>Grade</th>
-              <th style={{ width: '85px', textAlign: 'center' }}>Points</th>
             </tr>
           </thead>
           <tbody>
             {list.map((w, idx) => (
               <tr key={w.id || idx}>
                 <td style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{idx + 1}</td>
-                <td style={{ textAlign: 'center' }}>
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    fontSize: '0.78rem',
-                    background: w.rank === 1 ? 'rgba(255, 215, 0, 0.18)' : w.rank === 2 ? 'rgba(192, 192, 192, 0.18)' : 'rgba(205, 127, 50, 0.18)',
-                    color: w.rank === 1 ? '#ffd700' : w.rank === 2 ? '#c0c0c0' : '#cd7f32',
-                    border: `1px solid ${w.rank === 1 ? 'rgba(255, 215, 0, 0.4)' : w.rank === 2 ? 'rgba(192, 192, 192, 0.4)' : 'rgba(205, 127, 50, 0.4)'}`
-                  }}>
-                    {w.rank === 1 ? '🥇 1st' : w.rank === 2 ? '🥈 2nd' : w.rank === 3 ? '🥉 3rd' : `#${w.rank}`}
-                  </span>
-                  {w.is_tie && (
-                    <span style={{
-                      display: 'inline-block',
-                      fontSize: '0.62rem',
-                      fontWeight: 700,
-                      marginLeft: '4px',
-                      padding: '1px 5px',
-                      borderRadius: '8px',
-                      background: 'rgba(239, 68, 68, 0.18)',
-                      color: '#ef4444',
-                      border: '1px solid rgba(239, 68, 68, 0.35)'
-                    }}>
-                      Tie
-                    </span>
-                  )}
+                <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                  {w.rank === 1 ? '1st' : w.rank === 2 ? '2nd' : w.rank === 3 ? '3rd' : `${w.rank}`}
+                  {w.is_tie && <span style={{ marginLeft: '4px', fontSize: '0.72rem', color: '#ef4444', fontWeight: 700 }}>(Tie)</span>}
                 </td>
+                <td style={{ fontWeight: 600 }}>
+                  {w.member_name}
+                  {w.chest_no ? <span style={{ fontWeight: 400, color: 'var(--text-secondary)', marginLeft: '6px' }}>({w.chest_no})</span> : ''}
+                </td>
+                <td>{w.team_name || '—'}</td>
                 <td>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {w.member_name}
-                  </div>
-                  {w.chest_no && (
-                    <div style={{ fontSize: '0.73rem', color: 'var(--primary-neon)' }}>
-                      Chest #{w.chest_no}
-                    </div>
-                  )}
+                  {w.program_name}
+                  {w.program_type === 'group' && <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>(Group)</span>}
                 </td>
-                <td>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {w.team_name}
-                  </span>
-                </td>
-                <td>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {w.program_name}
-                  </div>
-                  <span
-                    className={`tag ${w.program_type === 'group' ? 'tag-warning' : 'tag-primary'}`}
-                    style={{ fontSize: '0.65rem', padding: '1px 6px', marginTop: '2px', display: 'inline-block' }}
-                  >
-                    {w.program_type === 'group' ? 'Group Item' : 'Single Item'}
-                  </span>
-                </td>
-                <td>
-                  <span className="tag tag-secondary" style={{ fontSize: '0.72rem' }}>
-                    {w.category_name}
-                  </span>
-                </td>
-                <td style={{ textAlign: 'center' }}>
-                  {w.total_marks != null ? w.total_marks : '—'}
-                </td>
-                <td style={{ textAlign: 'center', fontWeight: 600 }}>
-                  {w.grade || '—'}
-                </td>
-                <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--success-neon)' }}>
-                  {w.points != null ? `${w.points} pts` : '—'}
-                </td>
+                <td>{w.category_name || '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -200,13 +140,13 @@ export default function ReportViewer({ reportType, reportData }) {
   const renderProgramsWiseSection = () => {
     if (!programsWiseList || programsWiseList.length === 0) {
       return (
-        <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+        <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.88rem' }}>
           No programs found matching current filters.
         </div>
       );
     }
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {programsWiseList.map((prog) => (
           <div
             key={prog.program_id}
@@ -214,135 +154,59 @@ export default function ReportViewer({ reportType, reportData }) {
               breakInside: 'avoid',
               pageBreakInside: 'avoid',
               border: '1px solid var(--border-glass)',
-              borderRadius: '10px',
-              padding: '1.25rem',
-              background: 'rgba(255, 255, 255, 0.02)'
+              borderRadius: '6px',
+              padding: '0.75rem 1rem',
+              background: 'transparent'
             }}
           >
             <div style={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center',
-              borderBottom: '1.5px solid var(--border-glass)',
-              paddingBottom: '0.6rem',
-              marginBottom: '0.85rem',
+              alignItems: 'baseline',
+              borderBottom: '1px solid var(--border-glass)',
+              paddingBottom: '0.35rem',
+              marginBottom: '0.5rem',
               flexWrap: 'wrap',
               gap: '0.5rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <h4 style={{ margin: 0, fontFamily: 'var(--font-display)', color: 'var(--text-primary)', fontSize: '1.1rem' }}>
-                  {prog.program_name}
-                </h4>
-                <span
-                  className={`tag ${prog.program_type === 'group' ? 'tag-warning' : 'tag-primary'}`}
-                  style={{ fontSize: '0.68rem', padding: '2px 8px' }}
-                >
-                  {prog.program_type === 'group' ? 'Group Item' : 'Single Item'}
-                </span>
+              <div>
+                <strong style={{ fontSize: '0.98rem' }}>{prog.program_name}</strong>
+                {prog.program_type === 'group' && (
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginLeft: '6px' }}>(Group Item)</span>
+                )}
                 {prog.has_ties && (
-                  <span style={{
-                    fontSize: '0.68rem',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '10px',
-                    background: 'rgba(239, 68, 68, 0.18)',
-                    color: '#ef4444',
-                    border: '1px solid rgba(239, 68, 68, 0.35)'
-                  }}>
-                    Tie on Rank
-                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#ef4444', marginLeft: '6px', fontWeight: 600 }}>[Tie on Rank]</span>
                 )}
               </div>
-              <span className="tag tag-primary" style={{ fontSize: '0.75rem', fontWeight: 600 }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
                 {prog.category_name}
               </span>
             </div>
 
-            <div className="table-container">
-              <table className="custom-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '105px', textAlign: 'center' }}>Rank</th>
-                    <th>Name (Candidate)</th>
-                    <th>Group (Team)</th>
-                    <th>Item</th>
-                    <th>Category</th>
-                    <th style={{ width: '85px', textAlign: 'center' }}>Avg Marks</th>
-                    <th style={{ width: '75px', textAlign: 'center' }}>Grade</th>
-                    <th style={{ width: '85px', textAlign: 'center' }}>Points</th>
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '80px', textAlign: 'center' }}>Rank</th>
+                  <th>Name</th>
+                  <th>Group</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prog.winners.map((w, wIdx) => (
+                  <tr key={w.id || wIdx}>
+                    <td style={{ textAlign: 'center', fontWeight: 700 }}>
+                      {w.rank === 1 ? '1st' : w.rank === 2 ? '2nd' : w.rank === 3 ? '3rd' : `${w.rank}`}
+                      {w.is_tie && <span style={{ marginLeft: '4px', fontSize: '0.72rem', color: '#ef4444', fontWeight: 700 }}>(Tie)</span>}
+                    </td>
+                    <td style={{ fontWeight: 600 }}>
+                      {w.member_name}
+                      {w.chest_no ? <span style={{ fontWeight: 400, color: 'var(--text-secondary)', marginLeft: '6px' }}>({w.chest_no})</span> : ''}
+                    </td>
+                    <td>{w.team_name || '—'}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {prog.winners.map((w, wIdx) => (
-                    <tr key={w.id || wIdx}>
-                      <td style={{ textAlign: 'center' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.25rem',
-                          fontWeight: 700,
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '0.78rem',
-                          background: w.rank === 1 ? 'rgba(255, 215, 0, 0.18)' : w.rank === 2 ? 'rgba(192, 192, 192, 0.18)' : 'rgba(205, 127, 50, 0.18)',
-                          color: w.rank === 1 ? '#ffd700' : w.rank === 2 ? '#c0c0c0' : '#cd7f32',
-                          border: `1px solid ${w.rank === 1 ? 'rgba(255, 215, 0, 0.4)' : w.rank === 2 ? 'rgba(192, 192, 192, 0.4)' : 'rgba(205, 127, 50, 0.4)'}`
-                        }}>
-                          {w.rank === 1 ? '🥇 1st' : w.rank === 2 ? '🥈 2nd' : w.rank === 3 ? '🥉 3rd' : `#${w.rank}`}
-                        </span>
-                        {w.is_tie && (
-                          <span style={{
-                            display: 'inline-block',
-                            fontSize: '0.62rem',
-                            fontWeight: 700,
-                            marginLeft: '4px',
-                            padding: '1px 5px',
-                            borderRadius: '8px',
-                            background: 'rgba(239, 68, 68, 0.18)',
-                            color: '#ef4444',
-                            border: '1px solid rgba(239, 68, 68, 0.35)'
-                          }}>
-                            Tie
-                          </span>
-                        )}
-                      </td>
-                      <td>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                          {w.member_name}
-                        </div>
-                        {w.chest_no && (
-                          <div style={{ fontSize: '0.73rem', color: 'var(--primary-neon)' }}>
-                            Chest #{w.chest_no}
-                          </div>
-                        )}
-                      </td>
-                      <td>
-                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                          {w.team_name}
-                        </span>
-                      </td>
-                      <td style={{ color: 'var(--text-secondary)' }}>
-                        {w.program_name}
-                      </td>
-                      <td>
-                        <span className="tag tag-secondary" style={{ fontSize: '0.72rem' }}>
-                          {w.category_name}
-                        </span>
-                      </td>
-                      <td style={{ textAlign: 'center' }}>
-                        {w.total_marks != null ? w.total_marks : '—'}
-                      </td>
-                      <td style={{ textAlign: 'center', fontWeight: 600 }}>
-                        {w.grade || '—'}
-                      </td>
-                      <td style={{ textAlign: 'center', fontWeight: 700, color: 'var(--success-neon)' }}>
-                        {w.points != null ? `${w.points} pts` : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           </div>
         ))}
       </div>
@@ -353,27 +217,19 @@ export default function ReportViewer({ reportType, reportData }) {
     <div className="print-sign-footer" style={{ 
       display: 'flex', 
       justifyContent: 'space-between', 
-      marginTop: '3rem', 
-      paddingTop: '1.5rem', 
-      borderTop: '1px dashed var(--border-glass)', 
+      marginTop: '2.5rem', 
+      paddingTop: '1rem', 
       fontSize: '0.82rem',
       breakInside: 'avoid',
       pageBreakInside: 'avoid'
     }}>
-      <div style={{ textAlign: 'center', width: '210px' }}>
-        <div className="sign-line" style={{ height: '28px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '6px' }} />
-        <strong>Tabulation Officer</strong>
-        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>Name & Signature</div>
+      <div style={{ textAlign: 'center', width: '180px' }}>
+        <div className="sign-line" style={{ height: '22px', borderBottom: '1px solid #000', marginBottom: '4px' }} />
+        <span>Tabulation Officer</span>
       </div>
-      <div style={{ textAlign: 'center', width: '210px' }}>
-        <div className="sign-line" style={{ height: '28px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '6px' }} />
-        <strong>Festival Convener</strong>
-        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>Name & Signature</div>
-      </div>
-      <div style={{ textAlign: 'center', width: '210px' }}>
-        <div className="sign-line" style={{ height: '28px', borderBottom: '1.5px solid var(--text-primary)', marginBottom: '6px' }} />
-        <strong>General Secretary / Principal</strong>
-        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '2px' }}>Seal & Signature</div>
+      <div style={{ textAlign: 'center', width: '180px' }}>
+        <div className="sign-line" style={{ height: '22px', borderBottom: '1px solid #000', marginBottom: '4px' }} />
+        <span>Convener</span>
       </div>
     </div>
   );
@@ -585,47 +441,53 @@ export default function ReportViewer({ reportType, reportData }) {
             </div>
           </div>
 
-          {/* OFFICIAL PRINT HEADER (Rendered in print) */}
-          <div className="print-header" style={{ textAlign: 'center', borderBottom: '2px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-display)' }}>FESTALCHEMY OFFICIAL FESTIVAL REPORT</h2>
-            <h4 style={{ color: 'var(--secondary-neon)', textTransform: 'uppercase', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-              {selectedSection === '1' ? '1st Prize Winners Report (First Place)' :
-               selectedSection === '2' ? '2nd Prize Winners Report (Second Place)' :
-               selectedSection === '3' ? '3rd Prize Winners Report (Third Place)' :
-               selectedSection === '4' ? '1st & 2nd Prize Winners Report' :
-               selectedSection === '5' ? 'Programs-Vise Winners Report (First 3 Ranks)' :
-               'Festival Prize Winners Publication (All Sections)'}
-            </h4>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap', color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-              <span>Generated on: {new Date().toLocaleString()}</span>
-              {categoryFilter !== 'ALL' && <span>• Category: <strong>{categoryFilter}</strong></span>}
-              {itemTypeFilter !== 'all' && <span>• Scope: <strong>{itemTypeFilter === 'single' ? 'Single Items Only' : 'Group Items Only'}</strong></span>}
-            </div>
+          {/* SIMPLE PRINT HEADER (No site information) */}
+          <div className="print-header" style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+            <h2 style={{ margin: 0, textTransform: 'uppercase', fontSize: '1.35rem', fontWeight: 800, letterSpacing: '0.03em' }}>
+              {selectedSection === '1' ? 'First Prize Winners' :
+               selectedSection === '2' ? 'Second Prize Winners' :
+               selectedSection === '3' ? 'Third Prize Winners' :
+               selectedSection === '4' ? 'First & Second Prize Winners' :
+               selectedSection === '5' ? 'Programs-Wise Winners Report' :
+               'Winners List'}
+            </h2>
+            {(categoryFilter !== 'ALL' || itemTypeFilter !== 'all') && (
+              <div style={{ fontSize: '0.82rem', marginTop: '0.25rem', color: '#444' }}>
+                {categoryFilter !== 'ALL' && <span>Category: <strong>{categoryFilter}</strong></span>}
+                {categoryFilter !== 'ALL' && itemTypeFilter !== 'all' && <span> &nbsp;•&nbsp; </span>}
+                {itemTypeFilter !== 'all' && <span>Scope: <strong>{itemTypeFilter === 'single' ? 'Single Items Only' : 'Group Items Only'}</strong></span>}
+              </div>
+            )}
           </div>
 
           {/* ========================================================
               SECTION 1: 1ST PRIZE WINNER REPORT
               ======================================================== */}
           {(selectedSection === '1' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '3.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-              <div style={{
+            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              {selectedSection === 'all' && (
+                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  1. First Prize Winners
+                </h3>
+              )}
+              <div className="no-print" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 background: 'rgba(255, 215, 0, 0.05)',
                 border: '1.5px solid rgba(255, 215, 0, 0.35)',
-                padding: '0.85rem 1.25rem',
-                borderRadius: '10px',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '8px',
                 marginBottom: '1rem',
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                     <span>🥇</span> Section 1: First Prize Winner Report
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Official publication of 1st rank winners • Name, Group, Item, and Category
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    Name, Group, Item, and Category
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -640,7 +502,7 @@ export default function ReportViewer({ reportType, reportData }) {
                   <button
                     type="button"
                     onClick={() => printSection('1')}
-                    className="btn btn-primary no-print"
+                    className="btn btn-primary"
                     style={{ padding: '0.35rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Printer size={14} /> Print Section 1
@@ -657,25 +519,30 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 2: 2ND PRIZE WINNER REPORT
               ======================================================== */}
           {(selectedSection === '2' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '3.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-              <div style={{
+            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              {selectedSection === 'all' && (
+                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  2. Second Prize Winners
+                </h3>
+              )}
+              <div className="no-print" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 background: 'rgba(192, 192, 192, 0.05)',
                 border: '1.5px solid rgba(192, 192, 192, 0.35)',
-                padding: '0.85rem 1.25rem',
-                borderRadius: '10px',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '8px',
                 marginBottom: '1rem',
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                     <span>🥈</span> Section 2: Second Prize Winner Report
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Official publication of 2nd rank winners • Name, Group, Item, and Category
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    Name, Group, Item, and Category
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -690,7 +557,7 @@ export default function ReportViewer({ reportType, reportData }) {
                   <button
                     type="button"
                     onClick={() => printSection('2')}
-                    className="btn btn-primary no-print"
+                    className="btn btn-primary"
                     style={{ padding: '0.35rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Printer size={14} /> Print Section 2
@@ -707,25 +574,30 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 3: THIRD WINNER REPORT
               ======================================================== */}
           {(selectedSection === '3' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '3.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-              <div style={{
+            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              {selectedSection === 'all' && (
+                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  3. Third Prize Winners
+                </h3>
+              )}
+              <div className="no-print" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 background: 'rgba(205, 127, 50, 0.05)',
                 border: '1.5px solid rgba(205, 127, 50, 0.35)',
-                padding: '0.85rem 1.25rem',
-                borderRadius: '10px',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '8px',
                 marginBottom: '1rem',
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                     <span>🥉</span> Section 3: Third Winner Report
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Official publication of 3rd rank winners • Name, Group, Item, and Category with ties
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    Name, Group, Item, and Category
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -740,7 +612,7 @@ export default function ReportViewer({ reportType, reportData }) {
                   <button
                     type="button"
                     onClick={() => printSection('3')}
-                    className="btn btn-primary no-print"
+                    className="btn btn-primary"
                     style={{ padding: '0.35rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Printer size={14} /> Print Section 3
@@ -757,25 +629,30 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 4: FIRST & SECOND PRIZE WINNERS REPORT
               ======================================================== */}
           {(selectedSection === '4' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '3.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-              <div style={{
+            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              {selectedSection === 'all' && (
+                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  4. First & Second Prize Winners
+                </h3>
+              )}
+              <div className="no-print" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 background: 'rgba(99, 102, 241, 0.05)',
                 border: '1.5px solid rgba(99, 102, 241, 0.35)',
-                padding: '0.85rem 1.25rem',
-                borderRadius: '10px',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '8px',
                 marginBottom: '1rem',
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                     <span>🥇🥈</span> Section 4: First & Second Prize Winners Report
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Combined publication of 1st and 2nd rank winners across all events
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    Combined 1st and 2nd rank winners
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -790,7 +667,7 @@ export default function ReportViewer({ reportType, reportData }) {
                   <button
                     type="button"
                     onClick={() => printSection('4')}
-                    className="btn btn-primary no-print"
+                    className="btn btn-primary"
                     style={{ padding: '0.35rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Printer size={14} /> Print Section 4
@@ -807,25 +684,30 @@ export default function ReportViewer({ reportType, reportData }) {
               SECTION 5: PROGRAMS-VISE REPORT (First 3 Ranks of Programs)
               ======================================================== */}
           {(selectedSection === '5' || selectedSection === 'all') && (
-            <div style={{ marginBottom: '3.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-              <div style={{
+            <div style={{ marginBottom: '2.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              {selectedSection === 'all' && (
+                <h3 className="print-section-title" style={{ margin: '1.25rem 0 0.5rem', fontSize: '1.05rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  5. Programs-Wise Winners (First 3 Ranks)
+                </h3>
+              )}
+              <div className="no-print" style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 background: 'rgba(139, 92, 246, 0.05)',
                 border: '1.5px solid rgba(139, 92, 246, 0.35)',
-                padding: '0.85rem 1.25rem',
-                borderRadius: '10px',
+                padding: '0.75rem 1.25rem',
+                borderRadius: '8px',
                 marginBottom: '1rem',
                 flexWrap: 'wrap',
                 gap: '0.75rem'
               }}>
                 <div>
-                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem', color: 'var(--text-primary)' }}>
+                  <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', color: 'var(--text-primary)' }}>
                     <span>📋</span> Section 5: Programs-Vise Report (First 3 Ranks)
                   </h3>
-                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    Program-by-program breakdown of 1st, 2nd, and 3rd rank winners with ties & group items
+                  <p style={{ margin: '0.2rem 0 0', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                    First 3 ranks per event with ties & group items
                   </p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -835,7 +717,7 @@ export default function ReportViewer({ reportType, reportData }) {
                   <button
                     type="button"
                     onClick={() => printSection('5')}
-                    className="btn btn-primary no-print"
+                    className="btn btn-primary"
                     style={{ padding: '0.35rem 0.85rem', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                   >
                     <Printer size={14} /> Print Section 5
@@ -942,20 +824,16 @@ export default function ReportViewer({ reportType, reportData }) {
             </button>
           </div>
 
-          <div className="print-header" style={{ textAlign: 'center', borderBottom: '2px solid var(--border-glass)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-display)' }}>FESTALCHEMY OFFICIAL REPORT</h2>
-            <h4 style={{ color: 'var(--secondary-neon)', textTransform: 'uppercase', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+          <div className="print-header" style={{ textAlign: 'center', borderBottom: '2px solid #000', paddingBottom: '0.5rem', marginBottom: '1.25rem' }}>
+            <h2 style={{ margin: 0, textTransform: 'uppercase', fontSize: '1.35rem', fontWeight: 800, letterSpacing: '0.03em' }}>
               {isResults ? 'Event Results & Scoreboard' : 
                isMembers ? 'Registered Members Directory' : 
                isMarksheets ? 'Marksheets Entry Log' : 
                isTeamPoints ? 'Overall Team Standings' : 
-               isPerformers ? 'Top Performers — Individual Leaderboard' : 
-               isSchedule ? (selectedStageFilter === 'ALL' ? 'Fest Schedule — All Venues' : `Fest Schedule — ${selectedStageFilter}`) : 
-               isLots ? 'Candidate Lot Draw & Signature Verification Sheet' : 'Official Festival Report'}
-            </h4>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
-              Generated on: {new Date().toLocaleString()}
-            </p>
+               isPerformers ? 'Top Performers Leaderboard' : 
+               isSchedule ? (selectedStageFilter === 'ALL' ? 'Fest Schedule' : `Fest Schedule — ${selectedStageFilter}`) : 
+               isLots ? 'Candidate Lot Draw Sheet' : 'Festival Report'}
+            </h2>
           </div>
         </div>
       )}
