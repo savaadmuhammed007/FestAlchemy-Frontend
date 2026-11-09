@@ -981,7 +981,7 @@ select.form-control option {
 ───────────────────────────────────────────────────────────── */
 @media print {
   @page {
-    margin: 10mm 12mm;
+    margin: 0 !important;
     size: auto;
   }
 
@@ -1003,6 +1003,11 @@ select.form-control option {
     box-sizing: border-box !important;
     float: none !important;
     position: static !important;
+  }
+
+  body {
+    padding: 10mm 12mm !important;
+    margin: 0 !important;
   }
 
   .navbar, aside, .btn, .no-print, button, form, .form-group, select {

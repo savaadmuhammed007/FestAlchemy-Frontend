@@ -83,10 +83,19 @@ export default function ReportViewer({ reportType, reportData }) {
   });
   const programsWiseList = Object.values(programsWiseMap);
 
+  const triggerPrint = () => {
+    const origTitle = document.title;
+    document.title = ' ';
+    window.print();
+    setTimeout(() => {
+      document.title = origTitle;
+    }, 1000);
+  };
+
   const printSection = (sec) => {
     setSelectedSection(sec);
     setTimeout(() => {
-      window.print();
+      triggerPrint();
     }, 120);
   };
 
@@ -254,7 +263,7 @@ export default function ReportViewer({ reportType, reportData }) {
                 </p>
               </div>
               <button
-                onClick={() => window.print()}
+                onClick={triggerPrint}
                 className="btn btn-primary"
                 style={{ padding: '0.5rem 1.1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}
               >
@@ -820,7 +829,7 @@ export default function ReportViewer({ reportType, reportData }) {
                 );
               })()}
             </div>
-            <button onClick={() => window.print()} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button onClick={triggerPrint} className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Printer size={16} /> Print Report
             </button>
           </div>
