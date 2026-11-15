@@ -147,7 +147,8 @@ export default function AdminPanel() {
 
   // URL to tab synchronizer
   useEffect(() => {
-    const path = location.pathname;
+    const rawPath = location.pathname;
+    const path = rawPath.replace(/\/+$/, '') || '/';
     if (path.startsWith('/admin/reports')) {
       setActiveTab('reports');
       const rawSub = path.replace('/admin/reports', '').replace(/^\/+/, '').replace(/\/+$/, '');
@@ -1747,7 +1748,10 @@ export default function AdminPanel() {
 
           <div className="admin-sidebar-section-label">SYSTEM & REPORTS</div>
           
-          <button onClick={() => navigate('/admin/reports')} className={`btn ${activeTab === 'reports' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+          <button onClick={() => navigate('/admin/reports/winners')} className={`btn ${activeTab === 'reports' && location.pathname.includes('/winners') ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Award size={15} style={{ color: '#ffd700' }} /> Winners List
+          </button>
+          <button onClick={() => navigate('/admin/reports')} className={`btn ${activeTab === 'reports' && !location.pathname.includes('/winners') ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
             <FileText size={15} /> Reports Center
           </button>
           <button onClick={() => navigate('/admin/poster')} className={`btn ${activeTab === 'poster' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
