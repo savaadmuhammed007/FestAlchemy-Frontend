@@ -16,6 +16,7 @@ import AdminPanel from './views/AdminPanel';
 import JudgePanel from './views/JudgePanel';
 import TeamLeadPanel from './views/TeamLeadPanel';
 import LaunchPage from './views/LaunchPage';
+import IndividualPerformancePage from './views/IndividualPerformancePage';
 
 // Icons
 import { Trophy, LogIn, LogOut, Shield, Award, Users, RefreshCw, Moon, Sun, CheckCircle2, AlertTriangle, Info, XCircle, X, Menu, Sparkles, ArrowRight } from 'lucide-react';
@@ -467,7 +468,7 @@ function Navbar() {
 function AppContent() {
   const location = useLocation();
 
-  const isEduFenstaPage = ['/', '/edufensta', '/edufenta', '/ilalhabeeb', '/results', '/team-status'].includes(location.pathname);
+  const isEduFenstaPage = ['/', '/edufensta', '/edufenta', '/ilalhabeeb', '/results', '/team-status', '/individual-performance', '/performers'].includes(location.pathname);
   const isLaunchPage = location.pathname === '/launch';
   const isFullWidthPage = isEduFenstaPage || location.pathname === '/demo' || isLaunchPage;
 
@@ -487,6 +488,8 @@ function AppContent() {
           {/* New EduFensta styled pages */}
           <Route path="/results" element={<EduFenstaResultsPage />} />
           <Route path="/team-status" element={<EduFenstaTeamStatsPage />} />
+          <Route path="/individual-performance" element={<IndividualPerformancePage />} />
+          <Route path="/performers" element={<IndividualPerformancePage />} />
 
           {/* Preserved legacy pages — easily accessible or switchable back after EduFensta */}
           <Route path="/old-results" element={<ResultsPage />} />
