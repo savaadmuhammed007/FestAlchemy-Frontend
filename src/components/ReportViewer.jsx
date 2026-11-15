@@ -1047,7 +1047,7 @@ export default function ReportViewer({ reportType, reportData }) {
         </div>
       )}
 
-      {reportType === 'performers' && reportData.individual_leaderboard && (
+      {(isPerformers || reportType === 'performers' || reportType === 'performer') && reportData?.individual_leaderboard && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           {reportData.individual_leaderboard.map((catGroup) => (
             <div key={catGroup.category_id || catGroup.category_name} style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>

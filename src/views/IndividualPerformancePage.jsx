@@ -130,8 +130,8 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
       );
     } else if (prizeFilter === 'top3') {
       list = list.filter(p => 
-        p.prizes_count.total > 0 || 
-        p.programs.some(pr => pr.rank >= 1 && pr.rank <= 3)
+        (p.prizes_count?.total || 0) > 0 || 
+        (p.programs || []).some(pr => pr.rank >= 1 && pr.rank <= 3)
       );
     }
 
@@ -143,29 +143,29 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
         const matchChest = String(p.chest_no || '').includes(q);
         const matchTeam = (p.team_name || '').toLowerCase().includes(q);
         const matchCat = (p.category_name || '').toLowerCase().includes(q);
-        const matchProg = p.programs.some(pr => (pr.program_name || '').toLowerCase().includes(q));
+        const matchProg = (p.programs || []).some(pr => (pr.program_name || '').toLowerCase().includes(q));
         return matchName || matchChest || matchTeam || matchCat || matchProg;
       });
     }
 
     // Sorting
     if (sortBy === 'name') {
-      list.sort((a, b) => a.member_name.localeCompare(b.member_name));
+      list.sort((a, b) => (a.member_name || '').localeCompare(b.member_name || ''));
     } else if (sortBy === 'chest_no') {
       list.sort((a, b) => (a.chest_no || 0) - (b.chest_no || 0));
     } else if (sortBy === 'prizes') {
       list.sort((a, b) => (
-        b.prizes_count.first - a.prizes_count.first ||
-        b.prizes_count.second - a.prizes_count.second ||
-        b.prizes_count.third - a.prizes_count.third ||
-        b.total_points - a.total_points
+        ((b.prizes_count?.first || 0) - (a.prizes_count?.first || 0)) ||
+        ((b.prizes_count?.second || 0) - (a.prizes_count?.second || 0)) ||
+        ((b.prizes_count?.third || 0) - (a.prizes_count?.third || 0)) ||
+        ((b.total_points || 0) - (a.total_points || 0))
       ));
     } else {
       // points (default)
       list.sort((a, b) => (
-        b.total_points - a.total_points ||
-        b.prizes_count.first - a.prizes_count.first ||
-        (a.best_rank || 999) - (b.best_rank || 999)
+        ((b.total_points || 0) - (a.total_points || 0)) ||
+        ((b.prizes_count?.first || 0) - (a.prizes_count?.first || 0)) ||
+        ((a.best_rank || 999) - (b.best_rank || 999))
       ));
     }
 
@@ -174,7 +174,17 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
 
   // Overall KPI statistics
   const summaryStats = useMemo(() => {
-    if (!data?.performers) return { totalParticipants: 0, firstPrizes: 0, secondPrizes: 0, thirdPrizes: 0, totalPts: 0 };
+    if (!data?.performers) {
+      return {
+        totalParticipants: 0,
+        firstPrizes: 0,
+        secondPrizes: 0,
+        thirdPrizes: 0,
+        totalPts: 0,
+        categories: [],
+        teams: []
+      };
+    }
     return {
       totalParticipants: data.performers.length,
       firstPrizes: data.meta?.total_first_prizes || 0,
@@ -384,8 +394,8 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
             onChange={e => setCategoryFilter(e.target.value)}
           >
             <option value="ALL">All Categories</option>
-            {summaryStats.categories.map(c => (
-              <option key={c.id} value={c.name}>{c.name}</option>
+            {(summaryStats?.categories || []).map(c => (
+              <option key={c.id || c.name} value={c.name}>{c.name}</option>
             ))}
           </select>
 
@@ -396,8 +406,8 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
             onChange={e => setTeamFilter(e.target.value)}
           >
             <option value="ALL">All Teams</option>
-            {summaryStats.teams.map(t => (
-              <option key={t.id} value={t.name}>{t.name}</option>
+            {(summaryStats?.teams || []).map(t => (
+              <option key={t.id || t.name} value={t.name}>{t.name}</option>
             ))}
           </select>
 
@@ -562,17 +572,17 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
                   <div className="perf-card-pts-wrap">
                     {/* Prizes Summary Badges */}
                     <div className="perf-prizes-summary">
-                      {p.prizes_count.first > 0 && (
+                      {(p.prizes_count?.first || 0) > 0 && (
                         <span className="perf-prize-badge perf-prize-badge--1st" title={`${p.prizes_count.first} First Prizes`}>
                           🥇 {p.prizes_count.first}x 1st
                         </span>
                       )}
-                      {p.prizes_count.second > 0 && (
+                      {(p.prizes_count?.second || 0) > 0 && (
                         <span className="perf-prize-badge perf-prize-badge--2nd" title={`${p.prizes_count.second} Second Prizes`}>
                           🥈 {p.prizes_count.second}x 2nd
                         </span>
                       )}
-                      {p.prizes_count.third > 0 && (
+                      {(p.prizes_count?.third || 0) > 0 && (
                         <span className="perf-prize-badge perf-prize-badge--3rd" title={`${p.prizes_count.third} Third Prizes`}>
                           🥉 {p.prizes_count.third}x 3rd
                         </span>
