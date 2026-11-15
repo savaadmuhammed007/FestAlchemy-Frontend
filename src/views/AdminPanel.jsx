@@ -196,7 +196,7 @@ export default function AdminPanel() {
       setActiveTab('rankings');
     } else if (path === '/admin/schedule-planner') {
       setActiveTab('schedule-planner');
-    } else if (path === '/admin/performers') {
+    } else if (path === '/admin/performers' || path === '/admin/individual-performance' || path === '/admin/individual') {
       setActiveTab('performers');
     } else if (path === '/admin/poster') {
       setActiveTab('poster');
@@ -1741,8 +1741,8 @@ export default function AdminPanel() {
           <button onClick={() => navigate('/admin/schedule-planner')} className={`btn ${activeTab === 'schedule-planner' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
             <Clock size={15} /> Schedule Planner
           </button>
-          <button onClick={() => navigate('/admin/performers')} className={`btn ${activeTab === 'performers' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
-            <Medal size={15} /> Top Performers
+          <button onClick={() => navigate('/admin/individual-performance')} className={`btn ${activeTab === 'performers' ? 'btn-primary' : 'btn-secondary'}`} style={{ justifyContent: 'flex-start', width: '100%', padding: '0.55rem 0.85rem', fontSize: '0.85rem' }}>
+            <Trophy size={15} style={{ color: activeTab === 'performers' ? 'currentColor' : 'var(--gold, #f59e0b)' }} /> Individual Performance
           </button>
 
           <div className="admin-sidebar-section-label">SYSTEM & REPORTS</div>

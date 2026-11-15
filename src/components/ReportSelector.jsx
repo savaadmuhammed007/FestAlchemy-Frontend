@@ -280,6 +280,43 @@ export default function ReportSelector({ onNavigate }) {
           </div>
         </div>
 
+        {/* Individual Performance Card */}
+        <div
+          onClick={() => onNavigate('/admin/individual-performance')}
+          style={{
+            cursor: 'pointer',
+            padding: '1.25rem',
+            borderRadius: '12px',
+            border: '1px solid var(--border-glass)',
+            background: 'var(--bg-glass)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.75rem',
+            textAlign: 'center',
+            transition: 'all 0.2s ease-in-out'
+          }}
+          className="report-card-hover"
+        >
+          <div style={{
+            width: '44px',
+            height: '44px',
+            borderRadius: '50%',
+            background: 'rgba(245, 158, 11, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'var(--gold, #f59e0b)',
+            transition: 'background 0.2s'
+          }}>
+            <Trophy size={20} />
+          </div>
+          <div>
+            <h4 style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '0.2rem', fontFamily: 'var(--font-display)' }}>Individual Performance</h4>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Participant grades, prizes (1st/2nd/3rd) & events</p>
+          </div>
+        </div>
+
         {/* Fest Schedule Card */}
         <div
           onClick={() => onNavigate('/admin/reports/schedule')}

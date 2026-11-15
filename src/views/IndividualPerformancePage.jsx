@@ -19,7 +19,8 @@ import {
   X,
   Star,
   CheckCircle2,
-  Calendar
+  Calendar,
+  ExternalLink
 } from 'lucide-react';
 
 export default function IndividualPerformancePage({ isEmbedded = false }) {
@@ -214,6 +215,18 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.65rem', alignItems: 'center' }}>
+            {isEmbedded && (
+              <a
+                href="/individual-performance"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-secondary"
+                style={{ fontSize: '0.85rem', padding: '0.45rem 0.95rem', display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none' }}
+                title="Open public individual performance page in new tab"
+              >
+                <ExternalLink size={14} /> Public View
+              </a>
+            )}
             <button
               type="button"
               onClick={fetchPerformers}
@@ -682,3 +695,4 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
     </>
   );
 }
+

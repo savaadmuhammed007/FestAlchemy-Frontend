@@ -356,6 +356,7 @@ function Navbar() {
         { to: '/edufensta', label: 'Home', exact: true },
         { to: '/results', label: 'Results' },
         { to: '/team-status', label: 'Team Status' },
+        { to: '/individual-performance', label: 'Performers' },
       ]
     : [
         { to: '/edufensta', label: 'Home', exact: true },

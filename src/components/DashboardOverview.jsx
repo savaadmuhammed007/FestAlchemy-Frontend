@@ -1449,6 +1449,9 @@ export default function DashboardOverview({ statsLoading, stats, onNavigate }) {
           <button onClick={() => onNavigate('/admin/rankings')} className="btn btn-secondary" style={{ padding: '0.45rem 1rem', fontSize: '0.8rem' }}>
             Scoring & Rankings
           </button>
+          <button onClick={() => onNavigate('/admin/individual-performance')} className="btn btn-secondary" style={{ padding: '0.45rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Trophy size={14} style={{ color: 'var(--gold, #f59e0b)' }} /> Individual Performance
+          </button>
         </div>
       </div>
 
