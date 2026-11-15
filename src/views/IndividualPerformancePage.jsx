@@ -36,23 +36,23 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('points'); // 'points' | 'prizes' | 'name' | 'chest_no'
 
-  // Expand / collapse map (all expanded by default for instant reading)
-  const [collapsedMembers, setCollapsedMembers] = useState({});
+  // Expand / collapse map (all collapsed by default)
+  const [expandedMembers, setExpandedMembers] = useState({});
 
-  const toggleCollapse = (id) => {
-    setCollapsedMembers(prev => ({
+  const toggleExpand = (id) => {
+    setExpandedMembers(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
   };
 
-  const expandAll = () => setCollapsedMembers({});
-  const collapseAll = () => {
+  const expandAll = () => {
     if (!data?.performers) return;
     const all = {};
     data.performers.forEach(p => { all[p.member_id] = true; });
-    setCollapsedMembers(all);
+    setExpandedMembers(all);
   };
+  const collapseAll = () => setExpandedMembers({});
 
   const fetchPerformers = async () => {
     setLoading(true);
@@ -536,12 +536,17 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
             const podiumClass = isTop1 ? 'perf-card--podium-1' : isTop2 ? 'perf-card--podium-2' : isTop3 ? 'perf-card--podium-3' : '';
             const rankCircleClass = isTop1 ? 'perf-rank-circle--gold' : isTop2 ? 'perf-rank-circle--silver' : isTop3 ? 'perf-rank-circle--bronze' : '';
 
-            const isCollapsed = Boolean(collapsedMembers[p.member_id]);
+            const isExpanded = Boolean(expandedMembers[p.member_id]);
+            const collapsedClass = !isExpanded ? 'perf-card--collapsed' : '';
 
             return (
-              <div key={p.member_id} className={`perf-card ${podiumClass}`}>
+              <div key={p.member_id} className={`perf-card ${podiumClass} ${collapsedClass}`}>
                 {/* Participant Header Bar */}
-                <div className="perf-card-header">
+                <div 
+                  className="perf-card-header"
+                  onClick={() => toggleExpand(p.member_id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="perf-card-meta">
                     <div className={`perf-rank-circle ${rankCircleClass}`}>
                       {p.leaderboard_rank || idx + 1}
@@ -598,19 +603,21 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
                     {/* Collapse / Expand Toggle Button */}
                     <button
                       type="button"
-                      onClick={() => toggleCollapse(p.member_id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleExpand(p.member_id);
+                      }}
                       className="btn btn-secondary no-print"
                       style={{ padding: '0.35rem 0.5rem', borderRadius: '8px', border: '1px solid var(--border-glass)' }}
-                      title={isCollapsed ? 'Show program details' : 'Hide program details'}
+                      title={isExpanded ? 'Hide program details' : 'Show program details'}
                     >
-                      {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+                      {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                   </div>
                 </div>
 
                 {/* Programs Breakdown Table */}
-                {!isCollapsed && (
-                  <div className="perf-programs-table-wrap">
+                <div className={`perf-programs-table-wrap ${!isExpanded ? 'perf-programs-table-wrap--collapsed' : ''}`}>
                     <table className="perf-table custom-table">
                       <thead>
                         <tr>
@@ -684,7 +691,6 @@ export default function IndividualPerformancePage({ isEmbedded = false }) {
                       </tbody>
                     </table>
                   </div>
-                )}
               </div>
             );
           })}

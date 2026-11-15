@@ -362,6 +362,14 @@
   overflow-x: auto;
 }
 
+.perf-programs-table-wrap--collapsed {
+  display: none;
+}
+
+.perf-card--collapsed .perf-card-header {
+  border-bottom: none;
+}
+
 .perf-table {
   width: 100%;
   border-collapse: collapse;
@@ -477,6 +485,10 @@
     margin-bottom: 1rem !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  .perf-programs-table-wrap--collapsed {
+    display: block !important;
   }
 
   .perf-card-header {
